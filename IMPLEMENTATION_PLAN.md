@@ -14,22 +14,22 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#33** — Test strategy, Windows matrix, and evidence layout (first pack after #55).
-- Follow blueprint required execution order; do not invent alternative architecture choices already DEFAULT/LOCKED in packs.
+- **Active:** #19 Pomodoro state machine — PR #58 being reconciled with current `main` (blueprint #55 landed after PR open).
+- **Next after #19:** **#33** (test strategy / Windows evidence). Do not start #33 while #19 is open.
 - Manual evidence debt from #18 remains open.
-- Note: PR #58 (#19 Pomodoro) may still be open from a prior loop fire — reconcile leases before starting a second unit.
+- Deterministic blueprint is the sole pack decision store.
 
 ## Active work
 
-- None after #57 merge. Next unit: **#33**.
+- **#19** — branch `issue-19-pomodoro-state-machine`, lease `agent:solpaper-dev-loop`, risk **MEDIUM**, PR **#58**: Pomodoro state machine + recovery in `solpaper-core`, design note, unit tests; rebase/merge with post-#55 main.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #33 | Test strategy / Windows matrix / evidence | Execute pack #33 from deterministic blueprint |
-| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #33 per blueprint order |
-| #5 / #7 / #19 | Alpha 1 foundation components | After foundation packs (or parallel only if blueprint allows) |
+| #33 | Test strategy / Windows matrix / evidence | After #19 merges |
+| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | Per blueprint order after #33 |
+| #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
 
@@ -43,26 +43,26 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Manual evidence required
 
-From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, multi-monitor, mixed DPI, Explorer restart, Win+D/fullscreen, prolonged idle.
+From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, multi-monitor, mixed DPI, Explorer restart, Win+D/fullscreen, prolonged idle. Physical Pomodoro sleep/resume remains under #33/#24.
 
 ## Recently completed
 
-- **#55** — Deterministic execution blueprint. PR #57 (standards+spec PASS, verifier VERIFIED, CI green).
-- **#32** — CI, protected-main policy, required quality gates. PR #53.
-- **#46** — Composable Solpaper engineering skills. PR #50.
-- **#16** — Post-spike ADRs + production workspace. PR #49.
+- **#55** — Deterministic execution blueprint. PR #57.
+- **#32** — CI, protected-main policy. PR #53.
+- **#46** — Composable engineering skills. PR #50.
+- **#16** — ADRs + production workspace. PR #49.
 - **#31** — Agent governance. PR #47.
 - **#18** — Overlay spike. PR #28.
 - **#17** — Product destination. PR #26.
 
 ## Discovered defects
 
-- None currently open for the blueprint unit.
+- None yet for the #19 reconcile pass.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T17:46:30Z
-- **Branch:** `main` (includes #57)
-- **Open implementation PRs:** check #58 (#19) if still open
+- **Date (UTC):** 2026-08-05T17:51:00Z
+- **Branch:** `issue-19-pomodoro-state-machine` (merging `main` including #55/#59)
+- **Open implementation PRs:** #58 only
 - **Production workspace:** present
 - **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55

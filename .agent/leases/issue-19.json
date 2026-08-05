@@ -1,0 +1,12 @@
+{
+    "issue":  19,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-19-pomodoro-state-machine",
+    "claimed_at":  "2026-08-05T17:30:52.4078090Z",
+    "expires_at":  "2026-08-05T19:51:02.3413152Z",
+    "heartbeat_at":  "2026-08-05T17:51:02.3413152Z",
+    "status":  "active",
+    "unit":  "Reconcile and finish PR #58 against blueprint",
+    "pr":  58,
+    "risk_class":  "MEDIUM"
+}

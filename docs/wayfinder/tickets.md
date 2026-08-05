@@ -1,37 +1,52 @@
 # Wayfinder tickets (index)
 
-Parent map: [solpaper v1 wayfinder map](https://github.com/rps321321/solpaper/issues/1) · in-repo [`map.md`](map.md)
+Parent map: [solpaper desktop-surface wayfinder map](https://github.com/rps321321/solpaper/issues/1) · in-repo [`map.md`](map.md)
 
 Open/closed state on GitHub is authoritative; refresh this file when tickets are added, blocked, or resolved.
 
-## Research (AFK)
+**Intended order:** #17 → #18 → #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24
+
+## Done
+
+| Issue | Title | Notes |
+|------:|-------|-------|
+| [#17](https://github.com/rps321321/solpaper/issues/17) | Redefine Solpaper as a Windows desktop-surface application | Product locks recorded; vocabulary in `CONTEXT.md` |
+
+## Open — frontier and foundation
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#2](https://github.com/rps321321/solpaper/issues/2) | Research Wallhaven API for 2560x1440 and purity | — |
-| [#3](https://github.com/rps321321/solpaper/issues/3) | Research Bing high-res wallpaper fetch path | — |
-| [#4](https://github.com/rps321321/solpaper/issues/4) | Research Unsplash API auth sizing and rate limits | — |
-| [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper multi-monitor apply from Rust | — |
-| [#6](https://github.com/rps321321/solpaper/issues/6) | Research Windows Credential Manager from Rust | — |
-| [#7](https://github.com/rps321321/solpaper/issues/7) | Research tray agent and logon autostart on Windows | — |
-| [#8](https://github.com/rps321321/solpaper/issues/8) | Research local IPC between TUI and tray agent | — |
+| [#18](https://github.com/rps321321/solpaper/issues/18) | Prototype desktop overlay feasibility on Windows 11 | — (unblocked; **current frontier**) |
+| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | #18 (+ human ADR approval) |
+| [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | #18 (+ human v1 boundary) |
+| [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #18, #16 |
+| [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |
+| [#19](https://github.com/rps321321/solpaper/issues/19) | Design the Pomodoro state machine and recovery semantics | #16 (+ human defaults) |
 
-Research write-ups go under [`docs/research/`](../research/) and are linked from the issue.
-
-## Grilling (HITL)
+## Open — product slices
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#9](https://github.com/rps321321/solpaper/issues/9) | Grill TUI information architecture and keybindings | — |
-| [#10](https://github.com/rps321321/solpaper/issues/10) | Grill cron presets skip and pause semantics | — |
-| [#11](https://github.com/rps321321/solpaper/issues/11) | Grill cache cap and eviction defaults | — |
-| [#12](https://github.com/rps321321/solpaper/issues/12) | Grill default purity categories and source enablement | [#2](https://github.com/rps321321/solpaper/issues/2) |
-| [#13](https://github.com/rps321321/solpaper/issues/13) | Grill v1 acceptance criteria | — |
-| [#14](https://github.com/rps321321/solpaper/issues/14) | Grill per-monitor image fit policy | — |
+| [#20](https://github.com/rps321321/solpaper/issues/20) | Build Alpha 1: tray, persistent layout, Pomodoro, local wallpapers | #16, #19, #5, #7 |
+| [#6](https://github.com/rps321321/solpaper/issues/6) | Research secret storage and Google Calendar desktop OAuth | #20 (+ privacy default from #17) |
+| [#21](https://github.com/rps321321/solpaper/issues/21) | Build Alpha 2: read-only Google Calendar agenda widget | #6, #20 |
+| [#22](https://github.com/rps321321/solpaper/issues/22) | Research and select the first remote wallpaper provider | #20 |
+| [#23](https://github.com/rps321321/solpaper/issues/23) | Build Beta wallpaper scheduling, cache, selected provider | #20, #22 |
+| [#24](https://github.com/rps321321/solpaper/issues/24) | Harden, package, and validate Solpaper v1 | #13, #20, #21, #23, #7 |
 
-## Prototype / task
+## Superseded (closed, old wallpaper/TUI product)
 
-| Issue | Title | Blocked by |
-|------:|-------|------------|
-| [#15](https://github.com/rps321321/solpaper/issues/15) | Prototype TUI status and settings shell | [#9](https://github.com/rps321321/solpaper/issues/9) |
-| [#16](https://github.com/rps321321/solpaper/issues/16) | Scaffold Cargo workspace and domain CONTEXT | — |
+| Issue | Title |
+|------:|-------|
+| [#2](https://github.com/rps321321/solpaper/issues/2) | Wallhaven API research |
+| [#3](https://github.com/rps321321/solpaper/issues/3) | Bing fetch research |
+| [#4](https://github.com/rps321321/solpaper/issues/4) | Unsplash research |
+| [#8](https://github.com/rps321321/solpaper/issues/8) | TUI↔agent IPC |
+| [#9](https://github.com/rps321321/solpaper/issues/9) | TUI information architecture |
+| [#10](https://github.com/rps321321/solpaper/issues/10) | cron semantics |
+| [#11](https://github.com/rps321321/solpaper/issues/11) | cache defaults |
+| [#12](https://github.com/rps321321/solpaper/issues/12) | purity/source defaults |
+| [#14](https://github.com/rps321321/solpaper/issues/14) | fixed 2560×1440-oriented fit policy |
+| [#15](https://github.com/rps321321/solpaper/issues/15) | TUI prototype |
+
+Research write-ups go under [`docs/research/`](../research/) and are linked from the issue when applicable.

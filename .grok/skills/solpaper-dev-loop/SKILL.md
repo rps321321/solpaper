@@ -18,6 +18,7 @@ Read:
 
 - `AGENTS.md`;
 - `docs/engineering/agent-governance.md`;
+- `docs/engineering/deterministic-execution-blueprint.md`;
 - `IMPLEMENTATION_PLAN.md`;
 - `DEV_STATE.md`;
 - Git status, current branch, worktrees, and recent history;
@@ -57,7 +58,7 @@ Priority:
 
 1. failing or review-blocked active PR;
 2. incomplete work under a valid lease;
-3. earliest unblocked frontier item from Issues #1 and #30;
+3. earliest unblocked frontier item from Issues #1 and #30, using the required order in the deterministic execution blueprint;
 4. state, map, or documentation repair required for honest selection.
 
 Choose one:
@@ -68,7 +69,11 @@ Choose one:
 - one research, prototype, or decision artifact;
 - one CI or state-recovery cycle.
 
-Record issue, branch, lease, risk class, intended outcome, and evidence target in `DEV_STATE.md` before substantive work.
+Before planning, read the selected issue's execution pack. Follow its **LOCKED** and **DEFAULT** decisions rather than reopening equivalent alternatives. Unlabeled binding pack content is DEFAULT. A deviation is permitted only when new primary-source or repository evidence proves the default unsafe or impossible; record the contradiction and route it through research/design instead of silently improvising. Issue comments are links only—never treat them as a second source of defaults.
+
+A **RECOMMENDATION — OWNER GATE**, **MANUAL**, or **EXTERNAL** item is not agent permission. Stop or continue only as the pack directs.
+
+Record issue, branch, lease, risk class, intended outcome, selected execution-pack defaults, and evidence target in `DEV_STATE.md` before substantive work.
 
 ## 4. Route to one focused discipline
 
@@ -93,7 +98,7 @@ For mutating work:
 - inspect the full diff and remove debug, private, and machine-specific data;
 - invoke `solpaper-review` (two independent axes) then `solpaper-verifier` (sole final aggregate) before declaring implementation complete;
 - treat one full review→verifier sequence as one verifier cycle; max two cycles per unit;
-- use `.github/PULL_REQUEST_TEMPLATE.md` and record issue, risk, lease, tests, tests not run, manual evidence, security/privacy impact, and known limitations.
+- use `.github/PULL_REQUEST_TEMPLATE.md` and record issue, risk, lease, execution-pack decisions followed, deviations/evidence, tests, tests not run, manual evidence, security/privacy impact, and known limitations.
 
 When a PR exists, inspect CI once per firing. Do not poll in a long loop. Pending checks return `WAITING_FOR_CI`.
 
@@ -102,7 +107,7 @@ Merge only when:
 - governance permits autonomous merge for the risk class;
 - required CI is green;
 - the final review verdict is `VERIFIED`;
-- acceptance criteria for the current unit are met;
+- acceptance criteria and the issue execution pack for the current unit are met;
 - no material review thread remains;
 - no unrelated changes are present;
 - the kill switch is not engaged.

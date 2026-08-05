@@ -1,0 +1,12 @@
+{
+    "issue":  32,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-32-ci-quality-gates",
+    "claimed_at":  "2026-08-05T16:00:32.0582437Z",
+    "expires_at":  "2026-08-05T18:01:16.9325921Z",
+    "heartbeat_at":  "2026-08-05T16:01:16.9325921Z",
+    "status":  "active",
+    "unit":  "CI workflows, ci-policy.md, branch-protection checklist, required-check matrix",
+    "pr":  null,
+    "risk_class":  "MEDIUM"
+}

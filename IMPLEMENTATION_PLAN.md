@@ -7,26 +7,25 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#17** — Redefine Solpaper as a Windows desktop-surface application (product decision / grilling).
-- Pre-approved answers exist in the `solpaper-dev-loop` skill (section D). Next action: record decisions, update vocabulary/map, close #17. No overlay implementation in that iteration.
+- **#18** — Prototype desktop overlay feasibility on Windows 11 (disposable spike under `spikes/desktop-overlay/`; research write-up `docs/research/overlay-feasibility.md`).
+- Compare independent widget HWNDs vs monitor-sized surfaces. No production workspace. Do not claim physical sleep/monitor tests unless performed.
 
 ## Active work
 
-- None. Working tree clean on `main`. No open pull requests.
+- PR for #17 vocabulary/map mirror landing (this iteration). After merge: #18 is next implementation unit.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #17 | Redefine Solpaper as a Windows desktop-surface application | Apply pre-approved product locks; update map/CONTEXT vocabulary; close #17 |
+| #18 | Prototype desktop overlay feasibility on Windows 11 | Disposable spike; compare Approach A (per-widget HWND) vs B (monitor surface) |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #18 | Prototype desktop overlay feasibility on Windows 11 | #17 |
-| #16 | Record post-spike architecture and scaffold production workspace | #17, #18 (+ human ADR approval) |
-| #13 | Define measurable desktop-surface v1 acceptance criteria | #17, #18 (+ human v1 boundary) |
+| #16 | Record post-spike architecture and scaffold production workspace | #18 (+ human ADR approval) |
+| #13 | Define measurable desktop-surface v1 acceptance criteria | #18 (+ human v1 boundary) |
 | #7 | Decide tray runtime, autostart, and single-instance behaviour | #18, #16 |
 | #5 | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |
 | #19 | Design Pomodoro state machine and recovery semantics | #16 (+ human defaults) |
@@ -44,18 +43,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Recently completed
 
+- **#17** — Product destination locked: desktop-surface app; wallpaper peer subsystem; Pomodoro required; Calendar read-only Alpha 2 intended for v1; TUI not primary v1 UI; local wallpapers first; calendar privacy default + Busy-only. In-repo: `CONTEXT.md`, `docs/wayfinder/map.md`, `docs/wayfinder/tickets.md`, `README.md` aligned with Issue #1.
 - Autonomous-development setup: `AGENTS.md`, this plan, `DEV_STATE.md`, `.grok/skills/solpaper-dev-loop`, `.grok/agents/solpaper-verifier.md`.
 
 ## Discovered defects
 
-- **Stale in-repo mirrors:** `docs/wayfinder/map.md`, `docs/wayfinder/tickets.md`, root `README.md`, and `CONTEXT.md` still describe the superseded wallpaper-cycler + TUI product. Issue #1 is canonical. Repair during #17 / #16, not as product feature work.
+- None currently open. Prior stale mirrors (map/tickets/README/CONTEXT wallpaper-cycler+TUI copy) addressed in the #17 docs PR.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T14:24:10Z
-- **Branch:** `main` (up to date with `origin/main`)
-- **Working tree:** clean
-- **Open PRs:** none
+- **Date (UTC):** 2026-08-05 (iteration completing #17 deliverables)
+- **Branch:** `issue-17-product-destination` (docs only)
+- **Working tree:** dirty until commit
+- **Open PRs:** this iteration’s PR (when opened)
 - **Production Cargo workspace:** absent
-- **Open roadmap issues:** #1, #5–#7, #13, #16–#24
+- **Open roadmap issues:** #1, #5–#7, #13, #16, #18–#24
+- **Closed complete (product):** #17
 - **Superseded (closed):** #2–#4, #8–#12, #14–#15

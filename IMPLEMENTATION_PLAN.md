@@ -10,25 +10,25 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
-**Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7, #19) → #13 → #20 → …
+**Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **Active:** #19 Pomodoro state machine — PR #58 being reconciled with current `main` (blueprint #55 landed after PR open).
-- **Next after #19:** **#33** (test strategy / Windows evidence). Do not start #33 while #19 is open.
+- **#33** — Test strategy, Windows matrix, and evidence layout (first pack after #19 completion).
+- Follow blueprint required execution order; pack defaults are sole decision store.
 - Manual evidence debt from #18 remains open.
-- Deterministic blueprint is the sole pack decision store.
+- **#19 is complete** — Pomodoro domain machine in `solpaper-core`.
 
 ## Active work
 
-- **#19** — branch `issue-19-pomodoro-state-machine`, lease `agent:solpaper-dev-loop`, risk **MEDIUM**, PR **#58**: Pomodoro state machine + recovery in `solpaper-core`, design note, unit tests; rebase/merge with post-#55 main.
+- None after #58 merge. Next unit: **#33**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #33 | Test strategy / Windows matrix / evidence | After #19 merges |
-| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | Per blueprint order after #33 |
+| #33 | Test strategy / Windows matrix / evidence | Execute pack #33 |
+| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #33 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -43,26 +43,27 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Manual evidence required
 
-From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, multi-monitor, mixed DPI, Explorer restart, Win+D/fullscreen, prolonged idle. Physical Pomodoro sleep/resume remains under #33/#24.
+From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, multi-monitor, mixed DPI, Explorer restart, Win+D/fullscreen, prolonged idle.
 
 ## Recently completed
 
+- **#19** — Pomodoro state machine + recovery. PR #58 (pack-aligned, VERIFIED).
 - **#55** — Deterministic execution blueprint. PR #57.
-- **#32** — CI, protected-main policy. PR #53.
-- **#46** — Composable engineering skills. PR #50.
-- **#16** — ADRs + production workspace. PR #49.
+- **#32** — CI + protected main. PR #53.
+- **#46** — Engineering skills. PR #50.
+- **#16** — ADRs + workspace. PR #49.
 - **#31** — Agent governance. PR #47.
 - **#18** — Overlay spike. PR #28.
 - **#17** — Product destination. PR #26.
 
 ## Discovered defects
 
-- None yet for the #19 reconcile pass.
+- None currently open for #19.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T17:51:00Z
-- **Branch:** `issue-19-pomodoro-state-machine` (merging `main` including #55/#59)
-- **Open implementation PRs:** #58 only
+- **Date (UTC):** 2026-08-05T18:03:00Z
+- **Branch:** `main` (includes #58)
+- **Open implementation PRs:** none
 - **Production workspace:** present
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19

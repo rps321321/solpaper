@@ -6,7 +6,7 @@ A user-session **Runtime** owns desktop widget **Surfaces**, productivity state,
 
 ## Status
 
-Product destination locked (Issue #17). Next technical frontier: overlay feasibility spike (Issue #18). No production Cargo workspace yet.
+Product destination locked (Issue #17). Overlay feasibility spike (Issue #18): `spikes/desktop-overlay/` + `docs/research/overlay-feasibility.md` (Approach A recommended; manual evidence debt remains). No production Cargo workspace yet.
 
 | Artifact | Where |
 |----------|--------|

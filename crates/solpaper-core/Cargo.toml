@@ -11,3 +11,4 @@ description = "Platform-neutral Solpaper domain types and pure logic"
 serde = { workspace = true }
 
 [dev-dependencies]
+serde_json = { workspace = true }

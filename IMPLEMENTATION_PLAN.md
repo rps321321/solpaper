@@ -20,7 +20,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Active work
 
-- None after #53 merge and branch protection apply.
+- **#19** — branch `issue-19-pomodoro-state-machine`, lease `agent:solpaper-dev-loop`, risk **MEDIUM**: Pomodoro state machine + recovery in `solpaper-core`, design note, unit tests.
 
 ## Ready
 

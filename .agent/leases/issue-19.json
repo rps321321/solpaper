@@ -1,0 +1,12 @@
+{
+    "issue":  19,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-19-pomodoro-state-machine",
+    "claimed_at":  "2026-08-05T17:30:52.4078090Z",
+    "expires_at":  "2026-08-05T19:33:20.4777661Z",
+    "heartbeat_at":  "2026-08-05T17:33:20.4777661Z",
+    "status":  "active",
+    "unit":  "Pomodoro state machine, recovery, unit tests in solpaper-core",
+    "pr":  null,
+    "risk_class":  "MEDIUM"
+}

@@ -1,6 +1,6 @@
 # Agent instructions — solpaper
 
-Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issue #1, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
+Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issues #1 and #30, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
 
 **Governance (enforceable):** [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md)  
 **Lease tooling:** `scripts/agent-lease.ps1` · store: `.agent/leases/`
@@ -16,37 +16,49 @@ Stable product and safety rules for autonomous and human development. For workfl
 - Live widgets are not baked into wallpaper images.
 - Documented Win32 APIs are preferred.
 - WorkerW/Progman must never be the sole supported architecture.
-- Architecture remains provisional until Issue #16 records post-#18 ADRs (spike #18 complete; Approach A recommended).
+- Architecture remains provisional until Issue #16 records post-#18 ADRs; spike #18 recommends independent widget-sized HWNDs.
 - Local wallpapers precede remote providers.
 - At most one remote provider may enter v1.
 
-## Change-risk classes (summary)
+## Change-risk classes
 
 | Class | Agent merge authority |
 |-------|------------------------|
-| **LOW** | Docs/format/test-only/plan-state → auto-merge after focused review + applicable checks |
-| **MEDIUM** | Ordinary impl + verifier `VERIFIED` + green CI → may auto-merge |
-| **HIGH** | Secrets/OAuth/autostart/installer/unsafe Win32/destructive migrations/security policy → verified PR only; **no auto-merge** |
+| **LOW** | Docs, format, test-only, plan/state → auto-merge after focused review and applicable checks |
+| **MEDIUM** | Ordinary implementation + verifier `VERIFIED` + green CI → may auto-merge |
+| **HIGH** | Secrets, OAuth, autostart, installer, unsafe Win32, destructive migrations, security policy → verified PR only; **no auto-merge** |
 | **CRITICAL** | Public release, signing keys, force-push, credential-policy weakening, fundamental product reduction → **human-only; do not execute** |
 
-Full tables, human-only gates, runaway stops, and kill-switch: `docs/engineering/agent-governance.md`.
+Full tables, human-only gates, runaway stops, and kill switch: `docs/engineering/agent-governance.md`.
 
 ## Safety and process
 
-- Do not store secrets in source, config, SQLite, logs, issues, or PRs.
+- Do not store secrets or private Calendar data in source, config, SQLite, logs, issues, PRs, screenshots, fixtures, or evidence.
 - Do not push directly to `main`.
-- Do not force-push.
+- Do not force-push or rewrite shared history.
 - Do not destroy unrelated working-tree changes.
 - Do not claim a test passed unless it was executed.
 - Do not ask the owner routine implementation questions.
 - Choose the smallest, safest, and most reversible reasonable option.
-- GitHub Issue #1 is the canonical product roadmap when repository mirrors disagree; #30 is the engineering-system map.
+- GitHub Issue #1 is the canonical product roadmap; Issue #30 is the engineering-system map.
 - Claim an atomic issue lease before editing; `DEV_STATE.md` alone is not a lease.
-- Max one active builder and one active implementation PR.
-- Max two verifier cycles per unit; stop after three materially identical failures.
-- Declare risk class on every PR (`.github/PULL_REQUEST_TEMPLATE.md`).
+- Maximum one active builder and one active implementation PR.
+- Maximum two verifier cycles per unit; stop after three materially identical failures.
+- Declare risk class and lease on every PR through `.github/PULL_REQUEST_TEMPLATE.md`.
+- Manual Windows evidence remains open until performed on a named environment.
 
-## Build and test (production workspace)
+## Engineering skills
+
+The Grok skill system is documented in `docs/agents/solpaper-engineering-skills.md`.
+
+- `solpaper-dev-loop` is a thin scheduled controller: recover, govern, choose one unit, route, persist, stop.
+- `solpaper-engineering` routes manually requested work.
+- Focused skills own implementation, ticketing, research, prototypes, TDD, diagnosis, domain/design, review, and conflict resolution.
+- Skills consume this file, governance, `CONTEXT.md`, ADRs, the originating issue/spec, leases, and repository state rather than restating product rules.
+- Completed implementation uses independent standards and spec review through `solpaper-review`; `solpaper-verifier` aggregates the two reports.
+- No skill may bypass governance, lease ownership, the kill switch, CI, manual evidence, or human-only gates.
+
+## Build and test
 
 When a production Cargo workspace exists, run:
 
@@ -57,7 +69,7 @@ cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 ```
 
-Spike crates use equivalent checks scoped to that crate. Do not invent a production workspace before Issues #17 and #18 are resolved (#17/#18 complete; workspace is #16).
+Spike crates use equivalent scoped checks. Do not invent a production workspace outside the accepted Issue #16 architecture.
 
 Governance tooling:
 
@@ -67,4 +79,4 @@ powershell -NoProfile -File scripts/tests/agent-lease.Tests.ps1
 
 ## Autonomous iteration
 
-Use the `solpaper-dev-loop` skill (`/solpaper-dev-loop`) for one bounded development iteration. Persistent memory is GitHub plus `IMPLEMENTATION_PLAN.md` and `DEV_STATE.md` — not conversation history. Governance doc and leases bind unattended behaviour.
+Use `/solpaper-dev-loop` for one bounded development iteration. Persistent memory is GitHub plus governance, leases, `IMPLEMENTATION_PLAN.md`, `DEV_STATE.md`, `CONTEXT.md`, and ADRs — not conversation history.

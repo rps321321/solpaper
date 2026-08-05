@@ -2,6 +2,7 @@
 //!
 //! Pure logic: injectable wall-clock (`UnixMs`), no threads, no Win32.
 //! Design note: `docs/design/pomodoro-state-machine.md`.
+//! Defaults follow `docs/engineering/deterministic-execution-blueprint.md` pack #19.
 
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +14,7 @@ pub type UnixMs = i64;
 /// Non-negative duration in milliseconds.
 pub type DurationMs = u64;
 
-/// Default focus length (provisional until human re-approves defaults).
+/// Default focus length (blueprint #19).
 pub const DEFAULT_FOCUS_MS: DurationMs = 25 * 60 * 1000;
 /// Default short break.
 pub const DEFAULT_SHORT_BREAK_MS: DurationMs = 5 * 60 * 1000;
@@ -21,6 +22,15 @@ pub const DEFAULT_SHORT_BREAK_MS: DurationMs = 5 * 60 * 1000;
 pub const DEFAULT_LONG_BREAK_MS: DurationMs = 15 * 60 * 1000;
 /// Focus completions before a long break.
 pub const DEFAULT_FOCUSES_BEFORE_LONG_BREAK: u32 = 4;
+
+const MIN_FOCUS_MS: DurationMs = 60_000;
+const MAX_FOCUS_MS: DurationMs = 180 * 60 * 1000;
+const MIN_SHORT_BREAK_MS: DurationMs = 60_000;
+const MAX_SHORT_BREAK_MS: DurationMs = 60 * 60 * 1000;
+const MIN_LONG_BREAK_MS: DurationMs = 60_000;
+const MAX_LONG_BREAK_MS: DurationMs = 120 * 60 * 1000;
+const MIN_CADENCE: u32 = 2;
+const MAX_CADENCE: u32 = 12;
 
 /// Durations and policy for a Pomodoro session cycle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,7 +40,8 @@ pub struct PomodoroConfig {
     pub long_break_ms: DurationMs,
     /// After this many *completed* focus phases, the next break is long.
     pub focuses_before_long_break: u32,
-    /// When true, automatically start the next phase after a natural completion.
+    /// When true, automatically start the next phase after a *live* completion or skip.
+    /// Recovery [`Command::Sync`] never auto-starts, even when this is true.
     pub auto_start_next: bool,
 }
 
@@ -48,14 +59,24 @@ impl Default for PomodoroConfig {
 
 impl PomodoroConfig {
     pub fn validate(&self) -> Result<(), CoreError> {
-        if self.focus_ms == 0 || self.short_break_ms == 0 || self.long_break_ms == 0 {
+        if !(MIN_FOCUS_MS..=MAX_FOCUS_MS).contains(&self.focus_ms) {
             return Err(CoreError::InvalidPomodoro(
-                "phase durations must be non-zero",
+                "focus duration must be 1–180 minutes",
             ));
         }
-        if self.focuses_before_long_break == 0 {
+        if !(MIN_SHORT_BREAK_MS..=MAX_SHORT_BREAK_MS).contains(&self.short_break_ms) {
             return Err(CoreError::InvalidPomodoro(
-                "focuses_before_long_break must be >= 1",
+                "short break duration must be 1–60 minutes",
+            ));
+        }
+        if !(MIN_LONG_BREAK_MS..=MAX_LONG_BREAK_MS).contains(&self.long_break_ms) {
+            return Err(CoreError::InvalidPomodoro(
+                "long break duration must be 1–120 minutes",
+            ));
+        }
+        if !(MIN_CADENCE..=MAX_CADENCE).contains(&self.focuses_before_long_break) {
+            return Err(CoreError::InvalidPomodoro(
+                "focuses_before_long_break must be 2–12",
             ));
         }
         Ok(())
@@ -97,10 +118,12 @@ pub enum TimerStatus {
     Running {
         phase: Phase,
         deadline_utc_ms: UnixMs,
+        phase_instance_id: u64,
     },
     Paused {
         phase: Phase,
         remaining_ms: DurationMs,
+        phase_instance_id: u64,
     },
 }
 
@@ -112,9 +135,10 @@ pub struct PomodoroState {
     /// Completed focus phases in the current long-break cycle (not including skips).
     pub completed_focuses_in_cycle: u32,
     pub last_transition_utc_ms: Option<UnixMs>,
-    /// Monotonic identity of the last emitted phase-completion (dedupe notifications).
+    /// Identity of the last emitted phase-completion (notification dedupe).
     pub last_completion_id: Option<u64>,
-    completion_seq: u64,
+    /// Next phase-instance / completion identity source (serde-visible for round-trip).
+    phase_seq: u64,
 }
 
 impl PomodoroState {
@@ -126,7 +150,7 @@ impl PomodoroState {
             completed_focuses_in_cycle: 0,
             last_transition_utc_ms: None,
             last_completion_id: None,
-            completion_seq: 0,
+            phase_seq: 0,
         })
     }
 
@@ -146,7 +170,12 @@ impl PomodoroState {
             Command::Resume => self.cmd_resume(now_utc_ms),
             Command::Skip => self.cmd_skip(now_utc_ms),
             Command::Reset => self.cmd_reset(now_utc_ms),
-            Command::Sync => self.cmd_sync(now_utc_ms),
+            // Recovery-safe: never auto-start after expiry.
+            Command::Sync => self.cmd_complete_if_due(now_utc_ms, /*allow_auto_start*/ false),
+            // Live tick while the process is continuously running; may auto-start.
+            Command::LiveTick => {
+                self.cmd_complete_if_due(now_utc_ms, /*allow_auto_start*/ true)
+            }
         }
     }
 
@@ -157,6 +186,7 @@ impl PomodoroState {
             TimerStatus::Running {
                 phase,
                 deadline_utc_ms,
+                ..
             } => {
                 let total = self.config.duration_for(*phase);
                 let remaining = remaining_until(*deadline_utc_ms, now_utc_ms, total);
@@ -165,6 +195,7 @@ impl PomodoroState {
             TimerStatus::Paused {
                 phase,
                 remaining_ms,
+                ..
             } => {
                 let total = self.config.duration_for(*phase);
                 (Some(*phase), *remaining_ms, total, false)
@@ -195,8 +226,11 @@ impl PomodoroState {
         match self.status {
             TimerStatus::Idle => {
                 let phase = Phase::Focus;
-                self.begin_phase(phase, now);
-                Ok(vec![PomodoroEvent::Started { phase }])
+                let id = self.begin_phase(phase, now);
+                Ok(vec![PomodoroEvent::Started {
+                    phase,
+                    phase_instance_id: id,
+                }])
             }
             _ => Err(CoreError::IllegalPomodoroTransition(
                 "Start is only valid from Idle (use Resume when paused)",
@@ -209,15 +243,20 @@ impl PomodoroState {
             TimerStatus::Running {
                 phase,
                 deadline_utc_ms,
+                phase_instance_id,
             } => {
                 let total = self.config.duration_for(phase);
                 let remaining = remaining_until(deadline_utc_ms, now, total);
                 self.status = TimerStatus::Paused {
                     phase,
                     remaining_ms: remaining,
+                    phase_instance_id,
                 };
                 self.last_transition_utc_ms = Some(now);
-                Ok(vec![PomodoroEvent::Paused { phase }])
+                Ok(vec![PomodoroEvent::Paused {
+                    phase,
+                    phase_instance_id,
+                }])
             }
             _ => Err(CoreError::IllegalPomodoroTransition(
                 "Pause is only valid while Running",
@@ -230,21 +269,28 @@ impl PomodoroState {
             TimerStatus::Paused {
                 phase,
                 remaining_ms,
+                phase_instance_id,
             } => {
                 if remaining_ms == 0 {
-                    // Degenerate pause at zero: treat as completion via Sync path.
+                    // Degenerate pause at zero: treat as live completion.
                     self.status = TimerStatus::Running {
                         phase,
                         deadline_utc_ms: now,
+                        phase_instance_id,
                     };
-                    return self.cmd_sync(now);
+                    return self.cmd_complete_if_due(now, /*allow_auto_start*/ true);
                 }
+                let deadline = saturating_deadline(now, remaining_ms);
                 self.status = TimerStatus::Running {
                     phase,
-                    deadline_utc_ms: now.saturating_add(remaining_ms as i64),
+                    deadline_utc_ms: deadline,
+                    phase_instance_id,
                 };
                 self.last_transition_utc_ms = Some(now);
-                Ok(vec![PomodoroEvent::Resumed { phase }])
+                Ok(vec![PomodoroEvent::Resumed {
+                    phase,
+                    phase_instance_id,
+                }])
             }
             _ => Err(CoreError::IllegalPomodoroTransition(
                 "Resume is only valid while Paused",
@@ -253,8 +299,17 @@ impl PomodoroState {
     }
 
     fn cmd_skip(&mut self, now: UnixMs) -> Result<Vec<PomodoroEvent>, CoreError> {
-        let phase = match self.status {
-            TimerStatus::Running { phase, .. } | TimerStatus::Paused { phase, .. } => phase,
+        let (phase, phase_instance_id) = match self.status {
+            TimerStatus::Running {
+                phase,
+                phase_instance_id,
+                ..
+            }
+            | TimerStatus::Paused {
+                phase,
+                phase_instance_id,
+                ..
+            } => (phase, phase_instance_id),
             TimerStatus::Idle => {
                 return Err(CoreError::IllegalPomodoroTransition(
                     "Skip is not valid while Idle",
@@ -263,10 +318,17 @@ impl PomodoroState {
         };
         // Skip does not count a focus completion.
         let next = self.next_phase_after(phase, /*focus_completed*/ false);
-        let mut events = vec![PomodoroEvent::Skipped { phase }];
+        let mut events = vec![PomodoroEvent::Skipped {
+            phase,
+            phase_instance_id,
+        }];
+        // Live skip: auto-start may apply.
         if self.config.auto_start_next {
-            self.begin_phase(next, now);
-            events.push(PomodoroEvent::NextPhaseStarted { phase: next });
+            let id = self.begin_phase(next, now);
+            events.push(PomodoroEvent::NextPhaseStarted {
+                phase: next,
+                phase_instance_id: id,
+            });
         } else {
             self.status = TimerStatus::Idle;
             self.last_transition_utc_ms = Some(now);
@@ -275,18 +337,25 @@ impl PomodoroState {
     }
 
     fn cmd_reset(&mut self, now: UnixMs) -> Result<Vec<PomodoroEvent>, CoreError> {
+        // Blueprint: Idle at full configured duration; preserve completed-focus count.
         self.status = TimerStatus::Idle;
-        self.completed_focuses_in_cycle = 0;
         self.last_transition_utc_ms = Some(now);
-        // Keep last_completion_id so notification dedupe survives reset storms.
         Ok(vec![PomodoroEvent::Reset])
     }
 
-    /// Recovery / deadline check. Completes at most one expired phase; never replays a backlog.
-    fn cmd_sync(&mut self, now: UnixMs) -> Result<Vec<PomodoroEvent>, CoreError> {
+    /// Complete at most one expired running phase. Never replays a multi-phase backlog.
+    ///
+    /// When `allow_auto_start` is false (recovery [`Command::Sync`]), the next phase is
+    /// always left Idle even if `auto_start_next` is configured.
+    fn cmd_complete_if_due(
+        &mut self,
+        now: UnixMs,
+        allow_auto_start: bool,
+    ) -> Result<Vec<PomodoroEvent>, CoreError> {
         let TimerStatus::Running {
             phase,
             deadline_utc_ms,
+            phase_instance_id,
         } = self.status
         else {
             return Ok(vec![]);
@@ -296,68 +365,59 @@ impl PomodoroState {
             return Ok(vec![]);
         }
 
-        // Expired: complete exactly one phase.
         let focus_completed = phase == Phase::Focus;
         if focus_completed {
             self.completed_focuses_in_cycle = self.completed_focuses_in_cycle.saturating_add(1);
         }
 
-        self.completion_seq = self.completion_seq.saturating_add(1);
-        let completion_id = self.completion_seq;
+        // Completion identity for notification dedupe (stable across repeated Sync).
+        let completion_id = phase_instance_id;
         self.last_completion_id = Some(completion_id);
         self.last_transition_utc_ms = Some(now);
 
         let mut events = vec![PomodoroEvent::PhaseCompleted {
             phase,
             completion_id,
+            phase_instance_id,
         }];
 
         let next = self.next_phase_after(phase, focus_completed);
-        if focus_completed
-            && self.completed_focuses_in_cycle >= self.config.focuses_before_long_break
-            && next == Phase::LongBreak
-        {
-            // Cycle rolls when entering long break after N focuses.
-            // Count is cleared when long break *completes* or is skipped after long break start.
+
+        if phase == Phase::LongBreak {
+            self.completed_focuses_in_cycle = 0;
         }
 
-        if self.config.auto_start_next {
-            // After completing enough focuses, next is LongBreak; after long break completes, reset cycle.
-            if phase == Phase::LongBreak {
-                self.completed_focuses_in_cycle = 0;
-            }
-            self.begin_phase(next, now);
-            events.push(PomodoroEvent::NextPhaseStarted { phase: next });
+        if allow_auto_start && self.config.auto_start_next {
+            let id = self.begin_phase(next, now);
+            events.push(PomodoroEvent::NextPhaseStarted {
+                phase: next,
+                phase_instance_id: id,
+            });
         } else {
-            if phase == Phase::LongBreak {
-                self.completed_focuses_in_cycle = 0;
-            }
             self.status = TimerStatus::Idle;
         }
 
         Ok(events)
     }
 
-    fn begin_phase(&mut self, phase: Phase, now: UnixMs) {
+    fn begin_phase(&mut self, phase: Phase, now: UnixMs) -> u64 {
+        self.phase_seq = self.phase_seq.saturating_add(1);
+        let phase_instance_id = self.phase_seq;
         let dur = self.config.duration_for(phase);
         self.status = TimerStatus::Running {
             phase,
-            deadline_utc_ms: now.saturating_add(dur as i64),
+            deadline_utc_ms: saturating_deadline(now, dur),
+            phase_instance_id,
         };
         self.last_transition_utc_ms = Some(now);
+        phase_instance_id
     }
 
     fn next_phase_after(&self, completed_or_skipped: Phase, focus_completed: bool) -> Phase {
         match completed_or_skipped {
             Phase::Focus => {
-                let count = if focus_completed {
-                    self.completed_focuses_in_cycle
-                } else {
-                    // Skip: look at current cycle without increment.
-                    self.completed_focuses_in_cycle
-                };
-                // After a completed focus, count already incremented in cmd_sync.
-                // For skip, use current count; long break only after completed focuses.
+                let count = self.completed_focuses_in_cycle;
+                // Long break only after completed focuses; skip never credits.
                 if focus_completed
                     && count > 0
                     && count % self.config.focuses_before_long_break == 0
@@ -380,20 +440,41 @@ pub enum Command {
     Resume,
     Skip,
     Reset,
-    /// Compare wall clock to deadline; complete at most one expired phase.
+    /// Recovery / restore path: complete at most one expired phase; **never** auto-start next.
     Sync,
+    /// Live deadline check while the process is continuously running; may auto-start next.
+    LiveTick,
 }
 
 /// Domain events for UI / notification wiring (not persisted as a log in Alpha 1).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PomodoroEvent {
-    Started { phase: Phase },
-    Paused { phase: Phase },
-    Resumed { phase: Phase },
-    Skipped { phase: Phase },
+    Started {
+        phase: Phase,
+        phase_instance_id: u64,
+    },
+    Paused {
+        phase: Phase,
+        phase_instance_id: u64,
+    },
+    Resumed {
+        phase: Phase,
+        phase_instance_id: u64,
+    },
+    Skipped {
+        phase: Phase,
+        phase_instance_id: u64,
+    },
     Reset,
-    PhaseCompleted { phase: Phase, completion_id: u64 },
-    NextPhaseStarted { phase: Phase },
+    PhaseCompleted {
+        phase: Phase,
+        completion_id: u64,
+        phase_instance_id: u64,
+    },
+    NextPhaseStarted {
+        phase: Phase,
+        phase_instance_id: u64,
+    },
 }
 
 /// Actions the widget may offer.
@@ -452,50 +533,89 @@ fn remaining_until(deadline_utc_ms: UnixMs, now_utc_ms: UnixMs, total: DurationM
     if now_utc_ms >= deadline_utc_ms {
         return 0;
     }
+    // Clock moved backward: remaining may exceed total; clamp to configured phase length.
     let left = (deadline_utc_ms - now_utc_ms) as DurationMs;
     left.min(total)
+}
+
+fn saturating_deadline(now: UnixMs, duration_ms: DurationMs) -> UnixMs {
+    let add = i64::try_from(duration_ms).unwrap_or(i64::MAX);
+    now.saturating_add(add)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn state() -> PomodoroState {
-        // Short durations for readable tests.
-        let cfg = PomodoroConfig {
+    /// Short durations for readable tests (bypass production range validation).
+    fn test_config() -> PomodoroConfig {
+        PomodoroConfig {
             focus_ms: 1_000,
             short_break_ms: 500,
             long_break_ms: 800,
             focuses_before_long_break: 2,
             auto_start_next: false,
-        };
-        PomodoroState::new(cfg).unwrap()
+        }
+    }
+
+    fn state() -> PomodoroState {
+        // Construct without full production ranges for fast unit tests.
+        PomodoroState {
+            config: test_config(),
+            status: TimerStatus::Idle,
+            completed_focuses_in_cycle: 0,
+            last_transition_utc_ms: None,
+            last_completion_id: None,
+            phase_seq: 0,
+        }
+    }
+
+    #[test]
+    fn default_config_matches_blueprint_minutes() {
+        let c = PomodoroConfig::default();
+        assert_eq!(c.focus_ms, 25 * 60 * 1000);
+        assert_eq!(c.short_break_ms, 5 * 60 * 1000);
+        assert_eq!(c.long_break_ms, 15 * 60 * 1000);
+        assert_eq!(c.focuses_before_long_break, 4);
+        assert!(!c.auto_start_next);
+        PomodoroState::new(c).unwrap();
     }
 
     #[test]
     fn start_from_idle_begins_focus() {
         let mut s = state();
         let ev = s.apply(Command::Start, 10_000).unwrap();
-        assert_eq!(
-            ev,
-            vec![PomodoroEvent::Started {
-                phase: Phase::Focus
+        assert!(matches!(
+            &ev[..],
+            [PomodoroEvent::Started {
+                phase: Phase::Focus,
+                phase_instance_id: 1
             }]
-        );
+        ));
         assert!(matches!(
             s.status,
             TimerStatus::Running {
                 phase: Phase::Focus,
-                deadline_utc_ms: 11_000
+                deadline_utc_ms: 11_000,
+                phase_instance_id: 1
             }
         ));
     }
 
     #[test]
-    fn start_while_running_is_illegal() {
+    fn illegal_commands_from_incompatible_states() {
         let mut s = state();
+        assert!(s.apply(Command::Pause, 0).is_err());
+        assert!(s.apply(Command::Resume, 0).is_err());
+        assert!(s.apply(Command::Skip, 0).is_err());
+
         s.apply(Command::Start, 0).unwrap();
         assert!(s.apply(Command::Start, 1).is_err());
+        assert!(s.apply(Command::Resume, 1).is_err());
+
+        s.apply(Command::Pause, 100).unwrap();
+        assert!(s.apply(Command::Pause, 101).is_err());
+        assert!(s.apply(Command::Start, 101).is_err());
     }
 
     #[test]
@@ -507,6 +627,7 @@ mod tests {
             TimerStatus::Paused {
                 phase: Phase::Focus,
                 remaining_ms,
+                phase_instance_id: 1,
             } => assert_eq!(remaining_ms, 600),
             other => panic!("expected paused, got {other:?}"),
         }
@@ -515,22 +636,10 @@ mod tests {
             TimerStatus::Running {
                 phase: Phase::Focus,
                 deadline_utc_ms,
+                phase_instance_id: 1,
             } => assert_eq!(deadline_utc_ms, 1_600),
             other => panic!("expected running, got {other:?}"),
         }
-    }
-
-    #[test]
-    fn pause_when_idle_is_illegal() {
-        let mut s = state();
-        assert!(s.apply(Command::Pause, 0).is_err());
-    }
-
-    #[test]
-    fn resume_when_running_is_illegal() {
-        let mut s = state();
-        s.apply(Command::Start, 0).unwrap();
-        assert!(s.apply(Command::Resume, 1).is_err());
     }
 
     #[test]
@@ -543,15 +652,16 @@ mod tests {
     }
 
     #[test]
-    fn sync_after_deadline_completes_one_phase_no_autostart() {
+    fn natural_focus_completion_via_live_tick() {
         let mut s = state();
         s.apply(Command::Start, 0).unwrap();
-        let ev = s.apply(Command::Sync, 1_000).unwrap();
+        let ev = s.apply(Command::LiveTick, 1_000).unwrap();
         assert_eq!(
             ev,
             vec![PomodoroEvent::PhaseCompleted {
                 phase: Phase::Focus,
-                completion_id: 1
+                completion_id: 1,
+                phase_instance_id: 1,
             }]
         );
         assert!(matches!(s.status, TimerStatus::Idle));
@@ -560,11 +670,11 @@ mod tests {
     }
 
     #[test]
-    fn large_time_jump_still_completes_only_one_phase() {
+    fn recovery_sync_never_auto_starts() {
         let mut s = state();
+        s.config.auto_start_next = true;
         s.apply(Command::Start, 0).unwrap();
-        // Far past several theoretical deadlines — still one completion.
-        let ev = s.apply(Command::Sync, 1_000_000).unwrap();
+        let ev = s.apply(Command::Sync, 1_000).unwrap();
         assert_eq!(ev.len(), 1);
         assert!(matches!(
             ev[0],
@@ -578,20 +688,36 @@ mod tests {
     }
 
     #[test]
-    fn auto_start_next_after_completion() {
+    fn large_time_jump_completes_only_one_phase() {
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        let ev = s.apply(Command::Sync, 1_000_000).unwrap();
+        assert_eq!(ev.len(), 1);
+        assert!(matches!(s.status, TimerStatus::Idle));
+        assert_eq!(s.completed_focuses_in_cycle, 1);
+        // Repeated Sync after completion produces no duplicate completion.
+        let ev2 = s.apply(Command::Sync, 2_000_000).unwrap();
+        assert!(ev2.is_empty());
+        assert_eq!(s.last_completion_id, Some(1));
+    }
+
+    #[test]
+    fn live_tick_auto_start_next_after_completion() {
         let mut s = state();
         s.config.auto_start_next = true;
         s.apply(Command::Start, 0).unwrap();
-        let ev = s.apply(Command::Sync, 1_000).unwrap();
+        let ev = s.apply(Command::LiveTick, 1_000).unwrap();
         assert_eq!(
             ev,
             vec![
                 PomodoroEvent::PhaseCompleted {
                     phase: Phase::Focus,
-                    completion_id: 1
+                    completion_id: 1,
+                    phase_instance_id: 1,
                 },
                 PomodoroEvent::NextPhaseStarted {
-                    phase: Phase::ShortBreak
+                    phase: Phase::ShortBreak,
+                    phase_instance_id: 2,
                 }
             ]
         );
@@ -605,27 +731,49 @@ mod tests {
     }
 
     #[test]
-    fn long_break_after_configured_focus_completions() {
+    fn natural_short_break_completion() {
         let mut s = state();
         s.config.auto_start_next = true;
-        s.config.focuses_before_long_break = 2;
-        // Focus 1
         s.apply(Command::Start, 0).unwrap();
-        s.apply(Command::Sync, 1_000).unwrap();
-        // Short break → focus 2
-        s.apply(Command::Sync, 1_500).unwrap();
-        // Focus 2 completes → long break
-        let ev = s.apply(Command::Sync, 2_500).unwrap();
+        s.apply(Command::LiveTick, 1_000).unwrap(); // → short break running
+        let ev = s.apply(Command::LiveTick, 1_500).unwrap();
+        assert!(ev.iter().any(|e| matches!(
+            e,
+            PomodoroEvent::PhaseCompleted {
+                phase: Phase::ShortBreak,
+                ..
+            }
+        )));
         assert!(ev.iter().any(|e| matches!(
             e,
             PomodoroEvent::NextPhaseStarted {
-                phase: Phase::LongBreak
+                phase: Phase::Focus,
+                ..
             }
         )));
     }
 
     #[test]
-    fn skip_does_not_increment_focus_count() {
+    fn fourth_style_long_break_after_configured_focus_completions() {
+        let mut s = state();
+        s.config.auto_start_next = true;
+        s.config.focuses_before_long_break = 2;
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::LiveTick, 1_000).unwrap(); // focus1 done → short
+        s.apply(Command::LiveTick, 1_500).unwrap(); // short done → focus2
+        let ev = s.apply(Command::LiveTick, 2_500).unwrap(); // focus2 done → long
+        assert!(ev.iter().any(|e| matches!(
+            e,
+            PomodoroEvent::NextPhaseStarted {
+                phase: Phase::LongBreak,
+                ..
+            }
+        )));
+        assert_eq!(s.completed_focuses_in_cycle, 2);
+    }
+
+    #[test]
+    fn skip_focus_does_not_credit() {
         let mut s = state();
         s.apply(Command::Start, 0).unwrap();
         s.apply(Command::Skip, 100).unwrap();
@@ -634,20 +782,130 @@ mod tests {
     }
 
     #[test]
-    fn skip_from_idle_is_illegal() {
+    fn skip_break_returns_toward_focus_when_auto() {
         let mut s = state();
-        assert!(s.apply(Command::Skip, 0).is_err());
+        s.config.auto_start_next = true;
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::LiveTick, 1_000).unwrap(); // short break
+        s.apply(Command::Skip, 1_100).unwrap();
+        assert!(matches!(
+            s.status,
+            TimerStatus::Running {
+                phase: Phase::Focus,
+                ..
+            }
+        ));
     }
 
     #[test]
-    fn reset_clears_cycle_and_idles() {
+    fn reset_from_running_and_paused_preserves_focus_count() {
         let mut s = state();
         s.apply(Command::Start, 0).unwrap();
         s.apply(Command::Sync, 1_000).unwrap();
         assert_eq!(s.completed_focuses_in_cycle, 1);
-        s.apply(Command::Reset, 2_000).unwrap();
-        assert_eq!(s.completed_focuses_in_cycle, 0);
+
+        s.apply(Command::Start, 2_000).unwrap();
+        s.apply(Command::Reset, 2_100).unwrap();
+        assert_eq!(s.completed_focuses_in_cycle, 1);
         assert!(matches!(s.status, TimerStatus::Idle));
+
+        s.apply(Command::Start, 3_000).unwrap();
+        s.apply(Command::Pause, 3_100).unwrap();
+        s.apply(Command::Reset, 3_200).unwrap();
+        assert_eq!(s.completed_focuses_in_cycle, 1);
+        assert!(matches!(s.status, TimerStatus::Idle));
+    }
+
+    #[test]
+    fn restart_before_deadline_continues_same_phase() {
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        let json = serde_json::to_string(&s).unwrap();
+        let mut back: PomodoroState = serde_json::from_str(&json).unwrap();
+        let v = back.view(500);
+        assert_eq!(v.remaining_ms, 500);
+        assert!(matches!(
+            back.status,
+            TimerStatus::Running {
+                phase: Phase::Focus,
+                deadline_utc_ms: 1_000,
+                ..
+            }
+        ));
+        assert!(back.apply(Command::Sync, 500).unwrap().is_empty());
+    }
+
+    #[test]
+    fn restart_after_deadline_completes_once_via_sync() {
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        let json = serde_json::to_string(&s).unwrap();
+        let mut back: PomodoroState = serde_json::from_str(&json).unwrap();
+        let ev = back.apply(Command::Sync, 5_000).unwrap();
+        assert_eq!(ev.len(), 1);
+        assert!(matches!(back.status, TimerStatus::Idle));
+    }
+
+    #[test]
+    fn clock_backward_clamps_remaining_to_phase_total() {
+        let mut s = state();
+        s.apply(Command::Start, 10_000).unwrap();
+        // now before start: remaining would exceed total without clamp
+        let v = s.view(0);
+        assert_eq!(v.remaining_ms, 1_000);
+    }
+
+    #[test]
+    fn resume_with_zero_remaining_completes() {
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::Pause, 1_000).unwrap(); // remaining 0
+        match s.status {
+            TimerStatus::Paused { remaining_ms, .. } => assert_eq!(remaining_ms, 0),
+            other => panic!("{other:?}"),
+        }
+        let ev = s.apply(Command::Resume, 2_000).unwrap();
+        assert!(ev.iter().any(|e| matches!(
+            e,
+            PomodoroEvent::PhaseCompleted {
+                phase: Phase::Focus,
+                ..
+            }
+        )));
+    }
+
+    #[test]
+    fn serde_roundtrip_idle_running_paused() {
+        let idle = state();
+        let j = serde_json::to_string(&idle).unwrap();
+        let back: PomodoroState = serde_json::from_str(&j).unwrap();
+        assert_eq!(back, idle);
+
+        let mut running = state();
+        running.apply(Command::Start, 42).unwrap();
+        let j = serde_json::to_string(&running).unwrap();
+        let back: PomodoroState = serde_json::from_str(&j).unwrap();
+        assert_eq!(back, running);
+        assert_eq!(back.phase_seq, 1);
+        assert_eq!(back.last_completion_id, None);
+
+        let mut paused = state();
+        paused.apply(Command::Start, 0).unwrap();
+        paused.apply(Command::Pause, 250).unwrap();
+        let j = serde_json::to_string(&paused).unwrap();
+        let back: PomodoroState = serde_json::from_str(&j).unwrap();
+        assert_eq!(back, paused);
+        match back.status {
+            TimerStatus::Paused {
+                remaining_ms,
+                phase_instance_id,
+                ..
+            } => {
+                assert_eq!(remaining_ms, 750);
+                assert_eq!(phase_instance_id, 1);
+            }
+            other => panic!("{other:?}"),
+        }
     }
 
     #[test]
@@ -662,31 +920,37 @@ mod tests {
     }
 
     #[test]
-    fn countdown_does_not_depend_on_one_second_ticks() {
-        let mut s = state();
-        s.apply(Command::Start, 0).unwrap();
-        // Single large step to near end.
-        let v = s.view(999);
-        assert_eq!(v.remaining_ms, 1);
-        let ev = s.apply(Command::Sync, 1_000).unwrap();
-        assert_eq!(ev.len(), 1);
-    }
-
-    #[test]
-    fn rejects_zero_duration_config() {
-        let cfg = PomodoroConfig {
+    fn production_config_range_validation() {
+        assert!(PomodoroState::new(PomodoroConfig {
             focus_ms: 0,
             ..PomodoroConfig::default()
-        };
-        assert!(PomodoroState::new(cfg).is_err());
+        })
+        .is_err());
+        assert!(PomodoroState::new(PomodoroConfig {
+            focus_ms: 200 * 60 * 1000,
+            ..PomodoroConfig::default()
+        })
+        .is_err());
+        assert!(PomodoroState::new(PomodoroConfig {
+            focuses_before_long_break: 1,
+            ..PomodoroConfig::default()
+        })
+        .is_err());
+        assert!(PomodoroState::new(PomodoroConfig::default()).is_ok());
     }
 
     #[test]
-    fn serde_roundtrip_snapshot() {
+    fn deadline_arithmetic_near_i64_edge() {
         let mut s = state();
-        s.apply(Command::Start, 42).unwrap();
-        let json = serde_json::to_string(&s).unwrap();
-        let back: PomodoroState = serde_json::from_str(&json).unwrap();
-        assert_eq!(back, s);
+        // near max: begin_phase uses saturating_add
+        s.apply(Command::Start, i64::MAX - 500).unwrap();
+        match s.status {
+            TimerStatus::Running {
+                deadline_utc_ms, ..
+            } => {
+                assert_eq!(deadline_utc_ms, i64::MAX);
+            }
+            other => panic!("{other:?}"),
+        }
     }
 }

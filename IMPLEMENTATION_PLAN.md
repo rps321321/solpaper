@@ -19,7 +19,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Active work
 
-- None after #50 merge. Next unit: #32.
+- **#32** — branch `issue-32-ci-quality-gates`, lease `agent:solpaper-dev-loop`, risk **MEDIUM**: Windows CI workflows, `docs/engineering/ci-policy.md`, branch-protection checklist + required-check matrix.
 
 ## Ready
 

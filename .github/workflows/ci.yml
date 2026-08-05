@@ -1,0 +1,91 @@
+# Solpaper CI — Windows quality gates for the production workspace.
+# Policy and required-check matrix: docs/engineering/ci-policy.md
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  rust-quality:
+    name: Windows Rust quality
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          # Cache keys incorporate Cargo.lock; lockfile changes invalidate correctly.
+          workspaces: ". -> target"
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Check
+        run: cargo check --workspace --all-targets
+
+      - name: Test
+        run: cargo test --workspace --all-targets
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Debug build
+        run: cargo build --workspace --all-targets
+
+  governance-tests:
+    name: Governance tooling
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Agent lease tests
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/agent-lease.Tests.ps1
+
+  ci-policy:
+    name: CI policy present
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require ci-policy.md
+        run: test -f docs/engineering/ci-policy.md
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        continue-on-error: true
+        with:
+          # Soft gate until an owner-approved license/severity policy is set.
+          # Critical severities are still reported; see docs/engineering/ci-policy.md.
+          fail-on-severity: critical
+          comment-summary-in-pr: on-failure

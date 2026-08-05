@@ -17,13 +17,14 @@ Overlay topology default is **Approach A** (per-widget HWND; ADR-0001). Renderer
 
 ## Current status
 
-**ARCHITECTURE SCAFFOLD IN PLACE; CI + ALPHA RESEARCH NEXT.**
+**BOOTSTRAP COMPLETE; FOUNDATION RESEARCH + ENGINEERING SYSTEMS NEXT.**
 
 - #17 product destination: complete.
 - #18 overlay spike: complete (Approach A recommended; PR #28).
 - #31 agent governance: complete (PR #47).
 - #16 production ADRs + workspace: complete (crates under `crates/`, ADRs under `docs/adr/`).
-- Engineering program: #30 with children #32–#45 (and remaining product issues).
+- #32 CI + protected main + quality gates: complete (PR #53).
+- Engineering program: #30 with remaining children #33–#45 (and product issues).
 - Alpha features (Pomodoro UI, tray polish, wallpaper apply) not implemented yet.
 
 ## Immediate frontier
@@ -32,9 +33,9 @@ Overlay topology default is **Approach A** (per-widget HWND; ADR-0001). Renderer
 2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (Approach A; PR #28).
 3. ~~[#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31)~~ — **done** (PR #47).
 4. ~~[#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16)~~ — **done** (ADRs + `crates/*` workspace).
-5. [#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32) — **bootstrap next**.
+5. ~~[#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32)~~ — **done** (PR #53; required checks on `main`).
 6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary.
-7. [#7](https://github.com/rps321321/solpaper/issues/7) / [#5](https://github.com/rps321321/solpaper/issues/5) / [#19](https://github.com/rps321321/solpaper/issues/19) foundation research after #16.
+7. [#7](https://github.com/rps321321/solpaper/issues/7) / [#5](https://github.com/rps321321/solpaper/issues/5) / [#19](https://github.com/rps321321/solpaper/issues/19) foundation research (unblocked).
 
 Engineering map: [#30](https://github.com/rps321321/solpaper/issues/30).
 

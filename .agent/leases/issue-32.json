@@ -1,12 +1,12 @@
-﻿{
+{
     "issue":  32,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-32-ci-quality-gates",
-    "claimed_at":  "2026-08-05T16:00:32.0582437Z",
-    "expires_at":  "2026-08-05T18:05:23.2801006Z",
-    "heartbeat_at":  "2026-08-05T16:05:23.2801006Z",
-    "status":  "active",
-    "unit":  "CI workflows, ci-policy.md, branch-protection checklist, required-check matrix",
-    "pr":  53,
-    "risk_class":  "MEDIUM"
+    "branch":  "chore/post-32-dev-state",
+    "claimed_at":  "2026-08-05T16:32:05.5853731Z",
+    "expires_at":  "2026-08-05T18:32:05.5853731Z",
+    "heartbeat_at":  "2026-08-05T16:32:15.5327198Z",
+    "status":  "released",
+    "unit":  "Post-merge state: #32 complete, frontier next",
+    "pr":  null,
+    "risk_class":  "LOW"
 }

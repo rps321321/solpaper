@@ -16,7 +16,7 @@ Stable product and safety rules for autonomous and human development. For workfl
 - Live widgets are not baked into wallpaper images.
 - Documented Win32 APIs are preferred.
 - WorkerW/Progman must never be the sole supported architecture.
-- Architecture remains provisional until Issue #16 records post-#18 ADRs; spike #18 recommends independent widget-sized HWNDs.
+- Architecture ADRs live in `docs/adr/` (Issue #16); Approach A widget HWNDs are default. Manual evidence debt from #18 and accessibility toolkit review remain open.
 - Local wallpapers precede remote providers.
 - At most one remote provider may enter v1.
 
@@ -69,7 +69,7 @@ cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 ```
 
-Spike crates use equivalent scoped checks. Do not invent a production workspace outside the accepted Issue #16 architecture.
+Spike crates use equivalent checks scoped to that crate (`spikes/` is excluded from the production workspace).
 
 Governance tooling:
 

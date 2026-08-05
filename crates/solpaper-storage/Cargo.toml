@@ -1,0 +1,14 @@
+[package]
+name = "solpaper-storage"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+description = "Solpaper settings paths, layout persistence helpers (no secrets)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+solpaper-core = { workspace = true }
+thiserror = { workspace = true }

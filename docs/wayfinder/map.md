@@ -17,16 +17,24 @@ The exact overlay-window model, renderer, normal-mode interactivity, process bou
 
 ## Current status
 
-**READY FOR TECHNICAL SPIKES** after product destination lock (#17 closed 2026-08-05).
+**SPIKE COMPLETE; ENGINEERING BOOTSTRAP + ARCHITECTURE NEXT.**
 
-There is no production implementation yet. Do not scaffold the final workspace or execute remote-provider/TUI work as the active frontier until #18 and #16 complete.
+- #17 product destination: complete.
+- #18 overlay spike: complete (Approach A recommended; PR #28).
+- Production workspace/ADRs: open on #16.
+- Engineering program: #30 with children #31–#45.
+- There is no production application implementation yet.
 
 ## Immediate frontier
 
-1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done** (product locks recorded).
-2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (spike + research; recommend Approach A; PR #28).
-3. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — **current frontier** (human ADR approval required).
-4. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — blocked by human v1 boundary (+ architecture from #16).
+1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done**.
+2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (Approach A; PR #28).
+3. [#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31) — **bootstrap active** (`docs/engineering/agent-governance.md`, leases).
+4. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — after #31; human ADR acceptance.
+5. [#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32) — as soon as workspace (or staged CI) allows.
+6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary (+ #16).
+
+Engineering map: [#30](https://github.com/rps321321/solpaper/issues/30).
 
 ## Blocked execution path
 

@@ -1,12 +1,12 @@
 # Development State
 
-Status: PR_OPENING
-Current issue: #17 (docs deliverables; issue already closed on GitHub)
-Current branch: issue-17-product-destination
-Current PR: pending
-Last completed action: rewrote CONTEXT/map/tickets/README for desktop-surface product locks
-Next action: open PR; independent verify; merge if allowed; then #18
+Status: IDLE
+Current issue: none
+Current branch: main
+Current PR: none (last: #26 merged)
+Last completed action: merged PR #26 — #17 product destination + vocabulary/map mirrors
+Next action: implement Issue #18 overlay feasibility spike
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: none
-Last updated: 2026-08-05T15:00:00Z
+Last updated: 2026-08-05T14:50:00Z

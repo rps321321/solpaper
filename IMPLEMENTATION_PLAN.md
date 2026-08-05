@@ -12,7 +12,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Active work
 
-- PR for #17 vocabulary/map mirror landing (this iteration). After merge: #18 is next implementation unit.
+- None. Working tree clean on `main`. Next unit: #18 overlay spike.
 
 ## Ready
 
@@ -52,10 +52,10 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05 (iteration completing #17 deliverables)
-- **Branch:** `issue-17-product-destination` (docs only)
-- **Working tree:** dirty until commit
-- **Open PRs:** this iteration’s PR (when opened)
+- **Date (UTC):** 2026-08-05T14:50:00Z
+- **Branch:** `main` (includes #26)
+- **Working tree:** clean after state refresh
+- **Open PRs:** none
 - **Production Cargo workspace:** absent
 - **Open roadmap issues:** #1, #5–#7, #13, #16, #18–#24
 - **Closed complete (product):** #17

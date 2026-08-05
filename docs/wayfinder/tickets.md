@@ -4,7 +4,8 @@ Parent map: [solpaper desktop-surface wayfinder map](https://github.com/rps32132
 
 Open/closed state on GitHub is authoritative; refresh this file when tickets are added, blocked, or resolved.
 
-**Intended order:** #17 → #18 → #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24
+**Product order:** #17 → #18 → #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
+**Bootstrap:** #31 → #16 → #32 → then #1/#30. Engineering map: #30 (#31–#45).
 
 ## Done
 
@@ -17,7 +18,10 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | human ADR approval (**current frontier**) |
+| [#31](https://github.com/rps321321/solpaper/issues/31) | Harden autonomous-agent governance and change-risk controls | none (**bootstrap active**) |
+| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | human ADR approval; prefer after #31 |
+| [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | coordinate with #31; workspace for full Rust CI |
+| [#30](https://github.com/rps321321/solpaper/issues/30) | Raise Solpaper to public-release engineering standards | parent map for #31–#45 |
 | [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16) |
 | [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 |
 | [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |

@@ -2,6 +2,9 @@
 
 Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issue #1, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
 
+**Governance (enforceable):** [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md)  
+**Lease tooling:** `scripts/agent-lease.ps1` · store: `.agent/leases/`
+
 ## Product locks
 
 - Solpaper is a local-first Windows 11 desktop-surface application written in Rust.
@@ -13,9 +16,20 @@ Stable product and safety rules for autonomous and human development. For workfl
 - Live widgets are not baked into wallpaper images.
 - Documented Win32 APIs are preferred.
 - WorkerW/Progman must never be the sole supported architecture.
-- Architecture remains provisional until Issue #18’s overlay spike is complete.
+- Architecture remains provisional until Issue #16 records post-#18 ADRs (spike #18 complete; Approach A recommended).
 - Local wallpapers precede remote providers.
 - At most one remote provider may enter v1.
+
+## Change-risk classes (summary)
+
+| Class | Agent merge authority |
+|-------|------------------------|
+| **LOW** | Docs/format/test-only/plan-state → auto-merge after focused review + applicable checks |
+| **MEDIUM** | Ordinary impl + verifier `VERIFIED` + green CI → may auto-merge |
+| **HIGH** | Secrets/OAuth/autostart/installer/unsafe Win32/destructive migrations/security policy → verified PR only; **no auto-merge** |
+| **CRITICAL** | Public release, signing keys, force-push, credential-policy weakening, fundamental product reduction → **human-only; do not execute** |
+
+Full tables, human-only gates, runaway stops, and kill-switch: `docs/engineering/agent-governance.md`.
 
 ## Safety and process
 
@@ -26,7 +40,11 @@ Stable product and safety rules for autonomous and human development. For workfl
 - Do not claim a test passed unless it was executed.
 - Do not ask the owner routine implementation questions.
 - Choose the smallest, safest, and most reversible reasonable option.
-- GitHub Issue #1 is the canonical roadmap when repository mirrors disagree.
+- GitHub Issue #1 is the canonical product roadmap when repository mirrors disagree; #30 is the engineering-system map.
+- Claim an atomic issue lease before editing; `DEV_STATE.md` alone is not a lease.
+- Max one active builder and one active implementation PR.
+- Max two verifier cycles per unit; stop after three materially identical failures.
+- Declare risk class on every PR (`.github/PULL_REQUEST_TEMPLATE.md`).
 
 ## Build and test (production workspace)
 
@@ -39,8 +57,14 @@ cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 ```
 
-Spike crates use equivalent checks scoped to that crate. Do not invent a production workspace before Issues #17 and #18 are resolved.
+Spike crates use equivalent checks scoped to that crate. Do not invent a production workspace before Issues #17 and #18 are resolved (#17/#18 complete; workspace is #16).
+
+Governance tooling:
+
+```powershell
+powershell -NoProfile -File scripts/tests/agent-lease.Tests.ps1
+```
 
 ## Autonomous iteration
 
-Use the `solpaper-dev-loop` skill (`/solpaper-dev-loop`) for one bounded development iteration. Persistent memory is GitHub plus `IMPLEMENTATION_PLAN.md` and `DEV_STATE.md` — not conversation history.
+Use the `solpaper-dev-loop` skill (`/solpaper-dev-loop`) for one bounded development iteration. Persistent memory is GitHub plus `IMPLEMENTATION_PLAN.md` and `DEV_STATE.md` — not conversation history. Governance doc and leases bind unattended behaviour.

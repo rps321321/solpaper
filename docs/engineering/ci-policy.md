@@ -1,7 +1,7 @@
 # CI policy and quality gates
 
 **Issue:** [#32](https://github.com/rps321321/solpaper/issues/32)  
-**Status:** active  
+**Status:** complete (PR #53; branch protection applied 2026-08-05)  
 **Related:** [agent-governance.md](./agent-governance.md) (change-risk classes)
 
 This document is the repository policy for continuous integration, required checks, branch protection, artifacts, and flaky-test handling. Workflows live under `.github/workflows/`.
@@ -115,17 +115,17 @@ Apply on branch `main` (Settings → Branches, or API):
 Use this after the CI workflow has run at least once on `main` or on a PR so check names exist in the UI.
 
 ```text
-[ ] Confirm checks appear on a recent PR: Windows Rust quality, Governance tooling, CI policy present
-[ ] Settings → Branches → Add rule (or edit) for `main`
-[ ] Enable "Require a pull request before merging"
-[ ] Enable "Require status checks to pass before merging"
-[ ] Add required checks: Windows Rust quality, Governance tooling, CI policy present
-[ ] Enable "Require branches to be up to date before merging" if available
-[ ] Disable force pushes
-[ ] Disable branch deletions
-[ ] Restrict direct pushes / require PR
-[ ] Confirm admin bypass is used only for emergency recovery
-[ ] Record completion date and actor in Issue #32 or a follow-up comment
+[x] Confirm checks appear on a recent PR: Windows Rust quality, Governance tooling, CI policy present
+[x] Settings → Branches → Add rule (or edit) for `main` (API PUT protection)
+[x] Enable "Require a pull request before merging"
+[x] Enable "Require status checks to pass before merging"
+[x] Add required checks: Windows Rust quality, Governance tooling, CI policy present
+[x] Enable "Require branches to be up to date before merging" (strict: true)
+[x] Disable force pushes
+[x] Disable branch deletions
+[x] Restrict direct pushes / require PR
+[x] Confirm admin bypass is used only for emergency recovery (enforce_admins: false)
+[x] Record completion date and actor: 2026-08-05, agent:solpaper-dev-loop after PR #53
 ```
 
 ### API sketch (admin; optional)

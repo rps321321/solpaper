@@ -5,7 +5,7 @@ Parent map: [solpaper desktop-surface wayfinder map](https://github.com/rps32132
 Open/closed state on GitHub is authoritative; refresh this file when tickets are added, blocked, or resolved.
 
 **Product order:** #17 → #18 → #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
-**Bootstrap:** #31 → #16 → #32 → then #1/#30. Engineering map: #30 (#31–#45).
+**Bootstrap:** #31 → #16 → #32 (**done**) → then #1/#30. Engineering map: #30 (#31–#45).
 
 ## Done
 
@@ -15,12 +15,12 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 | [#18](https://github.com/rps321321/solpaper/issues/18) | Prototype desktop overlay feasibility on Windows 11 | Spike A/B + `docs/research/overlay-feasibility.md`; recommend Approach A; PR #28 |
 | [#31](https://github.com/rps321321/solpaper/issues/31) | Harden autonomous-agent governance and change-risk controls | `docs/engineering/agent-governance.md`, leases, PR #47 |
 | [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | `docs/adr/*`, production workspace under `crates/` |
+| [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | `.github/workflows/*`, `docs/engineering/ci-policy.md`, protected `main`; PR #53 |
 
 ## Open — frontier and foundation
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | workspace exists; **bootstrap next** |
 | [#30](https://github.com/rps321321/solpaper/issues/30) | Raise Solpaper to public-release engineering standards | parent map for #31–#45 |
 | [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16) |
 | [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 |

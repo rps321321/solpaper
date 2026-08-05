@@ -26,7 +26,8 @@ The replacement separates **orchestration** from **engineering discipline**:
 | `solpaper-tdd` | model or user | Run a red-green cycle at an explicit public seam. |
 | `solpaper-diagnose` | model or user | Reproduce, minimise, test hypotheses, fix, and retain a regression signal. |
 | `solpaper-domain-design` | model or user | Sharpen domain vocabulary, ADRs, seams, and deep-module interfaces. |
-| `solpaper-review` | model or user | Review a fixed diff independently against repository standards and the originating spec. |
+| `solpaper-review` | model or user | Coordinate independent standards and spec reviews of a fixed diff; package both reports. |
+| `solpaper-verifier` (agent) | model | Sole final aggregate verdict over the two-axis package; no merge authority. |
 | `solpaper-resolve-conflicts` | model or user | Resolve merge/rebase conflicts by tracing the intent of both sides. |
 
 ## Shared sources of truth
@@ -53,7 +54,7 @@ The controller classifies work before routing:
 - **Feature or internal implementation** → `solpaper-implement`, which invokes `solpaper-tdd` at agreed seams.
 - **Bug or regression** → `solpaper-diagnose`.
 - **Large plan requiring decomposition** → `solpaper-ticketing`.
-- **Completed diff** → `solpaper-review`.
+- **Completed diff** → `solpaper-review`, then `solpaper-verifier` for the final aggregate verdict.
 - **Merge/rebase conflict** → `solpaper-resolve-conflicts`.
 
 A task may use more than one discipline sequentially, but one autonomous firing still ends after one bounded unit or one PR correction cycle.
@@ -85,18 +86,19 @@ A task may use more than one discipline sequentially, but one autonomous firing 
 
 ## Review model
 
-Review has two independent axes using fresh contexts:
+Review has two independent axes using fresh contexts, then one final aggregator:
 
-1. **Standards review** — repository rules, architecture, security/privacy, test quality, risk class, and code smells.
-2. **Spec review** — originating issue, acceptance criteria, non-goals, evidence, and unimplemented behavior.
+1. **Standards review** (`solpaper-standards-reviewer`) — repository rules, architecture, security/privacy, test quality, risk class, and code smells.
+2. **Spec review** (`solpaper-spec-reviewer`) — originating issue, acceptance criteria, non-goals, evidence, and unimplemented behavior.
+3. **Final aggregate** (`solpaper-verifier`) — sole merge-facing verdict over both reports; may re-run critical checks; no merge authority.
 
-The aggregate verdict is:
+`solpaper-review` coordinates steps 1–2 and packages both reports. Autonomous merge requires the verifier's final verdict:
 
 - `VERIFIED`
 - `CHANGES_REQUIRED`
 - `MANUAL_EVIDENCE_REQUIRED`
 
-A builder summary is evidence to inspect, not a fact to trust.
+One review→verifier sequence counts as one verifier cycle (max two per unit). A builder summary is evidence to inspect, not a fact to trust.
 
 ## Attribution
 

@@ -1,8 +1,8 @@
 ---
 name: solpaper-review
 description: >
-  Review a Solpaper diff against a fixed base using independent standards and
-  spec reviewers, then aggregate material findings and manual evidence debt.
+  Run independent standards and spec reviews of a pinned Solpaper diff and
+  return both reports for solpaper-verifier final aggregation.
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -10,6 +10,8 @@ disable-model-invocation: false
 # Solpaper two-axis review
 
 Review a fixed diff, not an ambiguous moving working tree.
+
+This skill **coordinates** the two independent reviewers. It is **not** the sole final merge-facing aggregator. After both reports exist, the builder or loop must invoke `solpaper-verifier` for the authoritative `VERIFIED` / `CHANGES_REQUIRED` / `MANUAL_EVIDENCE_REQUIRED` verdict used by autonomous merge rules.
 
 ## Pin the review
 
@@ -55,9 +57,11 @@ Use `.grok/agents/solpaper-spec-reviewer.md` or an equivalent fresh agent. It ev
 
 Neither reviewer receives the other's findings before returning its own result.
 
-## Aggregate
+## Package both reports
 
-Deduplicate findings, but do not soften disagreement. Rank by:
+Preserve both full reports. Optionally list provisional material findings and rank by severity, but **do not** issue the autonomous merge-facing final verdict here.
+
+Rank any provisional findings by:
 
 1. correctness, security or privacy, data loss, or dishonest evidence;
 2. missing acceptance behavior;
@@ -65,35 +69,33 @@ Deduplicate findings, but do not soften disagreement. Rank by:
 4. maintainability and clarity;
 5. nonblocking suggestions.
 
-Run or rerun relevant checks independently when possible. A builder's test report is not sufficient evidence.
+A builder's test report is not sufficient evidence. Independent re-checks belong primarily to `solpaper-verifier`.
 
-## Verdict
+## Output (hand-off to verifier)
 
-Return exactly one aggregate verdict:
-
-- `VERIFIED` — no material defect; required automated evidence passes; remaining manual debt is nonblocking for the current phase.
-- `CHANGES_REQUIRED` — material defect, missing criterion, failed check, scope or risk violation, or unsupported claim.
-- `MANUAL_EVIDENCE_REQUIRED` — code and spec review are acceptable, but required physical evidence blocks honest completion.
-
-Use this report:
+Return:
 
 ```markdown
-# Solpaper review
+# Solpaper two-axis review package
 
 **Base:**
 **Head:**
 **Issue/spec:**
 **Risk:**
 **Lease:**
-**Verdict:**
+**Provisional status:** READY_FOR_VERIFIER | OBVIOUS_CHANGES_REQUIRED
 
-## Material findings
-## Standards findings
-## Spec findings
-## Checks executed
-## Manual evidence
-## Merge authority
-## Nonblocking notes
+## Standards report
+(full standards-reviewer output)
+
+## Spec report
+(full spec-reviewer output)
+
+## Provisional material findings
+## Checks observed
+## Manual evidence notes
 ```
 
-High-risk work may be `VERIFIED` for code quality while still remaining human-gated for merge. Critical work cannot receive autonomous merge authority.
+Use `OBVIOUS_CHANGES_REQUIRED` only when a report already contains clear material defects; the builder may fix before spending a verifier cycle. Otherwise hand both reports to `solpaper-verifier`.
+
+High-risk work that later receives `VERIFIED` from the verifier still requires human merge approval. Critical work cannot receive autonomous merge authority.

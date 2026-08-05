@@ -79,7 +79,9 @@ Use scoped equivalents for disposable spike crates. Record commands and exact ou
 
 ## Review before publication
 
-Invoke `solpaper-review` against a pinned base and head. Address material findings, rerun relevant checks, and allow at most the verifier cycles permitted by governance.
+1. Invoke `solpaper-review` against a pinned base and head (two independent axes).
+2. Invoke `solpaper-verifier` with both reports for the **sole final aggregate** verdict.
+3. Address material findings, rerun relevant checks, and allow at most **two** full review→verifier cycles per unit (governance).
 
 Before commit or PR:
 

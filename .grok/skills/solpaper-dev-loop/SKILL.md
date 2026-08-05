@@ -28,7 +28,7 @@ Read:
 
 Reconcile stale state with Git and GitHub reality. Never discard unrelated changes.
 
-When the kill switch is engaged, return `GOVERNANCE_BLOCKED`.
+The kill switch is engaged when **either** `.agent/KILL` exists **or** `DEV_STATE.md` status is `KILLED`. When engaged, return `GOVERNANCE_BLOCKED`.
 
 When an active branch, PR, lease, or agent already owns the current work, continue it only when this agent owns or can validly reclaim the lease. Otherwise return `ACTIVE_WORK_ALREADY_RUNNING`. Do not create duplicate implementation.
 
@@ -78,7 +78,7 @@ Record issue, branch, lease, risk class, intended outcome, and evidence target i
 - approved feature or internal implementation → `solpaper-implement`
 - failing, flaky, broken, or slow behavior → `solpaper-diagnose`
 - terminology, responsibility, seam, or ADR choice → `solpaper-domain-design`
-- completed diff or PR correction → `solpaper-review`
+- completed diff or PR correction → `solpaper-review`, then `solpaper-verifier` for the final aggregate verdict
 - merge or rebase conflict → `solpaper-resolve-conflicts`
 
 Follow that skill's procedure. Do not reproduce its checklist here.
@@ -91,7 +91,8 @@ For mutating work:
 - keep the diff limited to the selected unit;
 - run applicable checks and record exact results;
 - inspect the full diff and remove debug, private, and machine-specific data;
-- invoke `solpaper-review` before declaring implementation complete;
+- invoke `solpaper-review` (two independent axes) then `solpaper-verifier` (sole final aggregate) before declaring implementation complete;
+- treat one full review→verifier sequence as one verifier cycle; max two cycles per unit;
 - use `.github/PULL_REQUEST_TEMPLATE.md` and record issue, risk, lease, tests, tests not run, manual evidence, security/privacy impact, and known limitations.
 
 When a PR exists, inspect CI once per firing. Do not poll in a long loop. Pending checks return `WAITING_FOR_CI`.
@@ -143,7 +144,7 @@ End with exactly one result:
 
 Stop autonomous work when:
 
-- Issue #1's closure rule is satisfied;
+- Issues **#24** and **#1** are both closed complete (`PROJECT_COMPLETE` per `docs/engineering/agent-governance.md`);
 - every remaining frontier item is externally or human blocked;
 - an accepted decision reduces or abandons the desktop-surface goal;
 - continuing requires unauthorized high or critical action;

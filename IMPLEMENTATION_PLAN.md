@@ -6,40 +6,40 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Engineering map:** [Issue #30](https://github.com/rps321321/solpaper/issues/30)  
 **Governance:** [docs/engineering/agent-governance.md](docs/engineering/agent-governance.md)  
 **ADRs:** [docs/adr/](docs/adr/)  
-**CI policy:** [docs/engineering/ci-policy.md](docs/engineering/ci-policy.md)
+**CI policy:** [docs/engineering/ci-policy.md](docs/engineering/ci-policy.md)  
+**Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
-**Bootstrap remaining:** **none** (#31, #16, #32 done) → #1/#30 frontier
+**Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7, #19) → #13 → #20 → …
 
 ## Current frontier
 
-- Foundation research unblocked: #7, #5, #19.
-- Engineering systems next candidates: #33 test strategy, #35 budgets, #36 threat model, #40 diagnostics, #41 a11y (per #30 before Alpha 1).
+- **#33** — Test strategy, Windows matrix, and evidence layout (first pack after #55).
+- Follow blueprint required execution order; do not invent alternative architecture choices already DEFAULT/LOCKED in packs.
 - Manual evidence debt from #18 remains open.
-- **#32 is complete** — CI workflows, ci-policy, protected `main` with required checks.
+- Note: PR #58 (#19 Pomodoro) may still be open from a prior loop fire — reconcile leases before starting a second unit.
 
 ## Active work
 
-- None after #53 merge and branch protection apply.
+- None after #57 merge. Next unit: **#33**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #7 | Tray runtime, autostart, single-instance | Research/design against ADR-0002 |
-| #5 | IDesktopWallpaper adapter research | After/with local wallpaper path planning |
-| #19 | Pomodoro state machine design | Platform-neutral in solpaper-core |
-| #33 | Test strategy / Windows matrix / evidence | Engineering map child |
+| #33 | Test strategy / Windows matrix / evidence | Execute pack #33 from deterministic blueprint |
+| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #33 per blueprint order |
+| #5 / #7 / #19 | Alpha 1 foundation components | After foundation packs (or parallel only if blueprint allows) |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #13 | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary |
-| #20 | Build Alpha 1 | #19, #5, #7, … |
+| #13 | Acceptance matrix | human v1 boundary + earlier packs |
+| #20 | Alpha 1 | foundation + #5/#7/#19 + #13 |
 | #6 / #21 | Calendar path | #20 |
-| #22 / #23 | Remote wallpaper path | #20 |
-| #24 | v1 harden/package | release gates |
+| #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
+| #24 | v1 RC | release gates |
 
 ## Manual evidence required
 
@@ -47,22 +47,22 @@ From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, mu
 
 ## Recently completed
 
-- **#32** — CI, protected-main policy, required quality gates. PR #53; branch protection on `main` (required: Windows Rust quality, Governance tooling, CI policy present).
+- **#55** — Deterministic execution blueprint. PR #57 (standards+spec PASS, verifier VERIFIED, CI green).
+- **#32** — CI, protected-main policy, required quality gates. PR #53.
 - **#46** — Composable Solpaper engineering skills. PR #50.
-- **#16** — Post-spike ADRs + production workspace (`crates/solpaper-*`). PR #49.
+- **#16** — Post-spike ADRs + production workspace. PR #49.
 - **#31** — Agent governance. PR #47.
 - **#18** — Overlay spike. PR #28.
 - **#17** — Product destination. PR #26.
 
 ## Discovered defects
 
-- None currently open.
+- None currently open for the blueprint unit.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T16:35:00Z
-- **Branch:** `main` (includes #53)
-- **Open implementation PRs:** none
+- **Date (UTC):** 2026-08-05T17:46:30Z
+- **Branch:** `main` (includes #57)
+- **Open implementation PRs:** check #58 (#19) if still open
 - **Production workspace:** present
-- **CI:** workflows + protected main
-- **Closed complete:** #17, #18, #31, #16, #46, #32
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55

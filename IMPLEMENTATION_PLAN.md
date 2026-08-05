@@ -15,10 +15,11 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 - **#32** — Establish CI, protected-main policy, and required quality gates (workspace exists under `crates/`).
 - Foundation research unblocked: #7, #5, #19 (after or parallel with #32 per gates).
 - Manual evidence debt from #18 remains open.
+- **#16 is complete** — do not re-open product scaffold work as if pending.
 
 ## Active work
 
-- None after #49 merge. Next unit: #32.
+- None after #50 merge. Next unit: #32.
 
 ## Ready
 
@@ -45,6 +46,7 @@ From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, mu
 
 ## Recently completed
 
+- **#46** — Composable Solpaper engineering skills. PR #50 (validated: grok inspect, routing, standards+spec, verifier VERIFIED).
 - **#16** — Post-spike ADRs + production workspace (`crates/solpaper-*`). PR #49.
 - **#31** — Agent governance. PR #47.
 - **#18** — Overlay spike. PR #28.
@@ -56,8 +58,8 @@ From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, mu
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T15:45:00Z
-- **Branch:** `main` (includes #49)
-- **Open implementation PRs:** none (draft #50 is skills refactor — not product impl)
+- **Date (UTC):** 2026-08-05T15:57:00Z
+- **Branch:** `main` (includes #50)
+- **Open implementation PRs:** none
 - **Production workspace:** present
-- **Closed complete:** #17, #18, #31, #16
+- **Closed complete:** #17, #18, #31, #16, #46

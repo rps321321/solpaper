@@ -3,6 +3,7 @@
 Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issues #1 and #30, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
 
 **Governance (enforceable):** [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md)  
+**Deterministic execution defaults:** [`docs/engineering/deterministic-execution-blueprint.md`](docs/engineering/deterministic-execution-blueprint.md)  
 **Lease tooling:** `scripts/agent-lease.ps1` · store: `.agent/leases/`
 
 ## Product locks
@@ -41,6 +42,8 @@ Full tables, human-only gates, runaway stops, and kill switch: `docs/engineering
 - Do not ask the owner routine implementation questions.
 - Choose the smallest, safest, and most reversible reasonable option.
 - GitHub Issue #1 is the canonical product roadmap; Issue #30 is the engineering-system map.
+- Read the relevant execution pack in `docs/engineering/deterministic-execution-blueprint.md` before planning any remaining roadmap issue.
+- Follow the blueprint's selected default instead of choosing among equivalent alternatives. A deviation requires new primary-source or repository evidence, an issue-linked rationale, and the applicable risk/human gate.
 - Claim an atomic issue lease before editing; `DEV_STATE.md` alone is not a lease.
 - Maximum one active builder and one active implementation PR.
 - Maximum two verifier cycles per unit; stop after three materially identical failures.
@@ -54,7 +57,7 @@ The Grok skill system is documented in `docs/agents/solpaper-engineering-skills.
 - `solpaper-dev-loop` is a thin scheduled controller: recover, govern, choose one unit, route, persist, stop.
 - `solpaper-engineering` routes manually requested work.
 - Focused skills own implementation, ticketing, research, prototypes, TDD, diagnosis, domain/design, review, and conflict resolution.
-- Skills consume this file, governance, `CONTEXT.md`, ADRs, the originating issue/spec, leases, and repository state rather than restating product rules.
+- Skills consume this file, governance, the deterministic blueprint, `CONTEXT.md`, ADRs, the originating issue/spec, leases, and repository state rather than restating product rules.
 - Completed implementation uses independent standards and spec review through `solpaper-review`; `solpaper-verifier` aggregates the two reports.
 - No skill may bypass governance, lease ownership, the kill switch, CI, manual evidence, or human-only gates.
 
@@ -79,4 +82,4 @@ powershell -NoProfile -File scripts/tests/agent-lease.Tests.ps1
 
 ## Autonomous iteration
 
-Use `/solpaper-dev-loop` for one bounded development iteration. Persistent memory is GitHub plus governance, leases, `IMPLEMENTATION_PLAN.md`, `DEV_STATE.md`, `CONTEXT.md`, and ADRs — not conversation history.
+Use `/solpaper-dev-loop` for one bounded development iteration. Persistent memory is GitHub plus governance, the deterministic execution blueprint, leases, `IMPLEMENTATION_PLAN.md`, `DEV_STATE.md`, `CONTEXT.md`, and ADRs — not conversation history.

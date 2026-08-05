@@ -69,7 +69,7 @@ Choose one:
 - one research, prototype, or decision artifact;
 - one CI or state-recovery cycle.
 
-Before planning, read the selected issue's execution pack. Follow its **LOCKED** and **DEFAULT** decisions rather than reopening equivalent alternatives. A deviation is permitted only when new primary-source or repository evidence proves the default unsafe or impossible; record the contradiction and route it through research/design instead of silently improvising.
+Before planning, read the selected issue's execution pack. Follow its **LOCKED** and **DEFAULT** decisions rather than reopening equivalent alternatives. Unlabeled binding pack content is DEFAULT. A deviation is permitted only when new primary-source or repository evidence proves the default unsafe or impossible; record the contradiction and route it through research/design instead of silently improvising. Issue comments are links only—never treat them as a second source of defaults.
 
 A **RECOMMENDATION — OWNER GATE**, **MANUAL**, or **EXTERNAL** item is not agent permission. Stop or continue only as the pack directs.
 

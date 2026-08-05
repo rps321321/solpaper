@@ -42,8 +42,9 @@ Full tables, human-only gates, runaway stops, and kill switch: `docs/engineering
 - Do not ask the owner routine implementation questions.
 - Choose the smallest, safest, and most reversible reasonable option.
 - GitHub Issue #1 is the canonical product roadmap; Issue #30 is the engineering-system map.
-- Read the relevant execution pack in `docs/engineering/deterministic-execution-blueprint.md` before planning any remaining roadmap issue.
-- Follow the blueprint's selected default instead of choosing among equivalent alternatives. A deviation requires new primary-source or repository evidence, an issue-linked rationale, and the applicable risk/human gate.
+- Read the relevant execution pack in `docs/engineering/deterministic-execution-blueprint.md` before planning any remaining roadmap issue. Authority order and decision labels live in that file (governance and ADRs still outrank it).
+- Follow the blueprint's selected default instead of choosing among equivalent alternatives. Unlabeled pack bullets are DEFAULT. A deviation requires new primary-source or repository evidence, an issue-linked rationale, and the applicable risk/human gate.
+- Issue comments that summarize packs are non-authoritative; the blueprint path is the sole decision store for pack defaults.
 - Claim an atomic issue lease before editing; `DEV_STATE.md` alone is not a lease.
 - Maximum one active builder and one active implementation PR.
 - Maximum two verifier cycles per unit; stop after three materially identical failures.

@@ -28,6 +28,10 @@ An agent must follow a selected default below unless new primary-source evidence
 - **MANUAL:** evidence or action cannot be fabricated or safely automated.
 - **EXTERNAL:** depends on an account, repository setting, signing service, provider term, or participant.
 
+**Interpretation rule:** Inside an issue pack, every binding imperative, table cell, interface sketch, numerical limit, and ordered list is **DEFAULT** unless it is explicitly labeled otherwise. Agents following `LOCKED` and `DEFAULT` in the controller must treat unlabeled pack content as DEFAULT.
+
+**Sole decision store:** This file (together with governance and accepted ADRs above it in the authority order) is the only version-controlled store of pack defaults. GitHub issue comments may **link** to `#55` / this path / a pack heading. They must not restate limits, APIs, crates, or policies. Existing summary comments are **non-authoritative** if they disagree with this file.
+
 ## Required execution order
 
 Finish or merge the existing post-#32 state PR before starting a new implementation lease. Then use this sequence:
@@ -75,6 +79,8 @@ pub trait DesktopWallpaper {
 - Persist a separate best-effort monitor fingerprint: normalized monitor device path first; EDID manufacturer/product + friendly name + connector second; geometry/orientation fallback last.
 - Wallpaper position is global, not per monitor. Default to **Fill**.
 - When per-monitor crop differs, pre-render a monitor-sized image into Solpaper's cache; do not pretend Windows exposes per-monitor positioning.
+- **DEFAULT** max acceptable upscale when filling a monitor: **1.5×** on either edge. Above that, prefer letterbox/pillarbox within Fill framing rather than further upscale; never invent a second remote fetch to “fix” resolution.
+- Image decode/encode for local files uses the Rust `image` crate (feature-gated codecs only for the accepted formats). Do not add a second image stack in Alpha 1.
 - Accept local `.jpg`, `.jpeg`, `.png`, and `.bmp` initially.
 - Canonicalize the source path, decode under the limits in #35, render/copy into a Solpaper-owned cache file, then call `SetWallpaper` with the full owned path.
 - Pin every file currently applied to a monitor. Cache cleanup must never delete a pinned file.
@@ -189,6 +195,13 @@ Unavailable feature actions are disabled, not hidden.
 - Toggle-off and uninstall remove only Solpaper's value.
 - Do not use Task Scheduler, a Windows service, or machine-wide registration for v1.
 
+### Notifications (Pomodoro and system status)
+
+- **DEFAULT** delivery path: `Shell_NotifyIcon` with `NIF_INFO` tray balloon / notification icon path documented for desktop tray apps.
+- Do not adopt Windows App SDK / toast-only stacks for Alpha 1 unless #7 evidence proves balloons unusable on the supported matrix.
+- Deduplicate by phase instance ID (see #19). Never put Calendar titles into balloon text under Busy-only or private projection.
+- Surface critical auth/sync failures through the same tray path plus Diagnostics, not a second channel.
+
 ### Shutdown and recovery
 
 - Stop accepting new work; stop timers; atomically flush settings/runtime state; ask worker to stop; wait at most 2 seconds; remove tray icon; destroy windows; release mutex.
@@ -253,7 +266,7 @@ Persist: phase, status/deadline or remaining duration, duration snapshot, comple
 - Restart/resume before deadline continues the same phase.
 - Restart/resume after deadline completes at most one phase; never replay multiple missed cycles.
 - Detect live UTC/monotonic divergence greater than 2 minutes; log a redacted clock-adjustment event and continue using monotonic elapsed time until the next durable transition.
-- Notification uses the tray balloon/system notification route selected by #7; dedupe by phase instance ID.
+- Notification uses the #7 **DEFAULT** `Shell_NotifyIcon` / `NIF_INFO` path; dedupe by phase instance ID.
 
 ### Tests
 
@@ -558,7 +571,8 @@ Create a field-level inventory with purpose, classification, location, retention
 
 ### Sync design
 
-- CalendarList uses its normal list/sync mechanism as researched.
+- Calendar list: use official `calendarList.list` with `showHidden=false` and `minAccessRole=reader`. Page with `pageToken` until exhausted; store calendar id, summary, primary flag, access role, and background color when present. No incremental calendarList syncToken in Alpha 2 unless a later issue proves list-only cost is too high.
+- HTTP transport for OAuth and Calendar: Rust `reqwest` with `default-features = false`, `rustls-tls`, and only the features required for HTTPS GET/POST JSON. One shared client configuration; no second HTTP stack in Alpha 2.
 - For each selected calendar, use official Events incremental synchronization:
   - initial full sync with `singleEvents=true`, `showDeleted=true`, and `timeMin = now - 30 days`; no `timeMax`;
   - page until the final `nextSyncToken` and commit results + token transactionally;
@@ -799,3 +813,20 @@ Everything else should follow this blueprint without asking the owner to choose 
 ## Blueprint completion rule
 
 This document is complete when every open roadmap issue links to the relevant pack, independent standards/spec review confirms no accepted ADR/governance rule was weakened, primary links are validated, and #55 closes. Later implementation may refine a numerical default only through evidence, an issue-linked change, and the required risk/human gate.
+
+## One-shot Grok validation prompt (for #55 / PR #57)
+
+Paste the following into a Grok session when validating or re-validating this blueprint. Do not invent a shorter path.
+
+```text
+Repo rps321321/solpaper. Validate and finish Issue #55 / draft PR #57 only. No product implementation.
+
+1. Fetch origin; ensure PR #54 is merged or main includes its state. Check out agent/deterministic-roadmap-blueprint; merge origin/main without force-push; confirm diff is only docs/engineering/deterministic-execution-blueprint.md, AGENTS.md, .grok/skills/solpaper-dev-loop/SKILL.md (plus necessary lease/state metadata).
+2. Claim lease: scripts/agent-lease.ps1 claim -Issue 55 -Owner 'agent:grok-blueprint-validation' -Branch 'agent/deterministic-roadmap-blueprint' -Unit 'Validate deterministic execution blueprint' -RiskClass MEDIUM -Pr 57
+3. grok inspect: AGENTS.md + solpaper-dev-loop discovered; all referenced skills/paths exist; controller still enforces kill switch, leases, risk, one-builder, verifier limits, CI, human-only.
+4. Confirm packs exist for #5 #6 #7 #13 #19–#24 #33–#45 and every open roadmap issue has a comment linking #55/PR #57 (comments are non-authoritative; blueprint is sole decision store).
+5. Validate primary-source URLs; classify material claims as documented fact / repository decision / engineering default / owner-gated recommendation / manual-external. Do not accept no-remote-provider into Issue #1.
+6. Run solpaper-review (fresh standards + fresh spec) then solpaper-verifier as sole final aggregate. Max two review→verifier cycles. Fix only #55 material findings.
+7. Run: agent-lease.Tests.ps1; cargo fmt/check/test/clippy workspace gates. Inspect GitHub Actions once after push; do not poll forever.
+8. Ready + squash-merge PR #57 only when VERIFIED, CI green, lease coherent, no product code, owner gates unaccepted. Then release lease, close #55, sync main, LOW state PR setting next frontier to #33. Do not start #33. Do not restart /loop.
+```

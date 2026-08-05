@@ -1,6 +1,6 @@
 # Agent instructions — solpaper
 
-Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issue #1, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
+Stable product and safety rules for autonomous and human development. For workflow details see `docs/agents/`. For roadmap status see GitHub Issues #1 and #30, `IMPLEMENTATION_PLAN.md`, and `DEV_STATE.md`.
 
 ## Product locks
 
@@ -13,22 +13,35 @@ Stable product and safety rules for autonomous and human development. For workfl
 - Live widgets are not baked into wallpaper images.
 - Documented Win32 APIs are preferred.
 - WorkerW/Progman must never be the sole supported architecture.
-- Architecture remains provisional until Issue #18’s overlay spike is complete.
+- Issue #18's spike recommends independent widget-sized HWNDs; production architecture remains provisional until accepted ADRs under Issue #16.
 - Local wallpapers precede remote providers.
 - At most one remote provider may enter v1.
 
 ## Safety and process
 
-- Do not store secrets in source, config, SQLite, logs, issues, or PRs.
+- Do not store secrets in source, config, SQLite, logs, issues, PRs, screenshots, fixtures, or evidence.
 - Do not push directly to `main`.
-- Do not force-push.
+- Do not force-push or rewrite shared history.
 - Do not destroy unrelated working-tree changes.
 - Do not claim a test passed unless it was executed.
 - Do not ask the owner routine implementation questions.
 - Choose the smallest, safest, and most reversible reasonable option.
-- GitHub Issue #1 is the canonical roadmap when repository mirrors disagree.
+- GitHub Issue #1 is the canonical product roadmap.
+- GitHub Issue #30 is the canonical engineering-system roadmap.
+- Respect the change-risk and human-only gates defined by Issue #31.
+- Manual Windows evidence remains open until actually performed on a named environment.
 
-## Build and test (production workspace)
+## Engineering skills
+
+The Grok skill map is documented in `docs/agents/solpaper-engineering-skills.md`.
+
+- `solpaper-dev-loop` is a thin scheduled controller: recover, choose one unit, route, persist, stop.
+- `solpaper-engineering` routes manual requests.
+- Focused skills own implementation, ticketing, research, prototypes, TDD, diagnosis, domain/design, review, and merge-conflict resolution.
+- Skills consume this file, `CONTEXT.md`, ADRs, the originating issue/spec, and repository state rather than restating product rules.
+- Completed implementation must pass independent standards and spec review through `solpaper-review`.
+
+## Build and test
 
 When a production Cargo workspace exists, run:
 
@@ -39,8 +52,8 @@ cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 ```
 
-Spike crates use equivalent checks scoped to that crate. Do not invent a production workspace before Issues #17 and #18 are resolved.
+Spike crates use equivalent scoped checks. Do not invent a production workspace outside the accepted Issue #16 architecture.
 
 ## Autonomous iteration
 
-Use the `solpaper-dev-loop` skill (`/solpaper-dev-loop`) for one bounded development iteration. Persistent memory is GitHub plus `IMPLEMENTATION_PLAN.md` and `DEV_STATE.md` — not conversation history.
+Use `/solpaper-dev-loop` for one bounded development iteration. Persistent memory is GitHub plus `IMPLEMENTATION_PLAN.md`, `DEV_STATE.md`, `CONTEXT.md`, and ADRs — not conversation history.

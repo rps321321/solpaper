@@ -35,7 +35,7 @@ There is **no** persisted permanent `Completed` state. Completion is an **event*
 
 | Command | Idle | Running | Paused |
 |---------|------|---------|--------|
-| `Start` | → Running(Focus, new instance) | illegal | illegal (use Resume) |
+| `Start` | → Running(`pending_phase` or Focus) | illegal | illegal (use Resume) |
 | `Pause` | illegal | → Paused (remaining) | illegal |
 | `Resume` | illegal | illegal | → Running (`now + remaining`) |
 | `Skip` | illegal | end phase without focus credit; Idle or live auto-next | same |
@@ -84,6 +84,7 @@ Serialize `PomodoroState`:
 - `config` (duration snapshot + auto-start + cadence)
 - `status` (Idle / Running+deadline+instance / Paused+remaining+instance)
 - `completed_focuses_in_cycle`
+- `pending_phase` (next phase for `Start` when Idle after completion/skip without auto-start)
 - `last_transition_utc_ms`
 - `last_completion_id`
 - `phase_seq` (serde-visible private field for instance/completion identity)

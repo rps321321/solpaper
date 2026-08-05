@@ -134,6 +134,9 @@ pub struct PomodoroState {
     pub status: TimerStatus,
     /// Completed focus phases in the current long-break cycle (not including skips).
     pub completed_focuses_in_cycle: u32,
+    /// When Idle after a completion/skip without auto-start, the phase [`Command::Start`] begins.
+    /// `None` means Start begins Focus (fresh focus session).
+    pub pending_phase: Option<Phase>,
     pub last_transition_utc_ms: Option<UnixMs>,
     /// Identity of the last emitted phase-completion (notification dedupe).
     pub last_completion_id: Option<u64>,
@@ -148,6 +151,7 @@ impl PomodoroState {
             config,
             status: TimerStatus::Idle,
             completed_focuses_in_cycle: 0,
+            pending_phase: None,
             last_transition_utc_ms: None,
             last_completion_id: None,
             phase_seq: 0,
@@ -225,7 +229,8 @@ impl PomodoroState {
     fn cmd_start(&mut self, now: UnixMs) -> Result<Vec<PomodoroEvent>, CoreError> {
         match self.status {
             TimerStatus::Idle => {
-                let phase = Phase::Focus;
+                // Start begins pending next phase (break after focus), or Focus if none pending.
+                let phase = self.pending_phase.take().unwrap_or(Phase::Focus);
                 let id = self.begin_phase(phase, now);
                 Ok(vec![PomodoroEvent::Started {
                     phase,
@@ -324,6 +329,7 @@ impl PomodoroState {
         }];
         // Live skip: auto-start may apply.
         if self.config.auto_start_next {
+            self.pending_phase = None;
             let id = self.begin_phase(next, now);
             events.push(PomodoroEvent::NextPhaseStarted {
                 phase: next,
@@ -331,6 +337,7 @@ impl PomodoroState {
             });
         } else {
             self.status = TimerStatus::Idle;
+            self.pending_phase = Some(next);
             self.last_transition_utc_ms = Some(now);
         }
         Ok(events)
@@ -339,6 +346,7 @@ impl PomodoroState {
     fn cmd_reset(&mut self, now: UnixMs) -> Result<Vec<PomodoroEvent>, CoreError> {
         // Blueprint: Idle at full configured duration; preserve completed-focus count.
         self.status = TimerStatus::Idle;
+        self.pending_phase = None;
         self.last_transition_utc_ms = Some(now);
         Ok(vec![PomodoroEvent::Reset])
     }
@@ -388,13 +396,16 @@ impl PomodoroState {
         }
 
         if allow_auto_start && self.config.auto_start_next {
+            self.pending_phase = None;
             let id = self.begin_phase(next, now);
             events.push(PomodoroEvent::NextPhaseStarted {
                 phase: next,
                 phase_instance_id: id,
             });
         } else {
+            // Idle with durable next phase so Start continues the cycle (default auto-start off).
             self.status = TimerStatus::Idle;
+            self.pending_phase = Some(next);
         }
 
         Ok(events)
@@ -564,6 +575,7 @@ mod tests {
             config: test_config(),
             status: TimerStatus::Idle,
             completed_focuses_in_cycle: 0,
+            pending_phase: None,
             last_transition_utc_ms: None,
             last_completion_id: None,
             phase_seq: 0,
@@ -952,5 +964,50 @@ mod tests {
             }
             other => panic!("{other:?}"),
         }
+    }
+
+    #[test]
+    fn default_no_autostart_focus_complete_then_start_begins_break() {
+        let mut s = state();
+        assert!(!s.config.auto_start_next);
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::Sync, 1_000).unwrap();
+        assert!(matches!(s.status, TimerStatus::Idle));
+        assert_eq!(s.pending_phase, Some(Phase::ShortBreak));
+        s.apply(Command::Start, 2_000).unwrap();
+        assert!(matches!(
+            s.status,
+            TimerStatus::Running {
+                phase: Phase::ShortBreak,
+                ..
+            }
+        ));
+        assert!(s.pending_phase.is_none());
+    }
+
+    #[test]
+    fn recovery_sync_sets_pending_break_without_running_it() {
+        let mut s = state();
+        s.config.auto_start_next = true; // still must not auto-run on Sync
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::Sync, 1_000).unwrap();
+        assert!(matches!(s.status, TimerStatus::Idle));
+        assert_eq!(s.pending_phase, Some(Phase::ShortBreak));
+    }
+
+    #[test]
+    fn skip_focus_pending_is_short_break() {
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        s.apply(Command::Skip, 50).unwrap();
+        assert_eq!(s.pending_phase, Some(Phase::ShortBreak));
+        s.apply(Command::Start, 100).unwrap();
+        assert!(matches!(
+            s.status,
+            TimerStatus::Running {
+                phase: Phase::ShortBreak,
+                ..
+            }
+        ));
     }
 }

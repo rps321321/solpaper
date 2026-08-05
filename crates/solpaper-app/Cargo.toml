@@ -1,0 +1,17 @@
+[package]
+name = "solpaper-app"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+description = "Solpaper composition root / user-session host"
+
+[[bin]]
+name = "solpaper"
+path = "src/main.rs"
+
+[dependencies]
+solpaper-core = { workspace = true }
+solpaper-storage = { workspace = true }
+solpaper-windows = { workspace = true }

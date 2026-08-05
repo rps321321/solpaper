@@ -2,15 +2,15 @@
 
 Terms only. No implementation detail.
 
-Product destination locked by Issue #17 (2026-08-05). Overlay spike (#18) recommends independent widget HWNDs (Approach A); renderer and Cargo crate boundaries remain provisional until Issue #16’s ADR + scaffold.
+Product destination locked by Issue #17 (2026-08-05). Overlay spike (#18) recommends independent widget HWNDs (Approach A). Production ADRs and workspace scaffold landed in Issue #16 (provisional freeze: manual evidence debt and accessibility toolkit review remain open).
 
 ## Runtime
 
-The user-session process that owns desktop widget surfaces, productivity state (e.g. Pomodoro), tray and settings interaction, and the wallpaper subsystem. Not a Windows SCM service. Continues while settings UI is closed.
+The user-session process that owns desktop widget surfaces, productivity state (e.g. Pomodoro), tray and settings interaction, and the wallpaper subsystem. Not a Windows SCM service. Continues while settings UI is closed. Single long-running process (ADR-0002); single-instance enforced.
 
 ## Surface
 
-A desktop-hosted visual region Solpaper manages. Spike #18 recommends widget-sized top-level windows (Approach A); production topology is confirmed in #16. Surfaces host Widgets; they are UI, never baked into wallpaper image files.
+A desktop-hosted visual region Solpaper manages. Production default: one top-level widget-sized HWND per Widget (ADR-0001). Surfaces host Widgets; they are UI, never baked into wallpaper image files.
 
 ## Widget
 
@@ -22,7 +22,7 @@ Interaction mode where the user can drag, resize, and arrange Widgets. Distinct 
 
 ## Widget Layout
 
-Persisted arrangement of Widgets: positions, sizes, opacity, monitor binding, and related placement state. Restored after process restart.
+Persisted arrangement of Widgets: monitor match, anchor, DIP offset, DIP size, opacity (ADR-0004). Restored after process restart.
 
 ## Monitor Binding
 
@@ -50,7 +50,7 @@ Primary always-available entry point for the Runtime: status, quick actions, and
 
 ## Settings surface
 
-Visual configuration UI (not a TUI as primary control plane). Exact toolkit TBD after architecture is known.
+Visual configuration UI (not a TUI as primary control plane). Toolkit provisional (ADR-0003); accessibility (#41) before freeze.
 
 ## TUI
 
@@ -58,4 +58,4 @@ Terminal UI. Explicitly **not** the primary v1 interface. May appear post-v1 for
 
 ## Credential
 
-A secret (API key, OAuth refresh token) stored outside plaintext config—Windows Credential Manager or equivalent after #6. Never committed or logged.
+A secret (API key, OAuth refresh token) stored outside plaintext config—Windows Credential Manager only (ADR-0005). Never committed or logged.

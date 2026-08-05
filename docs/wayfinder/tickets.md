@@ -14,13 +14,13 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 | [#17](https://github.com/rps321321/solpaper/issues/17) | Redefine Solpaper as a Windows desktop-surface application | Product locks recorded; vocabulary in `CONTEXT.md` |
 | [#18](https://github.com/rps321321/solpaper/issues/18) | Prototype desktop overlay feasibility on Windows 11 | Spike A/B + `docs/research/overlay-feasibility.md`; recommend Approach A; PR #28 |
 | [#31](https://github.com/rps321321/solpaper/issues/31) | Harden autonomous-agent governance and change-risk controls | `docs/engineering/agent-governance.md`, leases, PR #47 |
+| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | `docs/adr/*`, production workspace under `crates/` |
 
 ## Open — frontier and foundation
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | human ADR approval (**current frontier**) |
-| [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | coordinate with #31; workspace for full Rust CI |
+| [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | workspace exists; **bootstrap next** |
 | [#30](https://github.com/rps321321/solpaper/issues/30) | Raise Solpaper to public-release engineering standards | parent map for #31–#45 |
 | [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16) |
 | [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 |

@@ -29,8 +29,8 @@ The exact overlay-window model, renderer, normal-mode interactivity, process bou
 
 1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done**.
 2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (Approach A; PR #28).
-3. [#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31) — **bootstrap active** (`docs/engineering/agent-governance.md`, leases).
-4. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — after #31; human ADR acceptance.
+3. ~~[#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31)~~ — **done** (PR #47; `docs/engineering/agent-governance.md`, leases).
+4. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — **current frontier**; human ADR acceptance.
 5. [#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32) — as soon as workspace (or staged CI) allows.
 6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary (+ #16).
 

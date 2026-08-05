@@ -11,15 +11,15 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 | Issue | Title | Notes |
 |------:|-------|-------|
 | [#17](https://github.com/rps321321/solpaper/issues/17) | Redefine Solpaper as a Windows desktop-surface application | Product locks recorded; vocabulary in `CONTEXT.md` |
+| [#18](https://github.com/rps321321/solpaper/issues/18) | Prototype desktop overlay feasibility on Windows 11 | Spike A/B + `docs/research/overlay-feasibility.md`; recommend Approach A; PR #28 |
 
 ## Open — frontier and foundation
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
-| [#18](https://github.com/rps321321/solpaper/issues/18) | Prototype desktop overlay feasibility on Windows 11 | — (unblocked; **current frontier**) |
-| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | #18 (+ human ADR approval) |
-| [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | #18 (+ human v1 boundary) |
-| [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #18, #16 |
+| [#16](https://github.com/rps321321/solpaper/issues/16) | Record post-spike architecture and scaffold the production workspace | human ADR approval (**current frontier**) |
+| [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16) |
+| [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 |
 | [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |
 | [#19](https://github.com/rps321321/solpaper/issues/19) | Design the Pomodoro state machine and recovery semantics | #16 (+ human defaults) |
 

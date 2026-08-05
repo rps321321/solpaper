@@ -7,26 +7,26 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#18** — Overlay feasibility spike implemented on branch `issue-18-desktop-overlay-spike` (PR pending merge). Deliverables: `spikes/desktop-overlay/` (Approach A + B) and `docs/research/overlay-feasibility.md`.
-- **Recommendation (pending human ADR in #16):** prefer independent widget HWNDs (Approach A). Manual evidence debt listed in the research note.
+- **#16** — Record post-spike architecture and scaffold production workspace.
+- Spike recommendation (from #18): **Approach A — independent widget HWNDs**; Approach B validated as fallback. Human ADR approval required before production scaffold.
+- Manual evidence debt remains in `docs/research/overlay-feasibility.md` (non-blocking for starting #16 ADR draft; physical checks still needed before hard freezes).
 
 ## Active work
 
-- Branch `issue-18-desktop-overlay-spike`: #18 spike + research write-up; open/merge PR then close #18.
+- None. Working tree clean on `main` after #28. Next unit: #16 (human ADR gate).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #18 | Prototype desktop overlay feasibility on Windows 11 | Merge PR; record remaining manual evidence; close issue |
+| #16 | Record post-spike architecture and scaffold production workspace | Draft ADR from #18 recommendation; human approval; then scaffold |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #16 | Record post-spike architecture and scaffold production workspace | #18 closed (+ human ADR approval) |
-| #13 | Define measurable desktop-surface v1 acceptance criteria | #18 (+ human v1 boundary) |
-| #7 | Decide tray runtime, autostart, and single-instance behaviour | #18, #16 |
+| #13 | Define measurable desktop-surface v1 acceptance criteria | #18 done; still needs human v1 boundary |
+| #7 | Decide tray runtime, autostart, and single-instance behaviour | #16 |
 | #5 | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |
 | #19 | Design Pomodoro state machine and recovery semantics | #16 (+ human defaults) |
 | #20 | Build Alpha 1: tray, layout, Pomodoro, local wallpapers | #16, #19, #5, #7 |
@@ -38,7 +38,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Manual evidence required
 
-Recorded in `docs/research/overlay-feasibility.md` (do not automate during owner study sessions):
+From #18 (`docs/research/overlay-feasibility.md`):
 
 - Sleep/resume, lock/unlock
 - Monitor disconnect/reconnect, primary change, dual-monitor + cross-monitor drag
@@ -49,7 +49,8 @@ Recorded in `docs/research/overlay-feasibility.md` (do not automate during owner
 
 ## Recently completed
 
-- **#17** — Product destination locked: desktop-surface app; wallpaper peer subsystem; Pomodoro required; Calendar read-only Alpha 2 intended for v1; TUI not primary v1 UI; local wallpapers first; calendar privacy default + Busy-only. In-repo: `CONTEXT.md`, `docs/wayfinder/map.md`, `docs/wayfinder/tickets.md`, `README.md` aligned with Issue #1.
+- **#18** — Overlay feasibility spike: `spikes/desktop-overlay/` (A + B), research note recommends Approach A; no WorkerW sole path; idle ~7–8 MB smoke. PR #28.
+- **#17** — Product destination locked. PR #26.
 - Autonomous-development setup: `AGENTS.md`, this plan, `DEV_STATE.md`, `.grok/skills/solpaper-dev-loop`, `.grok/agents/solpaper-verifier.md`.
 
 ## Discovered defects
@@ -58,13 +59,12 @@ Recorded in `docs/research/overlay-feasibility.md` (do not automate during owner
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T16:00:00Z
-- **Branch:** `issue-18-desktop-overlay-spike`
-- **Working tree:** #18 spike + research (pre-PR commit)
-- **Open PRs:** #18 spike PR (this iteration)
+- **Date (UTC):** 2026-08-05T15:10:00Z
+- **Branch:** `main` (includes #28)
+- **Working tree:** clean after state refresh
+- **Open PRs:** none
 - **Production Cargo workspace:** absent
-- **Spike checks:** `cargo fmt/check/test/clippy -D warnings` green under `spikes/desktop-overlay/`
-- **Verifier:** VERIFIED (independent subagent)
-- **Open roadmap issues:** #1, #5–#7, #13, #16, #18–#24
-- **Closed complete (product):** #17
+- **Spike:** `spikes/desktop-overlay/` present (disposable)
+- **Open roadmap issues:** #1, #5–#7, #13, #16, #19–#24
+- **Closed complete (product):** #17, #18
 - **Superseded (closed):** #2–#4, #8–#12, #14–#15

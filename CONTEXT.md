@@ -2,7 +2,7 @@
 
 Terms only. No implementation detail.
 
-Product destination locked by Issue #17 (2026-08-05). Window topology, renderer, and Cargo crate boundaries remain provisional until Issue #18’s overlay spike completes.
+Product destination locked by Issue #17 (2026-08-05). Overlay spike (#18) recommends independent widget HWNDs (Approach A); renderer and Cargo crate boundaries remain provisional until Issue #16’s ADR + scaffold.
 
 ## Runtime
 
@@ -10,7 +10,7 @@ The user-session process that owns desktop widget surfaces, productivity state (
 
 ## Surface
 
-A desktop-hosted visual region Solpaper manages (widget-sized or monitor-sized window model TBD in #18). Surfaces host Widgets; they are UI, never baked into wallpaper image files.
+A desktop-hosted visual region Solpaper manages. Spike #18 recommends widget-sized top-level windows (Approach A); production topology is confirmed in #16. Surfaces host Widgets; they are UI, never baked into wallpaper image files.
 
 ## Widget
 

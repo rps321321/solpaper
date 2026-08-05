@@ -13,26 +13,28 @@ Working Windows 11 x64 application in Rust:
 
 > Solpaper is a lightweight, local-first desktop-surface application. A user-session runtime owns desktop widget surfaces, productivity state, tray/settings interaction, and wallpaper management. Pomodoro and a read-only Google Calendar agenda are first-class widget use cases. Wallpaper fetching/cycling is one subsystem, not the product root.
 
-The exact overlay-window model, renderer, normal-mode interactivity, process boundaries, Cargo workspace, and first remote wallpaper provider remain provisional until the overlay feasibility spike passes.
+Overlay topology default is **Approach A** (per-widget HWND; ADR-0001). Renderer remains a small native placeholder (ADR-0003). First remote wallpaper provider still TBD (#22).
 
 ## Current status
 
-**SPIKE COMPLETE; ENGINEERING BOOTSTRAP + ARCHITECTURE NEXT.**
+**ARCHITECTURE SCAFFOLD IN PLACE; CI + ALPHA RESEARCH NEXT.**
 
 - #17 product destination: complete.
 - #18 overlay spike: complete (Approach A recommended; PR #28).
-- Production workspace/ADRs: open on #16.
-- Engineering program: #30 with children #31–#45.
-- There is no production application implementation yet.
+- #31 agent governance: complete (PR #47).
+- #16 production ADRs + workspace: complete (crates under `crates/`, ADRs under `docs/adr/`).
+- Engineering program: #30 with children #32–#45 (and remaining product issues).
+- Alpha features (Pomodoro UI, tray polish, wallpaper apply) not implemented yet.
 
 ## Immediate frontier
 
 1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done**.
 2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (Approach A; PR #28).
-3. ~~[#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31)~~ — **done** (PR #47; `docs/engineering/agent-governance.md`, leases).
-4. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — **current frontier**; human ADR acceptance.
-5. [#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32) — as soon as workspace (or staged CI) allows.
-6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary (+ #16).
+3. ~~[#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31)~~ — **done** (PR #47).
+4. ~~[#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16)~~ — **done** (ADRs + `crates/*` workspace).
+5. [#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32) — **bootstrap next**.
+6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary.
+7. [#7](https://github.com/rps321321/solpaper/issues/7) / [#5](https://github.com/rps321321/solpaper/issues/5) / [#19](https://github.com/rps321321/solpaper/issues/19) foundation research after #16.
 
 Engineering map: [#30](https://github.com/rps321321/solpaper/issues/30).
 

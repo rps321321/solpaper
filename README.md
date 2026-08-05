@@ -6,17 +6,50 @@ A user-session **Runtime** owns desktop widget **Surfaces**, productivity state,
 
 ## Status
 
-Product destination locked (Issue #17). Overlay feasibility spike complete (Issue #18): `spikes/desktop-overlay/` + `docs/research/overlay-feasibility.md` (Approach A recommended; manual evidence debt remains). Next: architecture ADR + production scaffold (Issue #16). No production Cargo workspace yet.
+| Milestone | State |
+|-----------|--------|
+| Product destination (#17) | Complete |
+| Overlay spike (#18) | Complete — Approach A recommended; manual evidence debt open |
+| Architecture + workspace (#16) | ADRs + production crates scaffold |
+| CI / protected main (#32) | Next engineering bootstrap |
+| Alpha 1 application features | Not started |
+
+Production workspace (ADR-0006):
+
+```text
+crates/
+├── solpaper-app       # `solpaper` binary / composition root
+├── solpaper-core      # platform-neutral domain
+├── solpaper-windows   # Win32 adapters
+└── solpaper-storage   # paths / settings / layout files
+```
+
+ADRs: [`docs/adr/`](docs/adr/). Spike (disposable): [`spikes/desktop-overlay/`](spikes/desktop-overlay/).
 
 | Artifact | Where |
 |----------|--------|
-| **Wayfinder map (tracker)** | [solpaper desktop-surface wayfinder map](https://github.com/rps321321/solpaper/issues/1) |
-| **Wayfinder map (in-repo mirror)** | [`docs/wayfinder/map.md`](docs/wayfinder/map.md) |
+| **Wayfinder map (tracker)** | [Issue #1](https://github.com/rps321321/solpaper/issues/1) |
+| **Engineering map** | [Issue #30](https://github.com/rps321321/solpaper/issues/30) |
+| **Wayfinder map (in-repo)** | [`docs/wayfinder/map.md`](docs/wayfinder/map.md) |
 | **Ticket index** | [`docs/wayfinder/tickets.md`](docs/wayfinder/tickets.md) |
 | **Domain glossary** | [`CONTEXT.md`](CONTEXT.md) |
 | **Agent rules** | [`AGENTS.md`](AGENTS.md) |
+| **Governance** | [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md) |
 | **Implementation ledger** | [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) |
 | **Research notes** | [`docs/research/`](docs/research/) |
+
+## Develop
+
+```powershell
+cargo fmt --all -- --check
+cargo check --workspace --all-targets
+cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+# Placeholder host (interactive). Use --smoke for a short non-interactive pump.
+cargo run -p solpaper-app
+cargo run -p solpaper-app -- --smoke
+```
 
 ## Product locks
 
@@ -27,14 +60,15 @@ Product destination locked (Issue #17). Overlay feasibility spike complete (Issu
 - **Wallpaper:** peer subsystem; local folders first; at most one remote provider in v1.
 - **Win32:** prefer documented APIs; WorkerW/Progman must never be the sole architecture.
 - **Live widgets:** rendered as UI, never baked into wallpaper images.
-
-Window topology, renderer, and Cargo boundaries remain provisional until the overlay spike (#18).
+- **Topology (ADR-0001):** one top-level widget-sized HWND per widget by default.
+- **Secrets (ADR-0005):** Windows Credential Manager only—never in config/SQLite/logs.
 
 ## Planned slices
 
 | Slice | Scope |
 |-------|--------|
-| Prototype 0 | Overlay feasibility only |
+| Prototype 0 | Overlay feasibility (done) |
+| Scaffold | ADRs + workspace host (this tree) |
 | Alpha 1 | Tray, layout, Pomodoro, local wallpapers |
 | Alpha 2 | Read-only Calendar agenda widget |
 | Beta | One remote wallpaper provider + scheduling |

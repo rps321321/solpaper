@@ -7,24 +7,24 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#18** — Prototype desktop overlay feasibility on Windows 11 (disposable spike under `spikes/desktop-overlay/`; research write-up `docs/research/overlay-feasibility.md`).
-- Compare independent widget HWNDs vs monitor-sized surfaces. No production workspace. Do not claim physical sleep/monitor tests unless performed.
+- **#18** — Overlay feasibility spike implemented on branch `issue-18-desktop-overlay-spike` (PR pending merge). Deliverables: `spikes/desktop-overlay/` (Approach A + B) and `docs/research/overlay-feasibility.md`.
+- **Recommendation (pending human ADR in #16):** prefer independent widget HWNDs (Approach A). Manual evidence debt listed in the research note.
 
 ## Active work
 
-- None. Working tree clean on `main`. Next unit: #18 overlay spike.
+- Branch `issue-18-desktop-overlay-spike`: #18 spike + research write-up; open/merge PR then close #18.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #18 | Prototype desktop overlay feasibility on Windows 11 | Disposable spike; compare Approach A (per-widget HWND) vs B (monitor surface) |
+| #18 | Prototype desktop overlay feasibility on Windows 11 | Merge PR; record remaining manual evidence; close issue |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #16 | Record post-spike architecture and scaffold production workspace | #18 (+ human ADR approval) |
+| #16 | Record post-spike architecture and scaffold production workspace | #18 closed (+ human ADR approval) |
 | #13 | Define measurable desktop-surface v1 acceptance criteria | #18 (+ human v1 boundary) |
 | #7 | Decide tray runtime, autostart, and single-instance behaviour | #18, #16 |
 | #5 | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 |
@@ -38,8 +38,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Manual evidence required
 
-- None recorded yet.
-- Expected later (do not automate during owner study sessions): physical sleep/resume, monitor disconnect/reconnect, multi-monitor hardware checks, lock/unlock, registry destruction, credential removal where destructive.
+Recorded in `docs/research/overlay-feasibility.md` (do not automate during owner study sessions):
+
+- Sleep/resume, lock/unlock
+- Monitor disconnect/reconnect, primary change, dual-monitor + cross-monitor drag
+- Mixed 100%/125%/150% DPI
+- Explorer restart recovery
+- Win+D / fullscreen coverage
+- Prolonged idle CPU/memory
 
 ## Recently completed
 
@@ -48,15 +54,17 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Discovered defects
 
-- None currently open. Prior stale mirrors (map/tickets/README/CONTEXT wallpaper-cycler+TUI copy) addressed in the #17 docs PR.
+- None currently open.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T14:50:00Z
-- **Branch:** `main` (includes #26)
-- **Working tree:** clean after state refresh
-- **Open PRs:** none
+- **Date (UTC):** 2026-08-05T16:00:00Z
+- **Branch:** `issue-18-desktop-overlay-spike`
+- **Working tree:** #18 spike + research (pre-PR commit)
+- **Open PRs:** #18 spike PR (this iteration)
 - **Production Cargo workspace:** absent
+- **Spike checks:** `cargo fmt/check/test/clippy -D warnings` green under `spikes/desktop-overlay/`
+- **Verifier:** VERIFIED (independent subagent)
 - **Open roadmap issues:** #1, #5–#7, #13, #16, #18–#24
 - **Closed complete (product):** #17
 - **Superseded (closed):** #2–#4, #8–#12, #14–#15

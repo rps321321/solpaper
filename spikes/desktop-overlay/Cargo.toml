@@ -1,0 +1,27 @@
+[package]
+name = "desktop-overlay-spike"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Disposable Issue #18 desktop overlay feasibility spike — not production code"
+
+[[bin]]
+name = "desktop-overlay-spike"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+    "Win32_System_SystemInformation",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.dev]
+# Keep spike iteration snappy; no production packaging concerns.
+opt-level = 1

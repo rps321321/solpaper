@@ -24,7 +24,7 @@ There is no production implementation yet. Do not scaffold the final workspace o
 ## Immediate frontier
 
 1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done** (product locks recorded).
-2. [#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18) — disposable technical spike (**current frontier**).
+2. [#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18) — disposable spike under `spikes/desktop-overlay/`; write-up `docs/research/overlay-feasibility.md` (**current frontier**; recommends Approach A pending merge + ADR).
 3. [#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16) — blocked by #18 (+ human ADR approval).
 4. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — blocked by #18 (+ human v1 boundary).
 

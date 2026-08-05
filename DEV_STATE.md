@@ -1,12 +1,12 @@
 # Development State
 
-Status: IDLE
-Current issue: none
-Current branch: main
-Current PR: none (last: #26 merged)
-Last completed action: merged PR #26 — #17 product destination + vocabulary/map mirrors
-Next action: implement Issue #18 overlay feasibility spike
+Status: PR_OPENING
+Current issue: #18
+Current branch: issue-18-desktop-overlay-spike
+Current PR: (opening)
+Last completed action: #18 spike + research write-up; independent verifier VERIFIED
+Next action: push branch, open PR, wait for merge
 Repeated failure count: 0
 Last failure signature: none
-Manual evidence debt: none
-Last updated: 2026-08-05T14:50:00Z
+Manual evidence debt: sleep/resume, multi-monitor, Explorer restart, Win+D, mixed DPI, prolonged idle (see docs/research/overlay-feasibility.md)
+Last updated: 2026-08-05T16:00:00Z

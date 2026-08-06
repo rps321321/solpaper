@@ -1,15 +1,15 @@
 # Development State
 
-Status: ACTIVE
+Status: WAITING_FOR_CI
 Current issue: #34
 Current branch: issue-34-ux-flows
-Current PR: none (opening)
-Last completed action: claimed #34; authored docs/design/* UX pack
-Next action: review → PR → CI for #34
+Current PR: #66
+Last completed action: opened PR #66 docs/design/*; focused review VERIFIED
+Next action: squash-merge when CI green (LOW)
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: MD-001..009, MD-A11Y-01..05, MD-UX-01
-Last updated: 2026-08-06T09:20:00Z
+Last updated: 2026-08-06T09:25:00Z
 
 ## Active lease mirror
 
@@ -18,7 +18,7 @@ Last updated: 2026-08-06T09:20:00Z
 - Branch: issue-34-ux-flows
 - Unit: UX flows, keyboard map, interaction states for Alpha 1
 - Risk class: LOW
-- PR: pending
+- PR: 66
 
 ## Selected execution-pack defaults (#34)
 

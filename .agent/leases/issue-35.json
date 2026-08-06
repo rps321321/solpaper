@@ -1,12 +1,12 @@
 {
     "issue":  35,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-35-nfr-quality-budgets",
-    "claimed_at":  "2026-08-06T10:22:55.9215873Z",
-    "expires_at":  "2026-08-06T12:22:55.9215873Z",
-    "heartbeat_at":  "2026-08-06T10:22:55.9215873Z",
-    "status":  "active",
-    "unit":  "NFR doc + quality budgets + acceptance/perf plan rows",
+    "branch":  "chore/post-35-dev-state",
+    "claimed_at":  "2026-08-06T10:43:03.8106570Z",
+    "expires_at":  "2026-08-06T12:43:03.8106570Z",
+    "heartbeat_at":  "2026-08-06T10:43:24.7720623Z",
+    "status":  "released",
+    "unit":  "Post-merge state: #35 complete, frontier is #36",
     "pr":  null,
     "risk_class":  "LOW"
 }

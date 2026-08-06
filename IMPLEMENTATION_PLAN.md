@@ -10,28 +10,29 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)  
 **Testing:** [docs/testing/](docs/testing/)  
 **Accessibility:** [docs/accessibility/](docs/accessibility/)  
-**Design:** [docs/design/](docs/design/)
+**Design:** [docs/design/](docs/design/)  
+**NFR / budgets:** [docs/engineering/non-functional-requirements.md](docs/engineering/non-functional-requirements.md)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
 **Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **#35** — Non-functional requirements and measurable quality budgets (in progress on `issue-35-nfr-quality-budgets`).
+- **#36** — Threat model and security architecture (first pack after #35).
 - Follow blueprint required execution order; pack defaults are sole decision store.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
-- **#34 / #41 / #33 complete.**
+- **#35 / #34 / #41 / #33 complete.**
 
 ## Active work
 
-- **#35** — PR [#68](https://github.com/rps321321/solpaper/pull/68) (`issue-35-nfr-quality-budgets`); WAITING_FOR_CI; lease held.
+- None after #68 merge. Next unit: **#36**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #35 | Non-functional requirements / budgets | Finish PR (this unit) |
-| #36 / #38 / #40 | Foundation engineering packs | After #35 per blueprint |
+| #36 | Threat model / security architecture | Execute pack #36 |
+| #38 / #40 | Foundation engineering packs | After #36 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -50,6 +51,7 @@ Register: `docs/testing/manual-debt-register.md`.
 
 ## Recently completed
 
+- **#35** — NFR and quality budgets. PR #68. (Physical PERF: MD-PERF-01..03, MD-009 open.)
 - **#34** — UX flows, keyboard map, wireframes, usability script. PR #66. (Human sessions MD-UX-01 open.)
 - **#41** — Accessibility. PR #64.
 - **#33** — Test strategy. PR #61.
@@ -67,7 +69,7 @@ Register: `docs/testing/manual-debt-register.md`.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T09:44:00Z
-- **Branch:** `main` (includes #66)
+- **Date (UTC):** 2026-08-06T10:44:00Z
+- **Branch:** `main` (includes #68)
 - **Open implementation PRs:** none
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41, #34
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41, #34, #35

@@ -2,11 +2,11 @@
     "issue":  33,
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "chore/post-33-idle",
-    "claimed_at":  "2026-08-06T07:43:19.9396473Z",
-    "expires_at":  "2026-08-06T09:43:19.9396473Z",
-    "heartbeat_at":  "2026-08-06T07:43:31.3149670Z",
-    "status":  "released",
+    "claimed_at":  "2026-08-06T07:43:48.9599605Z",
+    "expires_at":  "2026-08-06T09:43:48.9599605Z",
+    "heartbeat_at":  "2026-08-06T07:43:48.9599605Z",
+    "status":  "active",
     "unit":  "Finalize IDLE after #62 merge",
-    "pr":  null,
+    "pr":  63,
     "risk_class":  "LOW"
 }

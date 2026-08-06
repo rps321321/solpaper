@@ -18,8 +18,13 @@ Owner provisional: smallest native placeholder for initial host; do **not** comm
 3. **Out of scope for scaffold:** WebView2, wgpu, egui, iced, tauri, and similar large stacks.
 4. **Revisit trigger:** settings surface complexity, accessibility requirements, or non-rectangular chrome that GDI cannot meet honestly.
 
+## Accessibility note (Issue #41)
+
+Initial feasibility (`docs/accessibility/uia-feasibility.md`) supports staying on Win32+GDI overlays **with a custom UIA fragment provider**, and **standard Win32 controls for settings**. Do not freeze WebView2/egui/wgpu as an accessibility shortcut without re-proving UIA. Physical Narrator/AT sign-off remains MANUAL through v1.
+
 ## Consequences
 
 - Placeholder surfaces in production crates stay intentionally dull.
 - Spike paint code is not copied wholesale; production adapters stay minimal.
 - Toolkit choice remains reversible without rewriting domain state in `solpaper-core`.
+- Overlay UIA providers are required work in `solpaper-windows` when widgets ship — not optional polish.

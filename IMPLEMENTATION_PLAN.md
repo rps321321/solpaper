@@ -8,27 +8,27 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **ADRs:** [docs/adr/](docs/adr/)  
 **CI policy:** [docs/engineering/ci-policy.md](docs/engineering/ci-policy.md)  
 **Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)  
-**Testing:** [docs/testing/](docs/testing/)
+**Testing:** [docs/testing/](docs/testing/)  
+**Accessibility:** [docs/accessibility/](docs/accessibility/)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
 **Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **#41** — Accessibility requirements / feasibility before UI toolkit freeze (first pack after #33).
+- **#41** — Accessibility requirements / UIA feasibility (**in progress** on `issue-41-accessibility-requirements`).
 - Follow blueprint required execution order; pack defaults are sole decision store.
-- Manual evidence debt tracked in `docs/testing/manual-debt-register.md`.
-- **#33 is complete** — test strategy, Windows matrix, evidence harness under `docs/testing/`.
+- Manual evidence debt tracked in `docs/testing/manual-debt-register.md` (includes MD-A11Y-*).
+- **#33 is complete** — test strategy under `docs/testing/`.
 
 ## Active work
 
-- None after #61 merge. Next unit: **#41**.
+- **#41** — `docs/accessibility/*` + ADR-0003 note + debt/mapping links. Risk **LOW**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #41 | Accessibility requirements | Execute pack #41 |
 | #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #41 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
@@ -36,20 +36,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #13 | Acceptance matrix | human v1 boundary + earlier packs; consumes #33 mapping |
+| #13 | Acceptance matrix | human v1 boundary + earlier packs; consumes #33/#41 rows |
 | #20 | Alpha 1 | foundation + #5/#7/#19 + #13 |
 | #6 / #21 | Calendar path | #20 |
 | #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
-| #24 | v1 RC | release gates |
+| #24 | v1 RC | release gates + AT MANUAL |
 
 ## Manual evidence required
 
-Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009). Source: #18 `docs/research/overlay-feasibility.md`.
+Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009, MD-A11Y-01–05).
 
 ## Recently completed
 
 - **#33** — Test strategy, Windows matrix, evidence harness. PR #61.
-- **#19** — Pomodoro state machine + recovery. PR #58 (pack-aligned, VERIFIED).
+- **#19** — Pomodoro state machine + recovery. PR #58.
 - **#55** — Deterministic execution blueprint. PR #57.
 - **#32** — CI + protected main. PR #53.
 - **#46** — Engineering skills. PR #50.
@@ -60,12 +60,12 @@ Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009). Source: #18 
 
 ## Discovered defects
 
-- None currently open.
+- None currently open for #41.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T07:25:00Z
-- **Branch:** `main` (includes #61)
-- **Open implementation PRs:** none
+- **Date (UTC):** 2026-08-06T08:20:00Z
+- **Branch:** `issue-41-accessibility-requirements`
+- **Open implementation PRs:** pending for #41
 - **Production workspace:** present
 - **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33

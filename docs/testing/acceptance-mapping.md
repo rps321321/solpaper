@@ -80,7 +80,7 @@ Legend:
 | Security / privacy tests | L1/L3/L4 | Auto | #36/#37 |
 | Dependency / supply-chain evidence | CI tools | Auto/Rel | #38 |
 | Diagnostics / recovery design | L2 + L6 | Auto + Man | #40 |
-| Accessibility | toolkit + Man | Auto + Man | #41 |
+| Accessibility | toolkit + Man | Auto + Man | #41 — see `docs/accessibility/acceptance-rows.md` (A11Y-01..15) |
 | Install / upgrade / rollback / uninstall | L7 | Rel | #39/#24 |
 | Performance / resource budgets | L6 | Man | #35 named hardware |
 | Release provenance | Rel | Rel/Gate | |

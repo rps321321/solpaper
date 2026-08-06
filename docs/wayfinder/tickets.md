@@ -26,7 +26,7 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 | Issue | Title | Blocked by |
 |------:|-------|------------|
 | [#30](https://github.com/rps321321/solpaper/issues/30) | Raise Solpaper to public-release engineering standards | parent map for #31–#45 |
-| [#34](https://github.com/rps321321/solpaper/issues/34) | UX flows, interaction prototypes, usability | after #41; pack before Alpha 1 polish |
+| [#34](https://github.com/rps321321/solpaper/issues/34) | Design Solpaper UX flows and validate interaction prototypes | after #41; in progress `docs/design/*` |
 | [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16, #33/#41 mapping) |
 | [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 + foundation packs |
 | [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 + foundation packs |

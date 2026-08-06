@@ -32,6 +32,7 @@
 | MD-A11Y-03 | Text scaling 100% / 150% / 200% usability | #41, #33, #13 | Named physical | owner | Alpha 1 (100/150); Beta (200) | `open` | — | Retest after layout/DPI changes |
 | MD-A11Y-04 | High contrast readable settings + widget status | #41, #13 | Named physical | owner | Beta | `open` | — | Retest after theme/paint changes |
 | MD-A11Y-05 | Narrator smoke Pomodoro + settings; no private title leak | #41, #13, #24 | Named physical | owner | v1 | `open` | — | Retest after projection/UIA/notification changes |
+| MD-UX-01 | Human usability sessions for `docs/design/usability-script.md` | #34, #20 | Named physical + participant | owner | Alpha 1 gate (script pass) | `open` | — | Retest after major tray/Edit Mode changes |
 
 ## How to clear a row
 

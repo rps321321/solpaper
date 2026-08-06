@@ -17,20 +17,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#34** — UX flows / interaction prototypes (**in progress** on `issue-34-ux-flows`).
+- **#35** — Non-functional requirements and measurable quality budgets (first pack after #34).
 - Follow blueprint required execution order; pack defaults are sole decision store.
-- Manual evidence: physical matrix + MD-A11Y-* + **MD-UX-01** usability sessions.
-- **#41 / #33 complete.**
+- Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01.
+- **#34 / #41 / #33 complete.**
 
 ## Active work
 
-- **#34** — `docs/design/*` (flows, states, keyboard, wireframes, usability script, consumer decisions). Risk **LOW**.
+- None after #66 merge. Next unit: **#35**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #35 / #36 / #38 / #40 | Foundation engineering packs | After #34 per blueprint |
+| #35 | Non-functional requirements / budgets | Execute pack #35 |
+| #36 / #38 / #40 | Foundation engineering packs | After #35 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -49,6 +50,7 @@ Register: `docs/testing/manual-debt-register.md`.
 
 ## Recently completed
 
+- **#34** — UX flows, keyboard map, wireframes, usability script. PR #66. (Human sessions MD-UX-01 open.)
 - **#41** — Accessibility. PR #64.
 - **#33** — Test strategy. PR #61.
 - **#19** — Pomodoro. PR #58.
@@ -61,10 +63,11 @@ Register: `docs/testing/manual-debt-register.md`.
 
 ## Discovered defects
 
-- None currently open for #34.
+- None currently open.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T09:20:00Z
-- **Branch:** `issue-34-ux-flows`
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41
+- **Date (UTC):** 2026-08-06T09:44:00Z
+- **Branch:** `main` (includes #66)
+- **Open implementation PRs:** none
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41, #34

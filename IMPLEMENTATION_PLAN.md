@@ -24,7 +24,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Active work
 
-- **#35** — `docs/engineering/non-functional-requirements.md` + PERF seed rows + debt; lease held by agent:solpaper-dev-loop.
+- **#35** — PR [#68](https://github.com/rps321321/solpaper/pull/68) (`issue-35-nfr-quality-budgets`); WAITING_FOR_CI; lease held.
 
 ## Ready
 

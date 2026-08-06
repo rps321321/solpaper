@@ -16,20 +16,22 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#41** — Accessibility requirements / UIA feasibility (**in progress** on `issue-41-accessibility-requirements`).
+- **#34** — UX flows, interaction prototypes, and usability validation (first pack after #41).
 - Follow blueprint required execution order; pack defaults are sole decision store.
 - Manual evidence debt tracked in `docs/testing/manual-debt-register.md` (includes MD-A11Y-*).
+- **#41 is complete** — accessibility requirements under `docs/accessibility/`.
 - **#33 is complete** — test strategy under `docs/testing/`.
 
 ## Active work
 
-- **#41** — `docs/accessibility/*` + ADR-0003 note + debt/mapping links. Risk **LOW**.
+- None after #64 merge. Next unit: **#34**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #41 per blueprint |
+| #34 | UX flows / interaction prototypes | Execute pack #34 |
+| #35 / #36 / #38 / #40 | Foundation engineering packs | After #34 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -48,6 +50,7 @@ Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009, MD-A11Y-01–
 
 ## Recently completed
 
+- **#41** — Accessibility requirements, UIA feasibility, AT matrix. PR #64.
 - **#33** — Test strategy, Windows matrix, evidence harness. PR #61.
 - **#19** — Pomodoro state machine + recovery. PR #58.
 - **#55** — Deterministic execution blueprint. PR #57.
@@ -60,12 +63,12 @@ Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009, MD-A11Y-01–
 
 ## Discovered defects
 
-- None currently open for #41.
+- None currently open.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T08:20:00Z
-- **Branch:** `issue-41-accessibility-requirements`
-- **Open implementation PRs:** pending for #41
+- **Date (UTC):** 2026-08-06T08:44:00Z
+- **Branch:** `main` (includes #64)
+- **Open implementation PRs:** none
 - **Production workspace:** present
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41

@@ -1,15 +1,15 @@
 # Development State
 
-Status: ACTIVE
+Status: WAITING_FOR_CI
 Current issue: #41
 Current branch: issue-41-accessibility-requirements
-Current PR: none (opening)
-Last completed action: claimed #41; authored docs/accessibility/* pack
-Next action: review → PR → CI for #41
+Current PR: #64
+Last completed action: opened PR #64 docs/accessibility/*; focused review VERIFIED
+Next action: one CI poll; squash-merge when green (LOW)
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: docs/testing/manual-debt-register.md (MD-001..MD-009 + MD-A11Y-01..05)
-Last updated: 2026-08-06T08:20:00Z
+Last updated: 2026-08-06T08:25:00Z
 
 ## Active lease mirror
 
@@ -18,7 +18,7 @@ Last updated: 2026-08-06T08:20:00Z
 - Branch: issue-41-accessibility-requirements
 - Unit: Accessibility requirements, UIA feasibility, acceptance rows
 - Risk class: LOW
-- PR: pending
+- PR: 64
 
 ## Selected execution-pack defaults (#41)
 

@@ -7,27 +7,27 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Governance:** [docs/engineering/agent-governance.md](docs/engineering/agent-governance.md)  
 **ADRs:** [docs/adr/](docs/adr/)  
 **CI policy:** [docs/engineering/ci-policy.md](docs/engineering/ci-policy.md)  
-**Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)
+**Deterministic packs:** [docs/engineering/deterministic-execution-blueprint.md](docs/engineering/deterministic-execution-blueprint.md)  
+**Testing:** [docs/testing/](docs/testing/)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
 **Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **#33** — Test strategy, Windows matrix, and evidence layout (first pack after #19 completion).
+- **#33** — Test strategy, Windows matrix, and evidence layout (**in progress** on `issue-33-test-strategy-evidence`).
 - Follow blueprint required execution order; pack defaults are sole decision store.
-- Manual evidence debt from #18 remains open.
+- Manual evidence debt tracked in `docs/testing/manual-debt-register.md`.
 - **#19 is complete** — Pomodoro domain machine in `solpaper-core`.
 
 ## Active work
 
-- None after #58 merge. Next unit: **#33**.
+- **#33** — docs under `docs/testing/*` (strategy, matrix, evidence templates, fixtures plan, #13 mapping, debt register). Risk **LOW**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #33 | Test strategy / Windows matrix / evidence | Execute pack #33 |
 | #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #33 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
@@ -35,7 +35,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #13 | Acceptance matrix | human v1 boundary + earlier packs |
+| #13 | Acceptance matrix | human v1 boundary + earlier packs; consumes #33 mapping |
 | #20 | Alpha 1 | foundation + #5/#7/#19 + #13 |
 | #6 / #21 | Calendar path | #20 |
 | #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
@@ -43,7 +43,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Manual evidence required
 
-From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, multi-monitor, mixed DPI, Explorer restart, Win+D/fullscreen, prolonged idle.
+Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009). Source: #18 `docs/research/overlay-feasibility.md`.
 
 ## Recently completed
 
@@ -58,12 +58,12 @@ From #18 (`docs/research/overlay-feasibility.md`): sleep/resume, lock/unlock, mu
 
 ## Discovered defects
 
-- None currently open for #19.
+- None currently open for #33.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-05T18:03:00Z
-- **Branch:** `main` (includes #58)
-- **Open implementation PRs:** none
+- **Date (UTC):** 2026-08-06T00:10:00Z
+- **Branch:** `issue-33-test-strategy-evidence`
+- **Open implementation PRs:** none yet for #33
 - **Production workspace:** present
 - **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19

@@ -1,0 +1,12 @@
+{
+    "issue":  33,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-33-test-strategy-evidence",
+    "claimed_at":  "2026-08-06T07:03:11.3573406Z",
+    "expires_at":  "2026-08-06T09:06:41.5142055Z",
+    "heartbeat_at":  "2026-08-06T07:06:41.5142055Z",
+    "status":  "active",
+    "unit":  "Test strategy, Windows matrix, evidence harness docs",
+    "pr":  null,
+    "risk_class":  "LOW"
+}

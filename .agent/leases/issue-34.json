@@ -1,12 +1,12 @@
 {
     "issue":  34,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-34-ux-flows",
-    "claimed_at":  "2026-08-06T09:22:43.2453123Z",
-    "expires_at":  "2026-08-06T11:25:29.8771411Z",
-    "heartbeat_at":  "2026-08-06T09:25:29.8771411Z",
-    "status":  "active",
-    "unit":  "UX flows, keyboard map, interaction states for Alpha 1",
-    "pr":  66,
+    "branch":  "chore/post-34-dev-state",
+    "claimed_at":  "2026-08-06T09:43:11.2864643Z",
+    "expires_at":  "2026-08-06T11:43:11.2864643Z",
+    "heartbeat_at":  "2026-08-06T09:43:18.4472252Z",
+    "status":  "released",
+    "unit":  "Post-merge state: #34 complete, frontier is #35",
+    "pr":  null,
     "risk_class":  "LOW"
 }

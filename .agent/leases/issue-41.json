@@ -1,0 +1,12 @@
+{
+    "issue":  41,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-41-accessibility-requirements",
+    "claimed_at":  "2026-08-06T08:22:42.0418113Z",
+    "expires_at":  "2026-08-06T10:22:42.0418113Z",
+    "heartbeat_at":  "2026-08-06T08:22:42.0418113Z",
+    "status":  "active",
+    "unit":  "Accessibility requirements, UIA feasibility, acceptance rows",
+    "pr":  null,
+    "risk_class":  "LOW"
+}

@@ -27,6 +27,11 @@
 | MD-007 | Win+D and restore | #18, #33, #13 | Named physical | owner | v1 | `open` | — | Retest after z-order/style changes |
 | MD-008 | Fullscreen game/video coverage (not permanent topmost) | #18, #33, #13 | Named physical | owner | v1 | `open` | — | Retest after topmost/style policy changes |
 | MD-009 | Prolonged idle CPU/memory (≥10 min smoke; Beta 8 h soak later) | #18, #33, #35, #24 | Named physical; release profile | owner | budgets at claimed phase | `open` | — | Retest after timer/poll/render loop changes |
+| MD-A11Y-01 | Keyboard-only core actions (tray/settings Pomodoro) | #41, #13, #20 | Named physical | owner | Alpha 1 | `open` | — | Retest after tray/command map changes |
+| MD-A11Y-02 | Inspect UIA: settings Names + overlay Pane/Group | #41, #13 | Named physical + SDK Inspect | owner | Alpha 1 / Beta | `open` | — | Retest after UIA provider or settings toolkit changes |
+| MD-A11Y-03 | Text scaling 100% / 150% / 200% usability | #41, #33, #13 | Named physical | owner | Alpha 1 (100/150); Beta (200) | `open` | — | Retest after layout/DPI changes |
+| MD-A11Y-04 | High contrast readable settings + widget status | #41, #13 | Named physical | owner | Beta | `open` | — | Retest after theme/paint changes |
+| MD-A11Y-05 | Narrator smoke Pomodoro + settings; no private title leak | #41, #13, #24 | Named physical | owner | v1 | `open` | — | Retest after projection/UIA/notification changes |
 
 ## How to clear a row
 

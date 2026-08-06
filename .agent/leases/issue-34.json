@@ -1,0 +1,12 @@
+{
+    "issue":  34,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-34-ux-flows",
+    "claimed_at":  "2026-08-06T09:22:43.2453123Z",
+    "expires_at":  "2026-08-06T11:22:43.2453123Z",
+    "heartbeat_at":  "2026-08-06T09:22:43.2453123Z",
+    "status":  "active",
+    "unit":  "UX flows, keyboard map, interaction states for Alpha 1",
+    "pr":  null,
+    "risk_class":  "LOW"
+}

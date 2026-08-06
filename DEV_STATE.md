@@ -1,15 +1,15 @@
 # Development State
 
-Status: ACTIVE
+Status: WAITING_FOR_CI
 Current issue: #33
 Current branch: issue-33-test-strategy-evidence
-Current PR: none (opening)
-Last completed action: claimed #33 lease; authored docs/testing/* strategy pack
-Next action: review → PR → CI for #33
+Current PR: #61
+Last completed action: opened PR #61 with docs/testing/* pack; focused review VERIFIED
+Next action: one CI poll; squash-merge when green (LOW)
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: see docs/testing/manual-debt-register.md (MD-001..MD-009 from #18)
-Last updated: 2026-08-06T00:10:00Z
+Last updated: 2026-08-06T00:20:00Z
 
 ## Active lease mirror
 
@@ -18,7 +18,7 @@ Last updated: 2026-08-06T00:10:00Z
 - Branch: issue-33-test-strategy-evidence
 - Unit: Test strategy, Windows matrix, evidence harness docs
 - Risk class: LOW
-- PR: pending
+- PR: 61
 
 ## Selected execution-pack defaults (#33)
 

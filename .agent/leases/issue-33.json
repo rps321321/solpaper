@@ -1,12 +1,12 @@
 {
     "issue":  33,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "chore/post-33-dev-state",
-    "claimed_at":  "2026-08-06T07:23:30.6343318Z",
-    "expires_at":  "2026-08-06T09:23:30.6343318Z",
-    "heartbeat_at":  "2026-08-06T07:23:30.6343318Z",
-    "status":  "active",
-    "unit":  "Post-merge state: #33 complete, frontier is #41",
+    "branch":  "chore/post-33-idle",
+    "claimed_at":  "2026-08-06T07:43:19.9396473Z",
+    "expires_at":  "2026-08-06T09:43:19.9396473Z",
+    "heartbeat_at":  "2026-08-06T07:43:31.3149670Z",
+    "status":  "released",
+    "unit":  "Finalize IDLE after #62 merge",
     "pr":  null,
     "risk_class":  "LOW"
 }

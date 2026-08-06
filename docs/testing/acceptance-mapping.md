@@ -82,7 +82,7 @@ Legend:
 | Diagnostics / recovery design | L2 + L6 | Auto + Man | #40 |
 | Accessibility | toolkit + Man | Auto + Man | #41 — see `docs/accessibility/acceptance-rows.md` (A11Y-01..15) |
 | Install / upgrade / rollback / uninstall | L7 | Rel | #39/#24 |
-| Performance / resource budgets | L6 | Man | #35 named hardware |
+| Performance / resource budgets | L1–L4 contracts + L6 physical | Auto + Man | [#35 NFR](../engineering/non-functional-requirements.md) — PERF-01..13 seed rows; CI enforces limits/timeouts; named hardware for idle/start |
 | Release provenance | Rel | Rel/Gate | |
 | Support / incident readiness | process | Gate | #45 |
 | External Beta / human approval | — | Gate | #44; human-only |
@@ -95,6 +95,17 @@ Each future acceptance row should include:
 2. **Layer code(s)** from [strategy.md](./strategy.md).
 3. **Topology / scenario IDs** from [windows-matrix.md](./windows-matrix.md) when physical.
 4. **Evidence path** or **manual-debt ID** until evidence exists.
-5. **Measurement/tolerance** from #35 when quantitative.
+5. **Measurement/tolerance** from [#35 non-functional-requirements.md](../engineering/non-functional-requirements.md) when quantitative (PERF seed table).
 
 Incomplete mapping is allowed while #13 is open; shipping a phase with unmapped **blocking** rows is not.
+
+## Performance seed rows (#35)
+
+Copy-ready rows for the future acceptance matrix live in [non-functional-requirements.md § Acceptance rows](../engineering/non-functional-requirements.md). Summary:
+
+| IDs | Class | Notes |
+|-----|-------|-------|
+| PERF-01..04, PERF-08 (partial) | Man L6 | Cold start, settings, idle, shutdown, duplicates |
+| PERF-05..07, PERF-09, parts of PERF-08 | Auto L1–L4 | Timer, wallpaper limits, storage, Calendar policy |
+| PERF-10..13 | Man / Rel | Calendar WS, soak, logs, upgrade |
+| REL-01, OPS-01 | Man / process | Sleep/resume; evidence completeness |

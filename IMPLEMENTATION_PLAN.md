@@ -17,20 +17,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#35** — Non-functional requirements and measurable quality budgets (first pack after #34).
+- **#35** — Non-functional requirements and measurable quality budgets (in progress on `issue-35-nfr-quality-budgets`).
 - Follow blueprint required execution order; pack defaults are sole decision store.
-- Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01.
+- Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
 - **#34 / #41 / #33 complete.**
 
 ## Active work
 
-- None after #66 merge. Next unit: **#35**.
+- **#35** — PR [#68](https://github.com/rps321321/solpaper/pull/68) (`issue-35-nfr-quality-budgets`); WAITING_FOR_CI; lease held.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #35 | Non-functional requirements / budgets | Execute pack #35 |
+| #35 | Non-functional requirements / budgets | Finish PR (this unit) |
 | #36 / #38 / #40 | Foundation engineering packs | After #35 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 

@@ -33,6 +33,9 @@
 | MD-A11Y-04 | High contrast readable settings + widget status | #41, #13 | Named physical | owner | Beta | `open` | — | Retest after theme/paint changes |
 | MD-A11Y-05 | Narrator smoke Pomodoro + settings; no private title leak | #41, #13, #24 | Named physical | owner | v1 | `open` | — | Retest after projection/UIA/notification changes |
 | MD-UX-01 | Human usability sessions for `docs/design/usability-script.md` | #34, #20 | Named physical + participant | owner | Alpha 1 gate (script pass) | `open` | — | Retest after major tray/Edit Mode changes |
+| MD-PERF-01 | Cold start p95 ≤ 1.5 s; warm/cold settings open; shutdown ≤ 2 s (release build) | #35, #13, #20 | Named Win11 x64 physical; release profile | owner | Alpha 1 | `open` | — | Retest after tray/settings host or startup path changes |
+| MD-PERF-02 | Idle working set with Calendar connected ≤ 100 MiB | #35, #21, #13 | Named physical; account connected | owner | Alpha 2 | `open` | — | Retest after Calendar sync/client changes |
+| MD-PERF-03 | Beta soak: no crash/hang in 8 h on reference environment | #35, #24 | Named reference env; unattended | owner | Beta | `open` | — | Retest after timer/poll/render or process-model changes |
 
 ## How to clear a row
 

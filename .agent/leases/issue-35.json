@@ -1,0 +1,12 @@
+{
+    "issue":  35,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-35-nfr-quality-budgets",
+    "claimed_at":  "2026-08-06T10:22:55.9215873Z",
+    "expires_at":  "2026-08-06T12:22:55.9215873Z",
+    "heartbeat_at":  "2026-08-06T10:22:55.9215873Z",
+    "status":  "active",
+    "unit":  "NFR doc + quality budgets + acceptance/perf plan rows",
+    "pr":  null,
+    "risk_class":  "LOW"
+}

@@ -40,7 +40,7 @@ Disposable spikes under `spikes/` use scoped local checks only; they are exclude
 | HWND styles, input pass-through, focus | 5 + 6 | windows crate smoke + physical matrix |
 | Tray / single-instance / autostart | 3 + 6 + 7 | fakes where possible; physical for shell |
 | Installer / upgrade / rollback | 7 | #39 / #24 |
-| Performance / idle budgets | 6 (named hardware) | evidence + #35 budgets |
+| Performance / idle budgets | 1–4 contracts + 6 physical | [NFR budgets](../engineering/non-functional-requirements.md) + evidence |
 | Accessibility | manual + toolkit tests when UI exists | #41 |
 
 ## Required injectable seams
@@ -106,6 +106,17 @@ Before stable v1 (#24):
 - Full acceptance mapping rows either automated-green or evidence-linked.
 - Release suite executed on a named environment.
 - Manual debt either cleared or human-waived with rationale on #13/#24.
+- Hard quality budgets from [#35](../engineering/non-functional-requirements.md) measured or human-waived — not invented at RC.
+
+## Performance regression (summary)
+
+Full plan: [non-functional-requirements.md § Performance-regression plan](../engineering/non-functional-requirements.md).
+
+| Where | Enforces |
+|-------|----------|
+| **CI** (layers 1–4) | Policy constants and limits: timer recovery math, wallpaper size/pixel/cache caps, atomic write, Calendar backoff/timeouts, notification dedupe, log allowlist when present |
+| **Named hardware** (layer 6) | Cold start p95, settings open, idle CPU/WS/handles, soak, physical duplicate-window scenarios |
+| **Not CI** | Idle CPU% and cold-start p95 on GitHub-hosted runners as product proof |
 
 ## UI automation
 
@@ -133,7 +144,7 @@ Do not depend on brittle screenshot pixel diffs for CI gates. Screenshots belong
 | #13 | Product acceptance rows; each maps here to a layer + evidence kind |
 | #18 | Source of retained physical debt (seed for register) |
 | #32 | CI enforces automated layers only |
-| #35 | Numeric budgets measured on named hardware (layer 6) |
+| #35 | Numeric budgets + PERF rows; CI contracts + named hardware ([NFR](../engineering/non-functional-requirements.md)) |
 | #24 | Consumes this matrix for RC validation |
 | #41 | Accessibility feasibility may add automated and manual rows |
 

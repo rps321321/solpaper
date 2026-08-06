@@ -2,7 +2,7 @@
 
 **Issue:** [#33](https://github.com/rps321321/solpaper/issues/33)  
 **Pack source:** [`deterministic-execution-blueprint.md` § #33](../engineering/deterministic-execution-blueprint.md)  
-**Budgets (later):** #35 — OS support list aligns with this matrix.
+**Budgets:** [#35 non-functional-requirements.md](../engineering/non-functional-requirements.md) — OS support list aligns with this matrix.
 
 ## Purpose
 

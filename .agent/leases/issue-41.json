@@ -1,12 +1,12 @@
 {
     "issue":  41,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-41-accessibility-requirements",
-    "claimed_at":  "2026-08-06T08:22:42.0418113Z",
-    "expires_at":  "2026-08-06T10:25:27.2963862Z",
-    "heartbeat_at":  "2026-08-06T08:25:27.2963862Z",
-    "status":  "active",
-    "unit":  "Accessibility requirements, UIA feasibility, acceptance rows",
-    "pr":  64,
+    "branch":  "chore/post-41-dev-state",
+    "claimed_at":  "2026-08-06T08:43:19.6368804Z",
+    "expires_at":  "2026-08-06T10:43:19.6368804Z",
+    "heartbeat_at":  "2026-08-06T08:43:26.9790168Z",
+    "status":  "released",
+    "unit":  "Post-merge state: #41 complete, frontier is #34",
+    "pr":  null,
     "risk_class":  "LOW"
 }

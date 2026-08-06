@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "issue": 0,
+  "debt_ids": ["MD-000"],
+  "scenario_ids": ["scn-example"],
+  "topology_ids": ["topo-single-100"],
+  "environment_id": "env-owner-primary",
+  "operator": "human:owner",
+  "source_sha": "0000000000000000000000000000000000000000",
+  "branch": "main",
+  "started_at_utc": "2026-01-01T00:00:00Z",
+  "ended_at_utc": "2026-01-01T00:30:00Z",
+  "windows": {
+    "edition": "Windows 11 Home/Pro",
+    "display_version": "24H2",
+    "build": "26100.x",
+    "arch": "x64"
+  },
+  "hardware": {
+    "cpu": "fill-me",
+    "gpu": "fill-me",
+    "ram_gib": 0
+  },
+  "monitors": [
+    {
+      "index": 0,
+      "width": 1920,
+      "height": 1080,
+      "dpi_scale_percent": 100,
+      "is_primary": true,
+      "orientation": "landscape"
+    }
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.x.x",
+    "cargo": "cargo 1.x.x",
+    "build_profile": "release"
+  },
+  "commands_file": "commands.txt",
+  "results_file": "results.md",
+  "redaction_confirmed": false,
+  "notes": "Replace all fill-me fields. Set redaction_confirmed true only after review."
+}

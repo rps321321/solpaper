@@ -1,0 +1,45 @@
+# Manual evidence debt register
+
+**Issue:** [#33](https://github.com/rps321321/solpaper/issues/33)  
+**Seed source:** [#18](https://github.com/rps321321/solpaper/issues/18) / [`overlay-feasibility.md`](../research/overlay-feasibility.md)  
+**Rules:** Autonomous merges may **add** rows. They must **not delete** or mark **cleared** without a linked evidence path and issue/PR trail.
+
+## Status values
+
+| Status | Meaning |
+|--------|---------|
+| `open` | Not yet run on a named environment |
+| `in_progress` | Session scheduled or partial evidence |
+| `cleared` | Evidence path filled; acceptance may cite it |
+| `waived` | Human waiver with rationale and issue link (rare) |
+| `blocked` | Waiting on hardware/operator/study constraints |
+
+## Register
+
+| ID | Scenario | Issue | Environment required | Owner / operator | Blocks release | Status | Evidence path | Expiry / retest trigger |
+|----|----------|------:|----------------------|------------------|---------------:|--------|---------------|-------------------------|
+| MD-001 | Sleep / resume — no duplicate windows; layout intact; Pomodoro recovery coherent | #18, #33, #13, #24 | Named Win11 x64 physical (`env-owner-primary` or successor) | owner | v1 (surface recovery) | `open` | — | Retest after Runtime HWND model or recovery policy change |
+| MD-002 | Lock / unlock session — no duplicate Runtime/windows | #18, #33, #13, #24 | Named physical | owner | v1 | `open` | — | Retest after session-notify handling changes |
+| MD-003 | Explorer restart recovery without undocumented-only path | #18, #33, #13, #24 | Named physical; disruptive | owner | v1 | `open` | — | Retest after surface create/destroy path changes |
+| MD-004 | Two-monitor layout + cross-monitor drag | #18, #33, #13 | Dual-monitor physical | owner | v1 if multi-mon claimed | `open` | — | Retest after layout/monitor-binding changes |
+| MD-005 | Mixed DPI (100% / 125% / 150%) usable layout | #18, #33, #13, #35 | Mixed-DPI physical | owner | v1 if mixed DPI claimed | `open` | — | Retest after DPI/DIP code changes |
+| MD-006 | Monitor disconnect / reconnect / primary change — no stranded widgets | #18, #33, #13 | Hotplug-capable physical | owner | v1 | `open` | — | Retest after topology listeners change |
+| MD-007 | Win+D and restore | #18, #33, #13 | Named physical | owner | v1 | `open` | — | Retest after z-order/style changes |
+| MD-008 | Fullscreen game/video coverage (not permanent topmost) | #18, #33, #13 | Named physical | owner | v1 | `open` | — | Retest after topmost/style policy changes |
+| MD-009 | Prolonged idle CPU/memory (≥10 min smoke; Beta 8 h soak later) | #18, #33, #35, #24 | Named physical; release profile | owner | budgets at claimed phase | `open` | — | Retest after timer/poll/render loop changes |
+
+## How to clear a row
+
+1. Run on a **named** environment from [windows-matrix.md](./windows-matrix.md).
+2. Write evidence under `docs/testing/evidence/<issue>/<yyyy-mm-dd>/<environment>/` using the templates.
+3. Set **Status** to `cleared`, fill **Evidence path**, link PR/issue comment.
+4. Do not remove the row; cleared rows are the audit trail.
+
+## How to add a row
+
+- New hardware-dependent or disruptive claim without automation: add `MD-0xx` with blocking release phase.
+- Prefer extending this table over burying debt only in chat or PR text.
+
+## Waivers
+
+Only a human may set `waived`. Record issue number, rationale, and which phase is no longer blocked. Autonomous agents must not waive.

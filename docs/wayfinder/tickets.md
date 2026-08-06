@@ -18,13 +18,14 @@ Open/closed state on GitHub is authoritative; refresh this file when tickets are
 | [#32](https://github.com/rps321321/solpaper/issues/32) | Establish CI, protected-main policy, and required quality gates | `.github/workflows/*`, `docs/engineering/ci-policy.md`, protected `main`; PR #53 |
 | [#55](https://github.com/rps321321/solpaper/issues/55) | Deterministic execution blueprint | `docs/engineering/deterministic-execution-blueprint.md`; PR #57 |
 | [#19](https://github.com/rps321321/solpaper/issues/19) | Design the Pomodoro state machine and recovery semantics | `solpaper-core` machine; PR #58 |
+| [#33](https://github.com/rps321321/solpaper/issues/33) | Define the test strategy, Windows matrix, and evidence harness | `docs/testing/*`; PR #61 |
 
 ## Open — frontier and foundation
 
 | Issue | Title | Blocked by |
 |------:|-------|------------|
 | [#30](https://github.com/rps321321/solpaper/issues/30) | Raise Solpaper to public-release engineering standards | parent map for #31–#45 |
-| [#33](https://github.com/rps321321/solpaper/issues/33) | Define the test strategy, Windows matrix, and evidence harness | #18 debt consumed; Alpha 1 gate |
+| [#41](https://github.com/rps321321/solpaper/issues/41) | Accessibility feasibility and requirements | before UI toolkit freeze; pack after #33 |
 | [#13](https://github.com/rps321321/solpaper/issues/13) | Define measurable desktop-surface v1 acceptance criteria | human v1 boundary (+ #16, #33 mapping) |
 | [#7](https://github.com/rps321321/solpaper/issues/7) | Decide tray runtime, autostart, and single-instance behaviour | #16 + foundation packs |
 | [#5](https://github.com/rps321321/solpaper/issues/5) | Research IDesktopWallpaper as wallpaper subsystem adapter | #16 + foundation packs |

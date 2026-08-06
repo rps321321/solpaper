@@ -15,20 +15,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#33** — Test strategy, Windows matrix, and evidence layout (**in progress** on `issue-33-test-strategy-evidence`).
+- **#41** — Accessibility requirements / feasibility before UI toolkit freeze (first pack after #33).
 - Follow blueprint required execution order; pack defaults are sole decision store.
 - Manual evidence debt tracked in `docs/testing/manual-debt-register.md`.
-- **#19 is complete** — Pomodoro domain machine in `solpaper-core`.
+- **#33 is complete** — test strategy, Windows matrix, evidence harness under `docs/testing/`.
 
 ## Active work
 
-- **#33** — docs under `docs/testing/*` (strategy, matrix, evidence templates, fixtures plan, #13 mapping, debt register). Risk **LOW**.
+- None after #61 merge. Next unit: **#41**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #41 / #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #33 per blueprint |
+| #41 | Accessibility requirements | Execute pack #41 |
+| #34 / #35 / #36 / #38 / #40 | Foundation engineering packs | After #41 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -47,6 +48,7 @@ Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009). Source: #18 
 
 ## Recently completed
 
+- **#33** — Test strategy, Windows matrix, evidence harness. PR #61.
 - **#19** — Pomodoro state machine + recovery. PR #58 (pack-aligned, VERIFIED).
 - **#55** — Deterministic execution blueprint. PR #57.
 - **#32** — CI + protected main. PR #53.
@@ -58,12 +60,12 @@ Register: `docs/testing/manual-debt-register.md` (MD-001–MD-009). Source: #18 
 
 ## Discovered defects
 
-- None currently open for #33.
+- None currently open.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T00:10:00Z
-- **Branch:** `issue-33-test-strategy-evidence`
-- **Open implementation PRs:** none yet for #33
+- **Date (UTC):** 2026-08-06T07:25:00Z
+- **Branch:** `main` (includes #61)
+- **Open implementation PRs:** none
 - **Production workspace:** present
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19
+- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33

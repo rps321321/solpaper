@@ -2,11 +2,12 @@
     "issue":  36,
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "issue-36-threat-model-security",
-    "claimed_at":  "2026-08-07T05:02:57.1839217Z",
-    "expires_at":  "2026-08-07T07:42:58.3316108Z",
-    "heartbeat_at":  "2026-08-07T05:42:58.3316108Z",
-    "status":  "active",
-    "unit":  "Threat model and security architecture docs (pack #36)",
+    "claimed_at":  "2026-08-07T08:13:30.8825750Z",
+    "expires_at":  "2026-08-07T10:13:30.8825750Z",
+    "heartbeat_at":  "2026-08-07T08:13:31.1909478Z",
+    "status":  "released",
+    "unit":  "Post-merge release after human merge of #70",
     "pr":  70,
-    "risk_class":  "HIGH"
+    "risk_class":  "HIGH",
+    "prior_owner":  "agent:solpaper-dev-loop"
 }

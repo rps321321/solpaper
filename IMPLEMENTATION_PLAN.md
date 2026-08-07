@@ -11,28 +11,29 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Testing:** [docs/testing/](docs/testing/)  
 **Accessibility:** [docs/accessibility/](docs/accessibility/)  
 **Design:** [docs/design/](docs/design/)  
-**NFR / budgets:** [docs/engineering/non-functional-requirements.md](docs/engineering/non-functional-requirements.md)
+**NFR / budgets:** [docs/engineering/non-functional-requirements.md](docs/engineering/non-functional-requirements.md)  
+**Security:** [docs/security/](docs/security/) · [SECURITY.md](SECURITY.md)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
 **Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **#36** — Threat model and security architecture — **PR #70 open** (HIGH, human merge).
-- After #70 merges: **#38** then **#40** per blueprint.
+- **#38** — Supply-chain, dependency, license, SBOM, provenance (next after human-merged #36).
+- Then **#40** (diagnostics / crash recovery) per blueprint.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
-- **#35 / #34 / #41 / #33 complete.**
+- **#36 / #35 / #34 / #41 / #33 / #19 complete.**
 
 ## Active work
 
-- **#36** — PR [#70](https://github.com/rps321321/solpaper/pull/70) on `issue-36-threat-model-security` (HIGH, no auto-merge). Lease active.
+- None after #70 human merge and #36 lease release. Next unit: **#38**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #36 | Threat model / security architecture | Human merge PR #70 (CI green, VERIFIED, HIGH) |
-| #38 / #40 | Foundation engineering packs | After #36 merge per blueprint |
+| #38 | Supply-chain / license / SBOM / provenance | Execute pack #38 |
+| #40 | Logging, diagnostics, crash recovery | After #38 per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -43,33 +44,31 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 | #20 | Alpha 1 | foundation + #5/#7/#19 + #13 + UX design |
 | #6 / #21 | Calendar path | #20 |
 | #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
-| #24 | v1 RC | release gates + AT/UX MANUAL |
+| #24 | v1 RC | release gates |
 
 ## Manual evidence required
 
-Register: `docs/testing/manual-debt-register.md`.
+From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03; sleep/resume, multi-monitor, Explorer restart, Win+D, mixed DPI, prolonged idle.
 
 ## Recently completed
 
-- **#35** — NFR and quality budgets. PR #68. (Physical PERF: MD-PERF-01..03, MD-009 open.)
-- **#34** — UX flows, keyboard map, wireframes, usability script. PR #66. (Human sessions MD-UX-01 open.)
-- **#41** — Accessibility. PR #64.
-- **#33** — Test strategy. PR #61.
-- **#19** — Pomodoro. PR #58.
-- **#55** — Blueprint. PR #57.
-- **#32** — CI. PR #53.
-- **#16** — ADRs + workspace. PR #49.
-- **#31** — Governance. PR #47.
-- **#18** — Overlay spike. PR #28.
-- **#17** — Product destination. PR #26.
+- **#36** — Threat model and security architecture. PR #70 (HIGH, human-merged).
+- **#35** — NFR / quality budgets. PR #68.
+- **#34** — UX flows. PR #66.
+- **#41** — Accessibility requirements. PR #64.
+- **#33** — Test strategy / evidence. PR #61.
+- **#19** — Pomodoro state machine. PR #58.
+- **#55** — Deterministic blueprint. PR #57.
+- **#32** — CI + protected main. PR #53.
 
 ## Discovered defects
 
-- None currently open.
+- None currently open for #36.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-06T10:44:00Z
-- **Branch:** `main` (includes #68)
-- **Open implementation PRs:** none
-- **Closed complete (recent):** #17, #18, #31, #16, #46, #32, #55, #19, #33, #41, #34, #35
+- **Date (UTC):** 2026-08-07T08:15:00Z
+- **Branch:** `main` @ `59ffb2e` (includes #70)
+- **Open implementation PRs:** none for roadmap packs (see #72 docs if open)
+- **Production workspace:** present
+- **Closed complete (recent):** #33, #41, #34, #35, #36

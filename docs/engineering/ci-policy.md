@@ -57,6 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/agent-lease.Te
 
 - `Swatinem/rust-cache` is pinned to a full commit SHA and caches registry/`target/` with lockfile awareness.
 - Third-party Actions are pinned to **full commit SHAs** (supply-chain policy #38).
+- When `dtolnay/rust-toolchain` is SHA-pinned, pass `toolchain: stable` explicitly (tag-based default no longer applies).
 - Do not configure cache restore keys that hide `Cargo.lock` changes.
 - Concurrency group `ci-${{ workflow }}-${{ pr number || ref }}` cancels superseded runs.
 

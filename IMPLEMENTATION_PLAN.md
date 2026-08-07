@@ -19,14 +19,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#38** — Supply-chain, dependency, license, SBOM, provenance (**in progress** on `issue-38-supply-chain`).
-- Then **#40** (diagnostics / crash recovery) per blueprint.
+- **#38** — Supply-chain PR [#74](https://github.com/rps321321/solpaper/pull/74) **CI green**, risk **HIGH** → **human merge only** (no auto-merge).
+- Then **#40** (diagnostics / crash recovery) per blueprint after #38 lands.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
 - **#36 / #35 / #34 / #41 / #33 / #19 complete.**
 
 ## Active work
 
-- **#38** lease `agent:solpaper-dev-loop` branch `issue-38-supply-chain` risk **HIGH**.
+- **#38** lease `agent:solpaper-dev-loop` branch `issue-38-supply-chain` PR **#74** risk **HIGH** — blocked on human merge.
 
 ## Ready
 

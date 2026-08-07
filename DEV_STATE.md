@@ -1,15 +1,16 @@
 # Development State
 
-Status: WAITING_FOR_CI
+Status: EXTERNALLY_BLOCKED
 Current issue: #36
 Current branch: issue-36-threat-model-security
-Current PR: #70 (HIGH — human merge only; verifier VERIFIED)
-Last completed action: opened PR #70 threat model/security architecture; two-axis review VERIFIED
-Next action: wait CI green; human merge of HIGH PR #70; then release lease and frontier #38
+Current PR: #70 (HIGH — human merge only; verifier VERIFIED; CI green)
+Last completed action: CI one-shot on PR #70 — all checks SUCCESS; governance forbids auto-merge for HIGH
+Next action: human merge PR #70; then agent releases #36 lease and advances frontier to #38
 Risk class: HIGH
-Lease: issue-36 / owner agent:solpaper-dev-loop / unit Threat model and security architecture docs (pack #36) / pr 70
-Execution-pack defaults: blueprint § #36 (OAuth loopback/PKCE, HTTPS bounds, path/image limits, log allowlist, no updater/IPC v1); no deviations
+Lease: issue-36 / owner agent:solpaper-dev-loop / unit Threat model and security architecture docs (pack #36) / pr 70 (kept active until merge)
+Execution-pack defaults: blueprint § #36; no deviations
+Blocker: HIGH risk class requires explicit human merge approval (governance)
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03
-Last updated: 2026-08-07T12:30:00Z
+Last updated: 2026-08-07T05:25:00Z

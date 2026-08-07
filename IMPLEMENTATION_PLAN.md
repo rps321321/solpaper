@@ -31,7 +31,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #36 | Threat model / security architecture | Human merge PR #70 after CI |
+| #36 | Threat model / security architecture | Human merge PR #70 (CI green, VERIFIED, HIGH) |
 | #38 / #40 | Foundation engineering packs | After #36 merge per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 

@@ -19,21 +19,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#38** — Supply-chain, dependency, license, SBOM, provenance (next after human-merged #36).
+- **#38** — Supply-chain, dependency, license, SBOM, provenance (**in progress** on `issue-38-supply-chain`).
 - Then **#40** (diagnostics / crash recovery) per blueprint.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
 - **#36 / #35 / #34 / #41 / #33 / #19 complete.**
 
 ## Active work
 
-- None after #70 human merge and #36 lease release. Next unit: **#38**.
+- **#38** lease `agent:solpaper-dev-loop` branch `issue-38-supply-chain` risk **HIGH**.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #38 | Supply-chain / license / SBOM / provenance | Execute pack #38 |
-| #40 | Logging, diagnostics, crash recovery | After #38 per blueprint |
+| #40 | Logging, diagnostics, crash recovery | After #38 merge per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked
@@ -63,12 +62,12 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Discovered defects
 
-- None currently open for #36.
+- None currently open for #38.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-07T08:15:00Z
-- **Branch:** `main` @ `59ffb2e` (includes #70)
-- **Open implementation PRs:** none for roadmap packs (see #72 docs if open)
+- **Date (UTC):** 2026-08-07T09:30:00Z
+- **Branch:** `issue-38-supply-chain` (from `main` @ `7a44bfa`)
+- **Open implementation PRs:** #38 in progress; docs draft #72 may coexist
 - **Production workspace:** present
 - **Closed complete (recent):** #33, #41, #34, #35, #36

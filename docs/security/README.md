@@ -13,6 +13,9 @@ Security architecture is defined **before** Calendar, remote content, autostart,
 | [external-input-controls.md](./external-input-controls.md) | Size, validation, timeout, error, retry, log, recovery per external input |
 | [requirements-mapping.md](./requirements-mapping.md) | Requirements mapped to #6, #20, #21, #22, #23, #24 |
 | [pr-checklist.md](./pr-checklist.md) | HIGH-risk PR security review checklist |
+| [supply-chain.md](./supply-chain.md) | License, dependency admission, cargo-deny/audit, SBOM, provenance (#38) |
+| [asset-licenses.md](./asset-licenses.md) | Non-code asset license register |
+| [release-manifest.schema.md](./release-manifest.schema.md) | Candidate release-manifest.json fields |
 
 ## Hard rules
 

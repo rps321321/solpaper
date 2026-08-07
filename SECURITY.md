@@ -63,7 +63,12 @@ These are **targets**, not contractual SLAs. Incident authority for signing-key 
 
 ## Dependency and release integrity
 
-Supply-chain controls (lockfile, advisory checks, SBOM, provenance) are specified under engineering packs [#38](https://github.com/rps321321/solpaper/issues/38) and release process docs. Public release, signing keys, and credential-policy weakening are **human-only** gates ([agent governance](docs/engineering/agent-governance.md)).
+Supply-chain policy: [`docs/security/supply-chain.md`](docs/security/supply-chain.md) (Issue [#38](https://github.com/rps321321/solpaper/issues/38)).
+
+- Project license: **MIT** ([`LICENSE`](LICENSE)); Cargo metadata matches.
+- CI runs `cargo deny` and `cargo audit`; `Cargo.lock` is committed; builds use `--locked`.
+- Release candidates carry hashes, CycloneDX SBOM, third-party notices, and a release manifest (`signing_state: unsigned` unless a human signed).
+- Public release, signing keys, and credential-policy weakening are **human-only** gates ([agent governance](docs/engineering/agent-governance.md)).
 
 ## Safe harbor for good-faith research
 

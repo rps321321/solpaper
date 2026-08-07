@@ -1,6 +1,6 @@
 # Release-artifact build check (not a public release).
 # Public signing and stable publication remain human-only (CRITICAL).
-# Policy: docs/engineering/ci-policy.md
+# Policy: docs/engineering/ci-policy.md · docs/security/supply-chain.md
 name: Release build check
 
 on:
@@ -15,6 +15,8 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
+  # Pin cargo-cyclonedx for optional SBOM generation (CLI version recorded in notes).
+  CARGO_CYCLONEDX_VERSION: "0.5.7"
 
 jobs:
   release-build:
@@ -22,25 +24,60 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master (stable channel)
+        with:
+          toolchain: stable
 
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
         with:
           workspaces: ". -> target"
           shared-key: release
 
-      - name: Release build (workspace)
-        run: cargo build --workspace --release
+      - name: Release build (workspace, locked)
+        run: cargo build --workspace --release --locked
 
       - name: Upload solpaper binary (unsigned)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: solpaper-windows-x64-unsigned
           path: target/release/solpaper.exe
           if-no-files-found: error
           retention-days: 14
           # Never attach secrets, Calendar data, or signing material.
+
+      - name: Install cargo-cyclonedx (pinned)
+        run: cargo install cargo-cyclonedx --locked --version ${{ env.CARGO_CYCLONEDX_VERSION }}
+
+      - name: Generate CycloneDX SBOM
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-sbom.ps1 -OutDir target/sbom
+
+      - name: Third-party notices stub
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-third-party-notices.ps1 -OutPath target/THIRD_PARTY_NOTICES.txt
+
+      - name: Release manifest (unsigned)
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/write-release-manifest.ps1 `
+            -Version "0.0.0-dev" `
+            -ArtifactPath "target/release/solpaper.exe" `
+            -SbomPath "target/sbom/solpaper.cdx.json" `
+            -NoticesPath "target/THIRD_PARTY_NOTICES.txt" `
+            -OutPath "target/release-manifest.json" `
+            -BuildWorkflow "release-build.yml" `
+            -BuildRunUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" `
+            -SigningState unsigned `
+            -Notes "CI candidate only; not a public release. cargo-cyclonedx ${{ env.CARGO_CYCLONEDX_VERSION }}"
+
+      - name: Upload SBOM, notices, manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: solpaper-windows-x64-provenance
+          path: |
+            target/sbom/
+            target/THIRD_PARTY_NOTICES.txt
+            target/release-manifest.json
+          if-no-files-found: warn
+          retention-days: 14

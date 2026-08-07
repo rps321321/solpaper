@@ -18,21 +18,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#36** — Threat model and security architecture (first pack after #35).
-- Follow blueprint required execution order; pack defaults are sole decision store.
+- **#36** — Threat model and security architecture — **PR #70 open** (HIGH, human merge).
+- After #70 merges: **#38** then **#40** per blueprint.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
 - **#35 / #34 / #41 / #33 complete.**
 
 ## Active work
 
-- None after #68 merge. Next unit: **#36**.
+- **#36** — PR [#70](https://github.com/rps321321/solpaper/pull/70) on `issue-36-threat-model-security` (HIGH, no auto-merge). Lease active.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #36 | Threat model / security architecture | Execute pack #36 |
-| #38 / #40 | Foundation engineering packs | After #36 per blueprint |
+| #36 | Threat model / security architecture | Human merge PR #70 (CI green, VERIFIED, HIGH) |
+| #38 / #40 | Foundation engineering packs | After #36 merge per blueprint |
 | #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
 
 ## Blocked

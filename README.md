@@ -37,6 +37,7 @@ ADRs: [`docs/adr/`](docs/adr/). Spike (disposable): [`spikes/desktop-overlay/`](
 | **Governance** | [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md) |
 | **Implementation ledger** | [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) |
 | **Research notes** | [`docs/research/`](docs/research/) |
+| **Security / threat model** | [`docs/security/`](docs/security/) · [`SECURITY.md`](SECURITY.md) |
 
 ## Develop
 

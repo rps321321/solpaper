@@ -1,0 +1,12 @@
+{
+    "issue":  36,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-36-threat-model-security",
+    "claimed_at":  "2026-08-07T05:02:57.1839217Z",
+    "expires_at":  "2026-08-07T07:07:13.1119282Z",
+    "heartbeat_at":  "2026-08-07T05:07:13.1119282Z",
+    "status":  "active",
+    "unit":  "Threat model and security architecture docs (pack #36)",
+    "pr":  null,
+    "risk_class":  "HIGH"
+}

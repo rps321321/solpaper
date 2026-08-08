@@ -21,14 +21,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#5** — IDesktopWallpaper adapter research + prototype (branch `issue-5-wallpaper-adapter`, risk **HIGH**).
+- **#5** — IDesktopWallpaper PR [#77](https://github.com/rps321321/solpaper/pull/77) **CI green**, risk **HIGH** → **human merge only** (no auto-merge).
 - Then **#7** (tray runtime / autostart / single instance); **#19** already complete.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-* + MD-WP-01..06.
 - **Foundation complete through #40.**
 
 ## Active work
 
-- **#5** lease `agent:solpaper-dev-loop` branch `issue-5-wallpaper-adapter` risk **HIGH** — COM unsafe; human merge only.
+- **#5** lease `agent:solpaper-dev-loop` branch `issue-5-wallpaper-adapter` PR **#77** risk **HIGH** — blocked on human merge.
 
 ## Ready
 

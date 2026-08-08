@@ -1,12 +1,12 @@
-{
+﻿{
     "issue":  7,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "chore/post-7-dev-state",
-    "claimed_at":  "2026-08-08T10:01:51.5586821Z",
-    "expires_at":  "2026-08-08T13:22:01.8585157Z",
-    "heartbeat_at":  "2026-08-08T11:22:01.8585157Z",
+    "branch":  "chore/post-7-ready",
+    "claimed_at":  "2026-08-08T11:42:32.5037866Z",
+    "expires_at":  "2026-08-08T13:42:32.5037866Z",
+    "heartbeat_at":  "2026-08-08T11:42:32.5037866Z",
     "status":  "active",
-    "unit":  "Post-merge state: #7 complete, frontier is #13",
-    "pr":  80,
+    "unit":  "Record #80 merged; READY for #13",
+    "pr":  81,
     "risk_class":  "LOW"
 }

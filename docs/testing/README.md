@@ -7,6 +7,7 @@ This directory is the single place for Solpaper’s test strategy, Windows matri
 
 | Document | Purpose |
 |----------|---------|
+| [acceptance-matrix.md](./acceptance-matrix.md) | **#13 product acceptance matrix** (phase rows, status, waivers) |
 | [strategy.md](./strategy.md) | Test layers, seams, ownership, flaky policy, regression rules |
 | [windows-matrix.md](./windows-matrix.md) | Named OS builds, monitor/DPI topologies, disruptive scenarios |
 | [acceptance-mapping.md](./acceptance-mapping.md) | #13 acceptance areas → test level and evidence kind |

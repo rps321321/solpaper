@@ -1,16 +1,16 @@
 # Development State
 
-Status: WAITING_FOR_CI
-Current issue: none (post-#7)
-Current branch: chore/post-7-ready
-Current PR: #81
-Last completed action: squash-merged PR #80 (post-#7 state on main); opened PR #81 to record READY + released lease
-Next action: green CI → squash-merge #81; then claim #13
+Status: IN_PROGRESS
+Current issue: #13
+Current branch: issue-13-acceptance-matrix
+Current PR: (set on open)
+Last completed action: claimed #13; drafted acceptance-matrix.md + debt register WP/RT rows
+Next action: open PR; CI; human freeze of v1 boundary remains for #13 close
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03, MD-WP-01..06, MD-RT-01..05
 Risk class: LOW
-Lease: issue-7 / owner agent:solpaper-dev-loop / branch chore/post-7-ready / PR #81
-Execution-pack defaults selected: n/a (state only)
-CI (one-shot poll): #81 — CI policy SUCCESS; Windows Rust quality, Governance tooling, Supply chain, Dependency review IN_PROGRESS
-Last updated: 2026-08-08T11:43:00Z
+Lease: issue-13 / owner agent:solpaper-dev-loop / branch issue-13-acceptance-matrix
+Execution-pack defaults selected: required columns; ID prefixes; no vague language; #18 debt as rows; human-only waivers; phases Prototype0–v1
+CI (one-shot poll): n/a until PR open
+Last updated: 2026-08-08T12:25:00Z

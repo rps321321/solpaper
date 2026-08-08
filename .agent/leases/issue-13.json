@@ -1,0 +1,12 @@
+{
+    "issue":  13,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-13-acceptance-matrix",
+    "claimed_at":  "2026-08-08T12:21:52.0542103Z",
+    "expires_at":  "2026-08-08T14:21:52.0542103Z",
+    "heartbeat_at":  "2026-08-08T12:21:52.0542103Z",
+    "status":  "active",
+    "unit":  "Create docs/testing/acceptance-matrix.md from pack #13 seeds",
+    "pr":  null,
+    "risk_class":  "LOW"
+}

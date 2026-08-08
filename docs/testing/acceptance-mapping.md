@@ -1,10 +1,10 @@
 # Acceptance area → test mapping
 
 **Issue:** [#33](https://github.com/rps321321/solpaper/issues/33)  
-**Consumes:** [#13](https://github.com/rps321321/solpaper/issues/13) acceptance areas (product matrix not yet frozen)  
+**Consumes:** [#13](https://github.com/rps321321/solpaper/issues/13) product matrix — [acceptance-matrix.md](./acceptance-matrix.md) (draft until owner freezes v1 boundary)  
 **Strategy layers:** [strategy.md](./strategy.md)
 
-This is the bridge from product acceptance themes to executable tests or explicit manual evidence. When #13 lands a rowed matrix, each row must reference a layer from this file and, if manual, a debt/evidence ID.
+This is the bridge from product acceptance themes to executable tests or explicit manual evidence. Each [acceptance-matrix.md](./acceptance-matrix.md) row should reference a layer from this file and, if manual, a debt/evidence ID.
 
 Legend:
 
@@ -87,9 +87,9 @@ Legend:
 | Support / incident readiness | process | Gate | #45 |
 | External Beta / human approval | — | Gate | #44; human-only |
 
-## How #13 should reference this file
+## How matrix rows reference this file
 
-Each future acceptance row should include:
+Each [acceptance-matrix.md](./acceptance-matrix.md) row should remain consistent with:
 
 1. **Phase** and whether it blocks that phase.
 2. **Layer code(s)** from [strategy.md](./strategy.md).
@@ -97,7 +97,7 @@ Each future acceptance row should include:
 4. **Evidence path** or **manual-debt ID** until evidence exists.
 5. **Measurement/tolerance** from [#35 non-functional-requirements.md](../engineering/non-functional-requirements.md) when quantitative (PERF seed table).
 
-Incomplete mapping is allowed while #13 is open; shipping a phase with unmapped **blocking** rows is not.
+Shipping a phase with unmapped **blocking** rows is not allowed. Owner freeze of the v1 boundary is still required on #13 before #24 treats the matrix as frozen.
 
 ## Performance seed rows (#35)
 

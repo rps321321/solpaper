@@ -1,12 +1,12 @@
 {
     "issue":  5,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-5-wallpaper-adapter",
-    "claimed_at":  "2026-08-08T08:21:53.9607961Z",
-    "expires_at":  "2026-08-08T10:41:42.0572000Z",
-    "heartbeat_at":  "2026-08-08T08:41:42.0572000Z",
+    "branch":  "chore/post-5-dev-state",
+    "claimed_at":  "2026-08-08T09:21:55.1579321Z",
+    "expires_at":  "2026-08-08T11:21:55.1579321Z",
+    "heartbeat_at":  "2026-08-08T09:21:55.1579321Z",
     "status":  "active",
-    "unit":  "IDesktopWallpaper research, trait, fake + COM adapter, error mapping",
-    "pr":  77,
-    "risk_class":  "HIGH"
+    "unit":  "Post-merge state: #5 complete, frontier is #7",
+    "pr":  null,
+    "risk_class":  "LOW"
 }

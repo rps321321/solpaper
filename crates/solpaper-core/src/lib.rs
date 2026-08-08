@@ -5,6 +5,7 @@
 mod diagnostics;
 mod layout;
 mod pomodoro;
+mod wallpaper;
 
 pub use diagnostics::{
     categorize_error_code, count_crashes_in_window, is_allowed_log_field,
@@ -23,6 +24,13 @@ pub use pomodoro::{
     PomodoroState, PomodoroView, TimerStatus, UnixMs, DEFAULT_FOCUSES_BEFORE_LONG_BREAK,
     DEFAULT_FOCUS_MS, DEFAULT_LONG_BREAK_MS, DEFAULT_SHORT_BREAK_MS,
 };
+pub use wallpaper::{
+    check_decoded_pixels, check_local_file_size, fill_decision, fill_scale_factors,
+    is_accepted_extension, require_monitor_id, validate_source_path_shape, FillDecision, FitPolicy,
+    ImageRequest, MonitorFingerprint, Orientation, WallpaperErrorKind, WallpaperMonitor,
+    WallpaperMonitorId, WallpaperPinSet, WallpaperPosition, ACCEPTED_EXTENSIONS,
+    DECODED_MAX_MEGAPIXELS, LOCAL_WALLPAPER_MAX_BYTES, MAX_UPSCALE_FACTOR,
+};
 
 /// Crate-level error type for pure domain operations.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,6 +43,8 @@ pub enum CoreError {
     IllegalPomodoroTransition(&'static str),
     /// Diagnostics / logging field policy violation.
     InvalidDiagnostics(&'static str),
+    /// Wallpaper domain validation failure.
+    InvalidWallpaper(&'static str),
 }
 
 impl std::fmt::Display for CoreError {
@@ -46,6 +56,7 @@ impl std::fmt::Display for CoreError {
                 write!(f, "illegal pomodoro transition: {msg}")
             }
             CoreError::InvalidDiagnostics(msg) => write!(f, "invalid diagnostics: {msg}"),
+            CoreError::InvalidWallpaper(msg) => write!(f, "invalid wallpaper: {msg}"),
         }
     }
 }

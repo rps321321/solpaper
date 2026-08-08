@@ -2,9 +2,19 @@
 //!
 //! No Win32. Unit-testable on any host that can compile the crate.
 
+mod diagnostics;
 mod layout;
 mod pomodoro;
 
+pub use diagnostics::{
+    categorize_error_code, count_crashes_in_window, is_allowed_log_field,
+    is_forbidden_bundle_entry_name, is_forbidden_log_field, log_files_to_delete,
+    needs_rotation_before_write, redact_user_path, should_recommend_safe_mode, validate_log_fields,
+    Component, CorrelationScope, ErrorCategory, LogFileMeta, SafeModePolicy, ALLOWED_LOG_FIELDS,
+    AUTO_RESTART_ON_CRASH, BUNDLE_LOG_TAIL_MAX_BYTES, CRASH_LOOP_THRESHOLD, CRASH_LOOP_WINDOW_MS,
+    FORBIDDEN_LOG_FIELDS, LOG_FILE_MAX_BYTES, LOG_FILE_MAX_COUNT, LOG_RETENTION_DAYS,
+    LOG_TOTAL_MAX_BYTES, REMOTE_CRASH_UPLOAD, TELEMETRY_ENABLED, WATCHDOG_PROCESS,
+};
 pub use layout::{
     Anchor, DipPoint, DipRect, DipSize, MonitorMatch, WidgetId, WidgetLayoutEntry, WidgetLayoutSet,
 };
@@ -23,6 +33,8 @@ pub enum CoreError {
     InvalidPomodoro(&'static str),
     /// Command not legal in the current Pomodoro status.
     IllegalPomodoroTransition(&'static str),
+    /// Diagnostics / logging field policy violation.
+    InvalidDiagnostics(&'static str),
 }
 
 impl std::fmt::Display for CoreError {
@@ -33,6 +45,7 @@ impl std::fmt::Display for CoreError {
             CoreError::IllegalPomodoroTransition(msg) => {
                 write!(f, "illegal pomodoro transition: {msg}")
             }
+            CoreError::InvalidDiagnostics(msg) => write!(f, "invalid diagnostics: {msg}"),
         }
     }
 }

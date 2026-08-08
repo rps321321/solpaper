@@ -16,6 +16,7 @@ Security architecture is defined **before** Calendar, remote content, autostart,
 | [supply-chain.md](./supply-chain.md) | License, dependency admission, cargo-deny/audit, SBOM, provenance (#38) |
 | [asset-licenses.md](./asset-licenses.md) | Non-code asset license register |
 | [release-manifest.schema.md](./release-manifest.schema.md) | Candidate release-manifest.json fields |
+| [../operations/diagnostics.md](../operations/diagnostics.md) | Logging allowlist, bundle exclusions, crash/safe-mode (#40) |
 
 ## Hard rules
 

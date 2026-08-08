@@ -139,10 +139,10 @@ Columns: **ID** · **Scenario** · **Metric** · **Target** · **Method** · **P
 
 | ID | Scenario | Metric | Target | Measurement method | Phase | Gate |
 |----|----------|--------|--------|--------------------|-------|------|
-| PERF-LOG-01 | Log volume | Files × size | **Five** files × **2 MiB**; **10 MiB** total cap | Diagnostics / FS after rotation | When logging lands (#40) | Hard |
-| PERF-LOG-02 | Log retention | Age | **14-day** cap | Rotation policy test / FS | #40 | Hard |
-| PERF-LOG-03 | Diagnostic bundle | Size / content | User-initiated; redacted; no tokens/titles/raw DB | Manual + fixture | #40 / v1 | Hard |
-| PERF-LOG-04 | Log field policy | Privacy | Allowlist excludes private Calendar and OAuth secrets | Unit allowlist tests | Alpha 2+ | Hard |
+| PERF-LOG-01 | Log volume | Files × size | **Five** files × **2 MiB**; **10 MiB** total cap | Diagnostics / FS after rotation; policy unit tests in `solpaper-core::diagnostics` | When file logging lands | Hard |
+| PERF-LOG-02 | Log retention | Age | **14-day** cap | Rotation policy unit tests + FS when writer lands | #40 policy / writer unit | Hard |
+| PERF-LOG-03 | Diagnostic bundle | Size / content | User-initiated; redacted; no tokens/titles/raw DB | Bundle name exclusion unit tests + manual | #40 / v1 | Hard |
+| PERF-LOG-04 | Log field policy | Privacy | Allowlist excludes private Calendar and OAuth secrets | Unit allowlist tests (`validate_log_fields`) | Alpha 1+ (policy now; full Calendar Alpha 2) | Hard |
 
 ### Reliability
 

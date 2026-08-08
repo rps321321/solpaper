@@ -1,0 +1,12 @@
+{
+    "issue":  40,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-40-diagnostics",
+    "claimed_at":  "2026-08-08T07:22:39.5252983Z",
+    "expires_at":  "2026-08-08T09:22:39.5252983Z",
+    "heartbeat_at":  "2026-08-08T07:22:39.5252983Z",
+    "status":  "active",
+    "unit":  "Logging/diagnostics design, redaction schema, crash/safe-mode policy, bug templates",
+    "pr":  null,
+    "risk_class":  "MEDIUM"
+}

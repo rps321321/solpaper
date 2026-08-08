@@ -36,6 +36,17 @@
 | MD-PERF-01 | Cold start p95 ≤ 1.5 s; warm/cold settings open; shutdown ≤ 2 s (release build) | #35, #13, #20 | Named Win11 x64 physical; release profile | owner | Alpha 1 | `open` | — | Retest after tray/settings host or startup path changes |
 | MD-PERF-02 | Idle working set with Calendar connected ≤ 100 MiB | #35, #21, #13 | Named physical; account connected | owner | Alpha 2 | `open` | — | Retest after Calendar sync/client changes |
 | MD-PERF-03 | Beta soak: no crash/hang in 8 h on reference environment | #35, #24 | Named reference env; unattended | owner | Beta | `open` | — | Retest after timer/poll/render or process-model changes |
+| MD-WP-01 | Two distinct images on two monitors | #5, #13, #20 | Dual-monitor physical | owner | v1 if multi-mon wallpaper claimed | `open` | — | Retest after per-monitor apply path changes |
+| MD-WP-02 | Detach/reconnect monitor; re-enumerate attached | #5, #13, #20 | Hotplug-capable physical | owner | v1 | `open` | — | Retest after topology enumerate changes |
+| MD-WP-03 | Monitor rename/identity fingerprint stability | #5, #13 | Multi-monitor physical | owner | v1 prefer | `open` | — | Retest after fingerprint policy changes |
+| MD-WP-04 | Global position Fill/Fit/Span behavior | #5, #13 | Named physical | owner | v1 prefer | `open` | — | Retest after position adapter changes |
+| MD-WP-05 | Invalid file keeps previous wallpaper (physical) | #5, #13, #20 | Named physical | owner | Alpha 1 | `open` | — | Retest after apply failure path changes |
+| MD-WP-06 | Explorer restart does not require WorkerW for wallpaper | #5, #13 | Named physical | owner | v1 | `open` | — | N/A for COM path unless WorkerW regresses |
+| MD-RT-01 | Explorer restart recreates tray only (not widget reparent) | #7, #13, #20 | Named physical; disruptive | owner | v1 | `open` | — | Retest after tray/TaskbarCreated handling changes |
+| MD-RT-02 | Logon autostart (installed build) | #7, #13, #20 | Named physical installed | owner | v1 | `open` | — | Retest after HKCU Run / installer changes |
+| MD-RT-03 | Task Manager startup entry name | #7, #13 | Named physical | owner | v1 | `open` | — | Retest after autostart display name changes |
+| MD-RT-04 | Toggle off / uninstall removes only Solpaper Run value | #7, #13, #39 | Named physical | owner | v1 | `open` | — | Retest after autostart remove path changes |
+| MD-RT-05 | Second launch opens settings; no second tray | #7, #13, #20 | Named physical | owner | Alpha 1 | `open` | — | Retest after control HWND / activation changes |
 
 ## How to clear a row
 

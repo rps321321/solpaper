@@ -21,14 +21,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#7** — Tray runtime / autostart / single-instance (branch `issue-7-tray-runtime`, risk **HIGH**).
+- **#7** — Tray runtime PR [#79](https://github.com/rps321321/solpaper/pull/79) **CI green**, risk **HIGH** → **human merge only** (no auto-merge).
 - After #7: #13 acceptance matrix (human v1 boundary) and/or #20 Alpha 1 when gates allow.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 - **#5 / #40 / foundation packs complete.**
 
 ## Active work
 
-- **#7** lease `agent:solpaper-dev-loop` branch `issue-7-tray-runtime` risk **HIGH** — autostart registry + activation Win32; human merge only.
+- **#7** lease `agent:solpaper-dev-loop` branch `issue-7-tray-runtime` PR **#79** risk **HIGH** — blocked on human merge.
 
 ## Ready
 

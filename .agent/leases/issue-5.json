@@ -3,10 +3,10 @@
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "issue-5-wallpaper-adapter",
     "claimed_at":  "2026-08-08T08:21:53.9607961Z",
-    "expires_at":  "2026-08-08T10:21:53.9607961Z",
-    "heartbeat_at":  "2026-08-08T08:21:53.9607961Z",
+    "expires_at":  "2026-08-08T10:27:41.7299070Z",
+    "heartbeat_at":  "2026-08-08T08:27:41.7299070Z",
     "status":  "active",
     "unit":  "IDesktopWallpaper research, trait, fake + COM adapter, error mapping",
-    "pr":  null,
+    "pr":  77,
     "risk_class":  "HIGH"
 }

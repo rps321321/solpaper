@@ -11,6 +11,7 @@ ADRs for Solpaper production architecture. Status values: **Accepted** (owner pr
 | [0005](0005-storage-split.md) | Storage split | Accepted |
 | [0006](0006-crate-boundaries.md) | Production crate boundaries | Accepted |
 | [0007](0007-local-ipc-deferred.md) | Local IPC deferred | Accepted |
+| [0008](0008-second-launch-activation.md) | Narrow second-launch activation (not general IPC) | Accepted |
 
 Source spike: [`docs/research/overlay-feasibility.md`](../research/overlay-feasibility.md) (Issue #18).  
 Product locks: Issue #17, `AGENTS.md`.  

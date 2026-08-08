@@ -21,42 +21,43 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#7** — Tray runtime, autostart, and single-instance behaviour (design/research + contract) per blueprint after #5.
-- Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-* + MD-WP-01..06.
-- **#5 / #40 / #38 / #36 / #35 / #34 / #41 / #33 / #19 complete.** Foundation + wallpaper adapter research landed.
+- **#7** — Tray runtime / autostart / single-instance (branch `issue-7-tray-runtime`, risk **HIGH**).
+- After #7: #13 acceptance matrix (human v1 boundary) and/or #20 Alpha 1 when gates allow.
+- Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
+- **#5 / #40 / foundation packs complete.**
 
 ## Active work
 
-- None (post-#5 state sync only).
+- **#7** lease `agent:solpaper-dev-loop` branch `issue-7-tray-runtime` risk **HIGH** — autostart registry + activation Win32; human merge only.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #7 | Tray runtime / autostart / single instance | Claim lease; follow pack #7 LOCKED/DEFAULT |
 | #13 | Acceptance matrix | human v1 boundary + earlier packs |
+| #20 | Alpha 1 | after #7 + #13 + UX |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
-| #13 | Acceptance matrix | human v1 boundary + earlier packs |
-| #20 | Alpha 1 | foundation + #5/#7/#19 + #13 + UX design |
+| #13 | Acceptance matrix | human v1 boundary |
+| #20 | Alpha 1 | #7 + #13 + UX |
 | #6 / #21 | Calendar path | #20 |
-| #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
+| #22 / #23 | Remote wallpaper | owner gate |
 | #24 | v1 RC | release gates |
 
 ## Manual evidence required
 
-From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03; wallpaper MD-WP-01..06 from #5.
+MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
-- **#5** — IDesktopWallpaper research, trait, fake + COM adapter. PR #77 (HIGH, human-merged).
-- **#40** — Diagnostics / logging policy / crash/safe-mode. PR #75.
+- **#5** — IDesktopWallpaper. PR #77.
+- **#40** — Diagnostics. PR #75.
 - **#38** — Supply-chain. PR #74.
 - **#36** — Threat model. PR #70.
-- **#35** — NFR budgets. PR #68.
+- **#35** — NFR. PR #68.
 - **#34** — UX flows. PR #66.
 - **#41** — Accessibility. PR #64.
 - **#33** — Test strategy. PR #61.
@@ -64,12 +65,10 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Discovered defects
 
-- None open.
+- None open for #7.
 
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-08
-- **Branch:** `main` @ `e8e10e8` (feat #5)
-- **Open implementation PRs:** none required for #5; docs draft #72 may coexist
-- **Production workspace:** present
-- **Closed complete (recent):** #33, #41, #34, #35, #36, #38, #40, #5
+- **Branch:** `issue-7-tray-runtime` (from `main` @ `0dc4f35`)
+- **Open implementation PRs:** #7 in progress; docs draft #72 may coexist

@@ -13,6 +13,7 @@
 | [usability-script.md](./usability-script.md) | Required new-user script + findings template |
 | [decisions-for-consumers.md](./decisions-for-consumers.md) | Explicit decisions for #7, #19, #20, #21 |
 | [pomodoro-state-machine.md](./pomodoro-state-machine.md) | Domain machine (#19) — not UI chrome |
+| [runtime-tray.md](./runtime-tray.md) | Tray runtime, autostart, single-instance (#7) |
 
 ## Hard rules (pack DEFAULT)
 

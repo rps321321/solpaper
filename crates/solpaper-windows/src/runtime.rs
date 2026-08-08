@@ -1,17 +1,23 @@
 //! Runtime control window + Shell_NotifyIcon tray host (Issue #20 / pack #7).
 //!
 //! Registers `Solpaper.Runtime.Control.v1`, owns the session message loop, tray icon
-//! (NIM_ADD + NIM_SETVERSION), TaskbarCreated re-add, and fixed-order context menu
-//! from `solpaper_core::tray`. Second launch finds this HWND via `FindWindowW`.
+//! (NIM_ADD + NIM_SETVERSION), TaskbarCreated re-add, fixed-order context menu, and
+//! widget host Edit Mode hotkeys (Ctrl+Alt+F2, Escape while editing).
+//! Second launch finds this HWND via `FindWindowW`.
 
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
 use solpaper_core::{
-    alpha1_scaffold_flags, build_tray_menu, TrayCommand, TrayMenuEntry, CONTROL_WINDOW_CLASS,
+    alpha1_widget_host_flags, build_tray_menu, SurfaceMode, TrayCommand, TrayMenuEntry,
+    CONTROL_WINDOW_CLASS,
 };
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    RegisterHotKey, UnregisterHotKey, HOT_KEY_MODIFIERS, MOD_ALT, MOD_CONTROL, MOD_NOREPEAT,
+    VK_ESCAPE, VK_F2,
+};
 use windows::Win32::UI::Shell::{
     Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_SETVERSION,
     NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
@@ -22,13 +28,14 @@ use windows::Win32::UI::WindowsAndMessaging::{
     PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow,
     SetMenuDefaultItem, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW,
     IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PM_REMOVE,
-    TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_NULL,
-    WM_QUIT, WM_RBUTTONUP, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
+    TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_HOTKEY,
+    WM_NULL, WM_QUIT, WM_RBUTTONUP, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
-use crate::placeholder::{
-    create_placeholder_window, destroy_placeholder_window, PlaceholderConfig,
+use crate::widget_host::{
+    create_widget_host, destroy_all_widgets, set_surface_mode, surface_mode, toggle_surface_mode,
+    WidgetSurfaceConfig,
 };
 
 /// Tray callback message (WM_APP + 2). Control window only.
@@ -36,6 +43,10 @@ const WM_TRAYICON: u32 = WM_APP + 2;
 
 /// Base id for tray menu commands (must not collide with system ids).
 const MENU_ID_BASE: u16 = 0xA000;
+
+/// Hotkey ids registered on the control HWND.
+const HOTKEY_TOGGLE_EDIT: i32 = 1;
+const HOTKEY_ESCAPE_EDIT: i32 = 2;
 
 static CONTROL_CLASS_REGISTERED: AtomicBool = AtomicBool::new(false);
 static TASKBAR_CREATED_MSG: AtomicU32 = AtomicU32::new(0);
@@ -45,6 +56,9 @@ static SETTINGS_REQUESTED: AtomicBool = AtomicBool::new(false);
 
 /// Whether the Runtime is accepting new tray work (cleared on shutdown).
 static ACCEPTING_WORK: AtomicBool = AtomicBool::new(true);
+
+/// Escape hotkey is registered only while Edit Mode is active.
+static ESCAPE_HOTKEY_REGISTERED: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug)]
 pub enum RuntimeError {
@@ -72,10 +86,10 @@ impl From<windows::core::Error> for RuntimeError {
 /// Host configuration for the Alpha 1 runtime loop.
 #[derive(Debug, Clone, Default)]
 pub struct RuntimeHostConfig {
-    /// When true: create control + tray (+ optional placeholder), pump briefly, tear down.
+    /// When true: create control + tray (+ widgets), pump briefly, tear down.
     pub smoke: bool,
-    /// Optional scaffold placeholder surface (widget host lands in later #20 bullets).
-    pub placeholder: Option<PlaceholderConfig>,
+    /// Approach A widget surfaces (empty = tray-only runtime).
+    pub widgets: Vec<WidgetSurfaceConfig>,
 }
 
 /// Whether a second-launch activation requested Settings (for host / tests).
@@ -83,15 +97,16 @@ pub fn take_settings_requested() -> bool {
     SETTINGS_REQUESTED.swap(false, Ordering::SeqCst)
 }
 
-/// Run the Runtime: control HWND, tray icon, message loop.
+/// Run the Runtime: control HWND, tray icon, widget host, message loop.
 ///
 /// # Safety context
 ///
-/// All Win32 calls are confined to this module. Tray uses a fixed uid; Explorer
-/// restart re-adds via `TaskbarCreated` only (does not reparent widgets).
+/// All Win32 calls are confined to this module and `widget_host`. Tray uses a fixed
+/// uid; Explorer restart re-adds via `TaskbarCreated` only (does not reparent widgets).
 pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> {
     ACCEPTING_WORK.store(true, Ordering::SeqCst);
     SETTINGS_REQUESTED.store(false, Ordering::SeqCst);
+    ESCAPE_HOTKEY_REGISTERED.store(false, Ordering::SeqCst);
 
     unsafe {
         let hinstance = GetModuleHandleW(None)?;
@@ -128,20 +143,27 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         }
 
         tray_add(control)?;
+        register_toggle_edit_hotkey(control)?;
 
-        let placeholder = if let Some(ref pc) = config.placeholder {
-            Some(create_placeholder_window(pc)?)
-        } else {
-            None
-        };
+        let has_widgets = !config.widgets.is_empty();
+        if has_widgets {
+            create_widget_host(&config.widgets)?;
+            set_surface_mode(SurfaceMode::Normal);
+        }
 
         if config.smoke {
+            // Exercise mode toggle path once for smoke (no user interaction).
+            if has_widgets {
+                let _ = toggle_surface_mode();
+                let _ = toggle_surface_mode();
+            }
             pump_peek(48);
             // Graceful teardown without full GetMessage loop.
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
+            unregister_all_hotkeys(control);
             let _ = tray_delete(control);
-            if let Some(ph) = placeholder {
-                destroy_placeholder_window(ph);
+            if has_widgets {
+                destroy_all_widgets();
             }
             let _ = DestroyWindow(control);
             pump_peek(16);
@@ -161,15 +183,62 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             DispatchMessageW(&msg);
         }
 
-        // Loop exit: ensure tray removed if still present (WM_DESTROY path also removes).
+        // Loop exit: ensure tray/hotkeys/widgets removed if still present.
+        unregister_all_hotkeys(control);
         let _ = tray_delete(control);
-        if let Some(ph) = placeholder {
-            // Placeholder may already be destroyed; destroy is idempotent via IsWindow check.
-            destroy_placeholder_window(ph);
+        if has_widgets {
+            destroy_all_widgets();
         }
     }
 
     Ok(())
+}
+
+unsafe fn register_toggle_edit_hotkey(hwnd: HWND) -> Result<(), RuntimeError> {
+    // Pack #34 DEFAULT: Ctrl+Alt+F2 toggles Edit Mode (global, always registered).
+    let mods = HOT_KEY_MODIFIERS(MOD_CONTROL.0 | MOD_ALT.0 | MOD_NOREPEAT.0);
+    RegisterHotKey(hwnd, HOTKEY_TOGGLE_EDIT, mods, VK_F2.0 as u32).map_err(RuntimeError::from)?;
+    Ok(())
+}
+
+unsafe fn register_escape_hotkey(hwnd: HWND) {
+    if ESCAPE_HOTKEY_REGISTERED.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    // Bare Escape only while Edit Mode is active (keyboard map: exit Edit).
+    let mods = HOT_KEY_MODIFIERS(MOD_NOREPEAT.0);
+    if RegisterHotKey(hwnd, HOTKEY_ESCAPE_EDIT, mods, VK_ESCAPE.0 as u32).is_err() {
+        ESCAPE_HOTKEY_REGISTERED.store(false, Ordering::SeqCst);
+        eprintln!("solpaper: Escape hotkey unavailable; use tray Edit Mode to exit");
+    }
+}
+
+unsafe fn unregister_escape_hotkey(hwnd: HWND) {
+    if !ESCAPE_HOTKEY_REGISTERED.swap(false, Ordering::SeqCst) {
+        return;
+    }
+    let _ = UnregisterHotKey(hwnd, HOTKEY_ESCAPE_EDIT);
+}
+
+unsafe fn unregister_all_hotkeys(hwnd: HWND) {
+    let _ = UnregisterHotKey(hwnd, HOTKEY_TOGGLE_EDIT);
+    unregister_escape_hotkey(hwnd);
+}
+
+fn apply_edit_mode(hwnd: HWND, mode: SurfaceMode) {
+    set_surface_mode(mode);
+    unsafe {
+        if mode.is_edit() {
+            register_escape_hotkey(hwnd);
+        } else {
+            unregister_escape_hotkey(hwnd);
+        }
+    }
+}
+
+fn toggle_edit_from_user(hwnd: HWND) {
+    let next = surface_mode().toggle();
+    apply_edit_mode(hwnd, next);
 }
 
 fn wide_z(s: &str) -> Vec<u16> {
@@ -283,7 +352,7 @@ unsafe fn show_tray_menu(hwnd: HWND) -> Result<(), RuntimeError> {
     if !ACCEPTING_WORK.load(Ordering::SeqCst) {
         return Ok(());
     }
-    let menu = build_tray_menu(alpha1_scaffold_flags(), None);
+    let menu = build_tray_menu(alpha1_widget_host_flags(), None);
     let hmenu = CreatePopupMenu()?;
     for entry in &menu {
         match entry {
@@ -335,6 +404,8 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
         TrayCommand::Quit => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
             unsafe {
+                unregister_all_hotkeys(hwnd);
+                destroy_all_widgets();
                 let _ = tray_delete(hwnd);
                 let _ = DestroyWindow(hwnd);
             }
@@ -347,9 +418,11 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
         TrayCommand::OpenDiagnostics => {
             eprintln!("solpaper: Diagnostics (host UI deferred)");
         }
-        // Disabled in alpha1_scaffold_flags or deferred to later tracer bullets.
-        TrayCommand::ToggleEditMode
-        | TrayCommand::PomodoroStartPauseResume
+        TrayCommand::ToggleEditMode => {
+            toggle_edit_from_user(hwnd);
+        }
+        // Deferred to later tracer bullets (Pomodoro / wallpaper / autostart).
+        TrayCommand::PomodoroStartPauseResume
         | TrayCommand::PomodoroSkip
         | TrayCommand::PomodoroReset
         | TrayCommand::WallpaperNext
@@ -398,8 +471,22 @@ unsafe extern "system" fn control_wnd_proc(
             eprintln!("solpaper: show settings requested (second launch)");
             LRESULT(0)
         }
+        WM_HOTKEY => {
+            let id = wparam.0 as i32;
+            match id {
+                HOTKEY_TOGGLE_EDIT => toggle_edit_from_user(hwnd),
+                // Escape exits Edit Mode only (does not quit the app).
+                HOTKEY_ESCAPE_EDIT if surface_mode().is_edit() => {
+                    apply_edit_mode(hwnd, SurfaceMode::Normal);
+                }
+                _ => {}
+            }
+            LRESULT(0)
+        }
         WM_DESTROY => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
+            unregister_all_hotkeys(hwnd);
+            destroy_all_widgets();
             let _ = tray_delete(hwnd);
             PostQuitMessage(0);
             LRESULT(0)

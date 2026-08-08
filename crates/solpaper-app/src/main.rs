@@ -1,7 +1,7 @@
 //! Solpaper user-session host (ADR-0002 / #7 / #20).
 //!
-//! Alpha 1 tracer bullet 1: single-instance + control HWND + tray icon host +
-//! scaffold placeholder surface. Full widget/Edit Mode / Pomodoro UI follow.
+//! Alpha 1 tracer bullet 2: single-instance + control HWND + tray + Approach A
+//! widget host with Normal/Edit Mode (tray, Ctrl+Alt+F2, Escape).
 
 use std::env;
 use std::process::ExitCode;
@@ -12,8 +12,8 @@ use solpaper_core::{
 use solpaper_storage::{load_layout, save_layout, AppPaths, SettingsDocument};
 use solpaper_windows::{
     activate_existing_show_settings, run_runtime_host, second_launch_outcome,
-    set_process_dpi_awareness, PlaceholderConfig, RuntimeHostConfig, SecondLaunchOutcome,
-    SingleInstanceGuard,
+    set_process_dpi_awareness, RuntimeHostConfig, SecondLaunchOutcome, SingleInstanceGuard,
+    WidgetSurfaceConfig,
 };
 
 fn main() -> ExitCode {
@@ -54,31 +54,33 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut layout = load_layout(&paths.layout)?;
     if layout.widgets.is_empty() {
-        layout = default_placeholder_layout(settings.default_opacity)?;
+        layout = default_widget_layout(settings.default_opacity)?;
         save_layout(&paths.layout, &layout)?;
     }
 
-    let entry = layout
+    let widgets: Vec<WidgetSurfaceConfig> = layout
         .widgets
-        .first()
-        .ok_or("layout has no widgets after seed")?;
+        .iter()
+        .map(|entry| {
+            let origin = WidgetLayoutSet::resolve_top_left(entry, 1920.0, 1080.0);
+            WidgetSurfaceConfig {
+                id: entry.id.as_str().to_string(),
+                title: format!("Solpaper · {}", entry.id.as_str()),
+                x: origin.x as i32,
+                y: origin.y as i32,
+                width: entry.size_dip.width.max(1.0) as i32,
+                height: entry.size_dip.height.max(1.0) as i32,
+                opacity: entry.opacity,
+            }
+        })
+        .collect();
 
-    let placeholder = PlaceholderConfig {
-        title: "Solpaper".into(),
-        origin: WidgetLayoutSet::resolve_top_left(entry, 1920.0, 1080.0),
-        size: entry.size_dip,
-        opacity: entry.opacity,
-    };
-
-    // Control window + tray (+ placeholder). Smoke: create, pump, tear down.
-    run_runtime_host(&RuntimeHostConfig {
-        smoke,
-        placeholder: Some(placeholder),
-    })?;
+    // Control window + tray + Approach A widgets. Smoke: create, toggle mode, tear down.
+    run_runtime_host(&RuntimeHostConfig { smoke, widgets })?;
     Ok(())
 }
 
-fn default_placeholder_layout(opacity: u8) -> Result<WidgetLayoutSet, solpaper_core::CoreError> {
+fn default_widget_layout(opacity: u8) -> Result<WidgetLayoutSet, solpaper_core::CoreError> {
     let mut set = WidgetLayoutSet::new_empty();
     set.widgets.push(WidgetLayoutEntry {
         id: WidgetId::new("placeholder")?,

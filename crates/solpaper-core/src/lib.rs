@@ -5,6 +5,7 @@
 mod diagnostics;
 mod layout;
 mod pomodoro;
+mod surface;
 mod tray;
 mod wallpaper;
 
@@ -25,12 +26,17 @@ pub use pomodoro::{
     PomodoroState, PomodoroView, TimerStatus, UnixMs, DEFAULT_FOCUSES_BEFORE_LONG_BREAK,
     DEFAULT_FOCUS_MS, DEFAULT_LONG_BREAK_MS, DEFAULT_SHORT_BREAK_MS,
 };
+pub use surface::{
+    apply_edit_arrow, apply_move, apply_resize, clamp_rect_visible, classify_widget_hit,
+    edit_arrow_delta, EditArrow, SurfaceMode, SurfaceRect, WidgetHit, WorkArea, DRAG_STRIP_DIP,
+    MIN_VISIBLE_DIP, MIN_WIDGET_SIZE_DIP, NUDGE_STEP_DIP, NUDGE_STEP_LARGE_DIP, RESIZE_GRIP_DIP,
+};
 pub use tray::{
-    alpha1_scaffold_flags, autostart_command_line, build_tray_menu, command_enabled,
-    pomodoro_status_label, portable_allows_autostart_ui, NotificationDeduper, PhaseInstanceId,
-    SecondLaunchAction, ShutdownStep, TrayCommand, TrayFeatureFlags, TrayMenuEntry,
-    AUTOSTART_BACKGROUND_FLAG, AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS, SECOND_LAUNCH_ACTION,
-    SHUTDOWN_SEQUENCE, SHUTDOWN_WORKER_WAIT_MS,
+    alpha1_scaffold_flags, alpha1_widget_host_flags, autostart_command_line, build_tray_menu,
+    command_enabled, pomodoro_status_label, portable_allows_autostart_ui, NotificationDeduper,
+    PhaseInstanceId, SecondLaunchAction, ShutdownStep, TrayCommand, TrayFeatureFlags,
+    TrayMenuEntry, AUTOSTART_BACKGROUND_FLAG, AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS,
+    SECOND_LAUNCH_ACTION, SHUTDOWN_SEQUENCE, SHUTDOWN_WORKER_WAIT_MS,
 };
 pub use wallpaper::{
     check_decoded_pixels, check_local_file_size, fill_decision, fill_scale_factors,

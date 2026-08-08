@@ -1,12 +1,12 @@
 {
     "issue":  40,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-40-diagnostics",
-    "claimed_at":  "2026-08-08T07:22:39.5252983Z",
-    "expires_at":  "2026-08-08T09:28:01.4998142Z",
-    "heartbeat_at":  "2026-08-08T07:28:01.4998142Z",
+    "branch":  "chore/post-40-dev-state",
+    "claimed_at":  "2026-08-08T07:42:06.1941397Z",
+    "expires_at":  "2026-08-08T09:42:42.1155439Z",
+    "heartbeat_at":  "2026-08-08T07:42:42.1155439Z",
     "status":  "active",
-    "unit":  "Logging/diagnostics design, redaction schema, crash/safe-mode policy, bug templates",
-    "pr":  75,
-    "risk_class":  "MEDIUM"
+    "unit":  "Post-merge state: #40 complete, frontier is #5",
+    "pr":  76,
+    "risk_class":  "LOW"
 }

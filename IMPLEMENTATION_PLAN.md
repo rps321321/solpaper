@@ -20,20 +20,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#40** — Logging / diagnostics / crash recovery: PR [#75](https://github.com/rps321321/solpaper/pull/75) on `issue-40-diagnostics` (MEDIUM, CI pending).
-- After #40 merges: foundation gates through #40 complete; next **#5 / #7** (wallpaper adapter / tray runtime) per blueprint.
+- **#5** — Research and prototype the Windows wallpaper adapter (`IDesktopWallpaper`) per blueprint after foundation gates.
+- Then **#7** (tray runtime, autostart, single instance); **#19** already complete.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
-- **#38 / #36 / #35 / #34 / #41 / #33 / #19 complete.**
+- **Foundation complete through #40** (#33, #41, #34, #35, #36, #38, #40).
 
 ## Active work
 
-- **#40** lease `agent:solpaper-dev-loop` branch `issue-40-diagnostics` PR **#75** risk **MEDIUM** — awaiting CI; review VERIFIED.
+- None (post-#40 state sync only).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #5 / #7 | Wallpaper adapter / tray runtime | After #40 merge per blueprint |
+| #5 | Wallpaper adapter research/prototype | Claim lease; follow pack #5 LOCKED/DEFAULT |
+| #7 | Tray runtime / autostart / single instance | After or parallel per pack order (#5 first) |
 | #13 | Acceptance matrix | human v1 boundary + earlier packs |
 
 ## Blocked
@@ -52,6 +53,7 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Recently completed
 
+- **#40** — Diagnostics, logging policy, crash/safe-mode, issue templates. PR #75 (MEDIUM, agent-merged CI green + VERIFIED).
 - **#38** — Supply-chain policy, MIT reconcile, deny/audit CI, SBOM scripts. PR #74 (HIGH, human-merged).
 - **#36** — Threat model and security architecture. PR #70 (HIGH, human-merged).
 - **#35** — NFR / quality budgets. PR #68.
@@ -64,12 +66,12 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Discovered defects
 
-- None currently open for #40.
+- None open.
 
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-08
-- **Branch:** `issue-40-diagnostics` (from `main` @ `4bd7bb1`)
-- **Open implementation PRs:** #40 in progress; docs draft #72 may coexist
+- **Branch:** `main` @ `bade04c` (feat #40)
+- **Open implementation PRs:** none required for #40; docs draft #72 may coexist
 - **Production workspace:** present
-- **Closed complete (recent):** #33, #41, #34, #35, #36, #38
+- **Closed complete (recent):** #33, #41, #34, #35, #36, #38, #40

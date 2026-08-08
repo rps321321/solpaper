@@ -1,12 +1,12 @@
 {
     "issue":  7,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-7-tray-runtime",
+    "branch":  "chore/post-7-dev-state",
     "claimed_at":  "2026-08-08T10:01:51.5586821Z",
-    "expires_at":  "2026-08-08T12:21:57.7226831Z",
-    "heartbeat_at":  "2026-08-08T10:21:57.7226831Z",
+    "expires_at":  "2026-08-08T13:22:01.8585157Z",
+    "heartbeat_at":  "2026-08-08T11:22:01.8585157Z",
     "status":  "active",
-    "unit":  "Tray runtime design, single-instance activation, autostart policy, tray command routing",
-    "pr":  79,
-    "risk_class":  "HIGH"
+    "unit":  "Post-merge state: #7 complete, frontier is #13",
+    "pr":  80,
+    "risk_class":  "LOW"
 }

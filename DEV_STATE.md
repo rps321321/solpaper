@@ -1,16 +1,16 @@
 # Development State
 
-Status: EXTERNALLY_BLOCKED
-Current issue: #5
-Current branch: issue-5-wallpaper-adapter
-Current PR: #77
-Last completed action: re-checked PR #77 — still OPEN, CI all SUCCESS; HIGH human merge only; loop stop (no independent unit); consecutive blocked fire 2/3 same reason
-Next action: human merge PR #77; restart solpaper-dev-loop after merge to release lease and frontier #7
+Status: READY
+Current issue: none (post-#5)
+Current branch: main / chore/post-5-dev-state
+Current PR: #78
+Last completed action: human-merged PR #77 (#5); released implementation lease; frontier is #7
+Next action: claim #7 (tray runtime / autostart / single instance) per blueprint after this state lands
 Repeated failure count: 0
 Last failure signature: none
 Manual evidence debt: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03, MD-WP-01..06
-Risk class: HIGH
-Lease: issue-5 / owner agent:solpaper-dev-loop / PR #77 (keep active until merge or abandon)
-Execution-pack defaults selected: windows crate only; STA; IDesktopWallpaper; device path IDs; global Fill; local formats; 1.5x upscale; keep wallpaper on failure; recreate COM once
-CI (one-shot poll): Windows Rust quality, Governance tooling, CI policy present, Supply chain, Dependency review — all SUCCESS
-Last updated: 2026-08-08T09:15:00Z
+Risk class: LOW
+Lease: issue-5 post-merge chore / owner agent:solpaper-dev-loop / branch chore/post-5-dev-state
+Execution-pack defaults selected: n/a (state only)
+CI (one-shot poll): n/a until PR open
+Last updated: 2026-08-08T09:35:00Z

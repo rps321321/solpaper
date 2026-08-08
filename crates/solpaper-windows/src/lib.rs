@@ -5,7 +5,9 @@
 mod dpi;
 mod placeholder;
 mod single_instance;
+mod wallpaper;
 
 pub use dpi::set_process_dpi_awareness;
 pub use placeholder::{run_placeholder_host, PlaceholderConfig};
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
+pub use wallpaper::{ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper, WallpaperError};

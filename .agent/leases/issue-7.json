@@ -7,6 +7,6 @@
     "heartbeat_at":  "2026-08-08T11:02:55.0752599Z",
     "status":  "active",
     "unit":  "Post-merge state: #7 complete, frontier is #13",
-    "pr":  null,
+    "pr":  80,
     "risk_class":  "LOW"
 }

@@ -20,14 +20,16 @@ use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, CreateWindowExW, DefWindowProcW, DestroyMenu, DestroyWindow,
     DispatchMessageW, GetCursorPos, GetMessageW, LoadCursorW, LoadIconW, PeekMessageW,
     PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow,
-    SetMenuDefaultItem, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON,
-    IDC_ARROW, IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG,
-    PM_REMOVE, TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY,
-    WM_NULL, WM_QUIT, WM_RBUTTONUP, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
+    SetMenuDefaultItem, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW,
+    IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PM_REMOVE,
+    TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_NULL,
+    WM_QUIT, WM_RBUTTONUP, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
-use crate::placeholder::{create_placeholder_window, destroy_placeholder_window, PlaceholderConfig};
+use crate::placeholder::{
+    create_placeholder_window, destroy_placeholder_window, PlaceholderConfig,
+};
 
 /// Tray callback message (WM_APP + 2). Control window only.
 const WM_TRAYICON: u32 = WM_APP + 2;
@@ -257,7 +259,9 @@ unsafe fn tray_add(hwnd: HWND) -> Result<(), RuntimeError> {
     nid.szTip[..copy_len].copy_from_slice(&tip_wide[..copy_len]);
 
     if !Shell_NotifyIconW(NIM_ADD, &nid).as_bool() {
-        return Err(RuntimeError::Message("Shell_NotifyIconW NIM_ADD failed".into()));
+        return Err(RuntimeError::Message(
+            "Shell_NotifyIconW NIM_ADD failed".into(),
+        ));
     }
     // Prefer V4 behavior when available.
     let _ = Shell_NotifyIconW(NIM_SETVERSION, &nid);

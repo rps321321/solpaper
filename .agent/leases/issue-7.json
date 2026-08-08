@@ -3,10 +3,10 @@
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "issue-7-tray-runtime",
     "claimed_at":  "2026-08-08T10:01:51.5586821Z",
-    "expires_at":  "2026-08-08T12:01:51.5586821Z",
-    "heartbeat_at":  "2026-08-08T10:01:51.5586821Z",
+    "expires_at":  "2026-08-08T12:06:41.2579568Z",
+    "heartbeat_at":  "2026-08-08T10:06:41.2579568Z",
     "status":  "active",
     "unit":  "Tray runtime design, single-instance activation, autostart policy, tray command routing",
-    "pr":  null,
+    "pr":  79,
     "risk_class":  "HIGH"
 }

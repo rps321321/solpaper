@@ -1,6 +1,7 @@
-//! Solpaper user-session host (ADR-0002).
+//! Solpaper user-session host (ADR-0002 / #7).
 //!
-//! Scaffold only: single-instance + placeholder surface. No Pomodoro UI, OAuth, or tray yet.
+//! Scaffold: single-instance + second-launch activation + placeholder surface.
+//! Full tray icon / control window registration land with Alpha 1 Runtime (#20).
 
 use std::env;
 use std::process::ExitCode;
@@ -10,7 +11,8 @@ use solpaper_core::{
 };
 use solpaper_storage::{load_layout, save_layout, AppPaths, SettingsDocument};
 use solpaper_windows::{
-    run_placeholder_host, set_process_dpi_awareness, PlaceholderConfig, SingleInstanceGuard,
+    activate_existing_show_settings, run_placeholder_host, second_launch_outcome,
+    set_process_dpi_awareness, PlaceholderConfig, SecondLaunchOutcome, SingleInstanceGuard,
 };
 
 fn main() -> ExitCode {
@@ -23,12 +25,21 @@ fn main() -> ExitCode {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let smoke = env::args().any(|a| a == "--smoke");
+    let _background = env::args().any(|a| a == "--background");
     set_process_dpi_awareness();
 
     let _guard = match SingleInstanceGuard::acquire() {
         Ok(g) => g,
         Err(solpaper_windows::SingleInstanceError::AlreadyRunning) => {
-            eprintln!("solpaper: already running (single-instance)");
+            // Narrow activation only (ADR-0007 / pack #7) — never start a second Runtime.
+            match second_launch_outcome(activate_existing_show_settings()) {
+                SecondLaunchOutcome::Activated => {
+                    eprintln!("solpaper: already running; requested Settings");
+                }
+                SecondLaunchOutcome::AlreadyRunningNoWindow => {
+                    eprintln!("solpaper: already running (single-instance)");
+                }
+            }
             return Ok(());
         }
         Err(e) => return Err(e.into()),

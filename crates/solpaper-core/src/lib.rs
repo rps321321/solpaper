@@ -5,6 +5,7 @@
 mod diagnostics;
 mod layout;
 mod pomodoro;
+mod tray;
 mod wallpaper;
 
 pub use diagnostics::{
@@ -23,6 +24,13 @@ pub use pomodoro::{
     AvailableActions, Command as PomodoroCommand, DurationMs, Phase, PomodoroConfig, PomodoroEvent,
     PomodoroState, PomodoroView, TimerStatus, UnixMs, DEFAULT_FOCUSES_BEFORE_LONG_BREAK,
     DEFAULT_FOCUS_MS, DEFAULT_LONG_BREAK_MS, DEFAULT_SHORT_BREAK_MS,
+};
+pub use tray::{
+    alpha1_scaffold_flags, autostart_command_line, build_tray_menu, command_enabled,
+    pomodoro_status_label, portable_allows_autostart_ui, NotificationDeduper, PhaseInstanceId,
+    SecondLaunchAction, ShutdownStep, TrayCommand, TrayFeatureFlags, TrayMenuEntry,
+    AUTOSTART_BACKGROUND_FLAG, AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS, SECOND_LAUNCH_ACTION,
+    SHUTDOWN_SEQUENCE, SHUTDOWN_WORKER_WAIT_MS,
 };
 pub use wallpaper::{
     check_decoded_pixels, check_local_file_size, fill_decision, fill_scale_factors,

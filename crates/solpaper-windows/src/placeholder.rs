@@ -1,6 +1,8 @@
 //! Minimal layered placeholder HWND host (ADR-0001 / ADR-0003).
 //!
 //! Intentionally small: not a port of the disposable spike architecture.
+//! When hosted by the Runtime tray loop, destroy does **not** post WM_QUIT
+//! (the control window owns process lifetime).
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -14,13 +16,15 @@ use windows::Win32::Graphics::Gdi::{
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetClientRect, GetMessageW,
-    GetSystemMetrics, LoadCursorW, PeekMessageW, PostQuitMessage, RegisterClassW,
+    GetSystemMetrics, IsWindow, LoadCursorW, PeekMessageW, PostQuitMessage, RegisterClassW,
     SetLayeredWindowAttributes, ShowWindow, TranslateMessage, CS_HREDRAW, CS_VREDRAW, IDC_ARROW,
     LWA_ALPHA, MSG, PM_REMOVE, SM_CXSCREEN, SM_CYSCREEN, SW_SHOWNOACTIVATE, WM_DESTROY, WM_PAINT,
     WM_QUIT, WNDCLASSW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_VISIBLE,
 };
 
 static CLASS_REGISTERED: AtomicBool = AtomicBool::new(false);
+/// When true, placeholder WM_DESTROY posts WM_QUIT (standalone host only).
+static POST_QUIT_ON_DESTROY: AtomicBool = AtomicBool::new(false);
 const CLASS_NAME: PCWSTR = w!("SolpaperPlaceholderHost");
 
 /// Placement for the scaffold placeholder surface (physical pixels at create time).
@@ -46,45 +50,38 @@ impl Default for PlaceholderConfig {
     }
 }
 
+/// Create a placeholder widget HWND without running a message loop.
+///
+/// Caller owns lifetime; destroy with [`destroy_placeholder_window`]. Does not
+/// post WM_QUIT on destroy (Runtime control window owns process exit).
+pub fn create_placeholder_window(config: &PlaceholderConfig) -> windows::core::Result<HWND> {
+    unsafe {
+        POST_QUIT_ON_DESTROY.store(false, Ordering::SeqCst);
+        let hinstance = HINSTANCE(GetModuleHandleW(None)?.0);
+        ensure_class(hinstance)?;
+        create_window(hinstance, config)
+    }
+}
+
+/// Destroy a placeholder HWND if still valid.
+pub fn destroy_placeholder_window(hwnd: HWND) {
+    unsafe {
+        if !hwnd.is_invalid() && IsWindow(hwnd).as_bool() {
+            let _ = DestroyWindow(hwnd);
+        }
+    }
+}
+
 /// Create a single placeholder widget window and run a message loop until closed.
 ///
 /// When `smoke` is true, create the window, pump a few messages with `PeekMessage`,
 /// destroy the window, and return (for automated checks).
 pub fn run_placeholder_host(config: &PlaceholderConfig, smoke: bool) -> windows::core::Result<()> {
     unsafe {
+        POST_QUIT_ON_DESTROY.store(true, Ordering::SeqCst);
         let hinstance = HINSTANCE(GetModuleHandleW(None)?.0);
         ensure_class(hinstance)?;
-
-        // Scaffold: treat DIP as physical pixels until full DPI conversion lands with multi-mon.
-        let x = config.origin.x as i32;
-        let y = config.origin.y as i32;
-        let width = config.size.width.max(1.0) as i32;
-        let height = config.size.height.max(1.0) as i32;
-
-        let screen_w = GetSystemMetrics(SM_CXSCREEN);
-        let screen_h = GetSystemMetrics(SM_CYSCREEN);
-        let x = x.clamp(0, (screen_w - 32).max(0));
-        let y = y.clamp(0, (screen_h - 32).max(0));
-
-        let title = windows::core::HSTRING::from(config.title.as_str());
-        let hwnd = CreateWindowExW(
-            WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
-            CLASS_NAME,
-            &title,
-            WS_POPUP | WS_VISIBLE,
-            x,
-            y,
-            width,
-            height,
-            None,
-            None,
-            hinstance,
-            None,
-        )?;
-
-        SetLayeredWindowAttributes(hwnd, COLORREF(0), config.opacity, LWA_ALPHA)?;
-        let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
-        let _ = InvalidateRect(hwnd, None, true);
+        let hwnd = create_window(hinstance, config)?;
 
         if smoke {
             pump_peek(hwnd, 32);
@@ -109,6 +106,43 @@ pub fn run_placeholder_host(config: &PlaceholderConfig, smoke: bool) -> windows:
     Ok(())
 }
 
+unsafe fn create_window(
+    hinstance: HINSTANCE,
+    config: &PlaceholderConfig,
+) -> windows::core::Result<HWND> {
+    // Scaffold: treat DIP as physical pixels until full DPI conversion lands with multi-mon.
+    let x = config.origin.x as i32;
+    let y = config.origin.y as i32;
+    let width = config.size.width.max(1.0) as i32;
+    let height = config.size.height.max(1.0) as i32;
+
+    let screen_w = GetSystemMetrics(SM_CXSCREEN);
+    let screen_h = GetSystemMetrics(SM_CYSCREEN);
+    let x = x.clamp(0, (screen_w - 32).max(0));
+    let y = y.clamp(0, (screen_h - 32).max(0));
+
+    let title = windows::core::HSTRING::from(config.title.as_str());
+    let hwnd = CreateWindowExW(
+        WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+        CLASS_NAME,
+        &title,
+        WS_POPUP | WS_VISIBLE,
+        x,
+        y,
+        width,
+        height,
+        None,
+        None,
+        hinstance,
+        None,
+    )?;
+
+    SetLayeredWindowAttributes(hwnd, COLORREF(0), config.opacity, LWA_ALPHA)?;
+    let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+    let _ = InvalidateRect(hwnd, None, true);
+    Ok(hwnd)
+}
+
 unsafe fn pump_peek(hwnd: HWND, max: u32) {
     let mut msg = MSG::default();
     for _ in 0..max {
@@ -120,7 +154,6 @@ unsafe fn pump_peek(hwnd: HWND, max: u32) {
         }
         let _ = TranslateMessage(&msg);
         DispatchMessageW(&msg);
-        // Avoid spinning forever if the queue stays full of paint noise for this HWND only.
         let _ = hwnd;
     }
 }
@@ -166,7 +199,9 @@ unsafe extern "system" fn wnd_proc(
             LRESULT(0)
         }
         WM_DESTROY => {
-            PostQuitMessage(0);
+            if POST_QUIT_ON_DESTROY.load(Ordering::SeqCst) {
+                PostQuitMessage(0);
+            }
             LRESULT(0)
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),

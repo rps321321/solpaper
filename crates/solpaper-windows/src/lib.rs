@@ -6,6 +6,7 @@ mod activation;
 mod autostart;
 mod dpi;
 mod placeholder;
+mod runtime;
 mod single_instance;
 mod wallpaper;
 
@@ -15,6 +16,9 @@ pub use activation::{
 };
 pub use autostart::{AutostartError, AutostartStore, FakeAutostartStore, WindowsRunKeyAutostart};
 pub use dpi::set_process_dpi_awareness;
-pub use placeholder::{run_placeholder_host, PlaceholderConfig};
+pub use placeholder::{
+    create_placeholder_window, destroy_placeholder_window, run_placeholder_host, PlaceholderConfig,
+};
+pub use runtime::{run_runtime_host, take_settings_requested, RuntimeError, RuntimeHostConfig};
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
 pub use wallpaper::{ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper, WallpaperError};

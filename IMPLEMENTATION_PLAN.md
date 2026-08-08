@@ -21,30 +21,30 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#13** — Matrix draft landed: [`docs/testing/acceptance-matrix.md`](docs/testing/acceptance-matrix.md) (PR #82). **Human freeze** of v1 boundary + waivers still required before issue close.
-- **#20** — Alpha 1 implementation is the next agent build unit when gates allow (matrix draft present; MD-UX-01 + physical MD-* remain open debt, not code blockers for starting tracer bullets).
+- **#20** — Alpha 1 tracer **bullet 1** (Runtime tray host) on PR [#84](https://github.com/rps321321/solpaper/pull/84): **CI green**, blocked on **human HIGH merge**. Autonomous loop stopped after 3 consecutive same-reason blocks.
+- Remaining #20 bullets (after #84 lands): widget host/Edit Mode → settings persistence polish → Pomodoro UI → wallpaper folders → diagnostics UI → physical evidence.
+- **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
-- **#7 / #5 / #40 / foundation packs complete.**
 
 ## Active work
 
-- None.
+- **#20** lease `agent:solpaper-dev-loop` branch `issue-20-runtime-tray-host` risk **HIGH** (Win32 tray/control HWND) — PR #84 awaiting human merge (all CI SUCCESS). Loop schedule deleted until human merges.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 | Alpha 1 | Claim lease; tracer bullets per pack #20 order |
-| #13 close | Acceptance freeze | owner approves v1 boundary on #13 |
+| #20 later bullets | Widget host, Pomodoro UI, wallpaper | after bullet 1 merges |
+| #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
 
 | Issue | Title | Blocked by / wait for |
 |------:|-------|------------------------|
 | #13 close | Freeze matrix | owner v1 boundary approval |
-| #6 / #21 | Calendar path | #20 |
-| #22 / #23 | Remote wallpaper | owner gate (#22 RECOMMENDATION) |
-| #24 | v1 RC | release gates + matrix freeze |
+| #6 / #21 | Calendar path | #20 complete |
+| #22 / #23 | Remote wallpaper | owner gate |
+| #24 | v1 RC | release gates |
 
 ## Manual evidence required
 
@@ -52,8 +52,8 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
-- **#13 draft** — Product acceptance matrix. PR #82 (LOW). Issue remains open for human freeze.
-- **#7** — Tray runtime. PR #79 (HIGH, human-merged); post-merge #80/#81.
+- **#13 draft** — Acceptance matrix. PR #82.
+- **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
 - **#40** — Diagnostics. PR #75.
 - **#38** — Supply-chain. PR #74.
@@ -71,7 +71,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-08
-- **Branch:** `main` @ `fa3dc44` (docs #13 matrix)
-- **Open implementation PRs:** none
-- **Production workspace:** present
-- **Closed complete (recent):** #33, #41, #34, #35, #36, #38, #40, #5, #7; #13 draft delivered
+- **Branch:** `issue-20-runtime-tray-host`
+- **Checks (local):** clippy -D warnings PASS; workspace tests PASS; `solpaper --smoke` PASS
+- **Open implementation PRs:** #20 bullet 1 in progress

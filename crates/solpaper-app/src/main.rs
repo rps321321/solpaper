@@ -1,7 +1,7 @@
-//! Solpaper user-session host (ADR-0002 / #7).
+//! Solpaper user-session host (ADR-0002 / #7 / #20).
 //!
-//! Scaffold: single-instance + second-launch activation + placeholder surface.
-//! Full tray icon / control window registration land with Alpha 1 Runtime (#20).
+//! Alpha 1 tracer bullet 1: single-instance + control HWND + tray icon host +
+//! scaffold placeholder surface. Full widget/Edit Mode / Pomodoro UI follow.
 
 use std::env;
 use std::process::ExitCode;
@@ -11,8 +11,9 @@ use solpaper_core::{
 };
 use solpaper_storage::{load_layout, save_layout, AppPaths, SettingsDocument};
 use solpaper_windows::{
-    activate_existing_show_settings, run_placeholder_host, second_launch_outcome,
-    set_process_dpi_awareness, PlaceholderConfig, SecondLaunchOutcome, SingleInstanceGuard,
+    activate_existing_show_settings, run_runtime_host, second_launch_outcome,
+    set_process_dpi_awareness, PlaceholderConfig, RuntimeHostConfig, SecondLaunchOutcome,
+    SingleInstanceGuard,
 };
 
 fn main() -> ExitCode {
@@ -62,15 +63,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .first()
         .ok_or("layout has no widgets after seed")?;
 
-    let config = PlaceholderConfig {
+    let placeholder = PlaceholderConfig {
         title: "Solpaper".into(),
         origin: WidgetLayoutSet::resolve_top_left(entry, 1920.0, 1080.0),
         size: entry.size_dip,
         opacity: entry.opacity,
     };
 
-    // Interactive: run until window closed. Smoke: create HWND, brief pump, destroy.
-    run_placeholder_host(&config, smoke)?;
+    // Control window + tray (+ placeholder). Smoke: create, pump, tear down.
+    run_runtime_host(&RuntimeHostConfig {
+        smoke,
+        placeholder: Some(placeholder),
+    })?;
     Ok(())
 }
 

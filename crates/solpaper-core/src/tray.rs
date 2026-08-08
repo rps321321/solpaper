@@ -74,11 +74,23 @@ impl Default for TrayFeatureFlags {
     }
 }
 
-/// Alpha 1 scaffold defaults: settings/diagnostics/quit on; feature surfaces may lag.
+/// Alpha 1 scaffold defaults before widget host: settings/diagnostics/quit on.
 pub fn alpha1_scaffold_flags() -> TrayFeatureFlags {
     TrayFeatureFlags {
         settings: true,
         edit_mode: false,
+        pomodoro: false,
+        wallpaper: false,
+        autostart_ui: false,
+        diagnostics: true,
+    }
+}
+
+/// Alpha 1 after tracer bullet 2: Edit Mode tray action enabled; Pomodoro/wallpaper still later.
+pub fn alpha1_widget_host_flags() -> TrayFeatureFlags {
+    TrayFeatureFlags {
+        settings: true,
+        edit_mode: true,
         pomodoro: false,
         wallpaper: false,
         autostart_ui: false,
@@ -327,6 +339,18 @@ mod tests {
                 .count(),
             10
         );
+    }
+
+    #[test]
+    fn widget_host_flags_enable_edit_mode() {
+        let flags = alpha1_widget_host_flags();
+        let menu = build_tray_menu(flags, None);
+        assert!(command_enabled(&menu, TrayCommand::ToggleEditMode));
+        assert!(!command_enabled(
+            &menu,
+            TrayCommand::PomodoroStartPauseResume
+        ));
+        assert!(!command_enabled(&menu, TrayCommand::WallpaperNext));
     }
 
     #[test]

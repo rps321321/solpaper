@@ -21,21 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 1** complete (PR [#84](https://github.com/rps321321/solpaper/pull/84) squash-merged under owner override 2026-08-08). Next: **bullet 2** — production widget host using ADR topology and Normal/Edit Mode.
-- Remaining #20 bullets after bullet 2: settings/layout persistence polish → Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
+- **#20** — Alpha 1 tracer **bullet 2** in PR (Approach A widget host + Normal/Edit Mode). Bullet 1 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84)).
+- Remaining #20 bullets after bullet 2: versioned settings/layout persistence + off-screen clamping → Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- None. Lease `issue-20` released after bullet 1. Next fire claims #20 for bullet 2.
+- **#20 bullet 2** — branch `issue-20-widget-host-edit-mode`, lease `issue-20`, risk HIGH (unsafe Win32 host).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 2 | Widget host + Normal/Edit Mode | claim lease + implement |
-| #20 later bullets | Settings, Pomodoro UI, wallpaper | after bullet 2 |
+| #20 bullet 3 | Settings/layout persistence polish | after bullet 2 merges |
+| #20 later bullets | Pomodoro UI, wallpaper | after bullet 3 |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -54,6 +54,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Recently completed
 
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
+- **State PRs** — #85 / #86 reconciled frontier after #84.
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -73,6 +74,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-08
-- **Branch:** `main` @ `9f23ed71` (PR #84 merge)
-- **Checks (CI on #84):** Windows Rust quality, Governance tooling, CI policy, Supply chain, Dependency review — all SUCCESS
-- **Open implementation PRs:** none
+- **Branch:** `issue-20-widget-host-edit-mode` (bullet 2 implement)
+- **Local gates:** `cargo fmt --check`, `cargo test --workspace --all-targets`, `cargo clippy -D warnings`, `solpaper --smoke` — PASS
+- **Open implementation PRs:** bullet 2 (this fire)

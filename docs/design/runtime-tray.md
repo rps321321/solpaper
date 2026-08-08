@@ -139,6 +139,8 @@ Sequence (`SHUTDOWN_SEQUENCE`):
 | RT-A1-05 | Shutdown sequence honors 2 s worker wait — tray remove + destroy; worker wait when worker lands |
 | RT-A1-06 | Balloon dedupe with phase instance id — pure deduper ready; NIF_INFO balloon wire later |
 | RT-A1-07 | Second launch posts WM_APP_SHOW_SETTINGS — **done** (FindWindow finds control HWND) |
+| RT-A1-08 | Approach A widget host class `Solpaper.Widget.Host.v1` — **done** (`widget_host.rs`, #20 bullet 2) |
+| RT-A1-09 | Normal Mode click-through + Edit Mode tray / Ctrl+Alt+F2 / Escape — **done** (session geometry only; layout write is bullet 3) |
 
 ## Manual evidence
 

@@ -9,6 +9,7 @@ mod placeholder;
 mod runtime;
 mod single_instance;
 mod wallpaper;
+mod widget_host;
 
 pub use activation::{
     activate_existing_show_settings, post_show_settings, second_launch_outcome, ActivationError,
@@ -22,3 +23,7 @@ pub use placeholder::{
 pub use runtime::{run_runtime_host, take_settings_requested, RuntimeError, RuntimeHostConfig};
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
 pub use wallpaper::{ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper, WallpaperError};
+pub use widget_host::{
+    create_widget_host, destroy_all_widgets, set_surface_mode, snapshot_widget_rects, surface_mode,
+    toggle_surface_mode, WidgetSurfaceConfig, WIDGET_WINDOW_CLASS,
+};

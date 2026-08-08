@@ -4,8 +4,8 @@
     "branch":  "chore/post-7-dev-state",
     "claimed_at":  "2026-08-08T10:01:51.5586821Z",
     "expires_at":  "2026-08-08T13:22:01.8585157Z",
-    "heartbeat_at":  "2026-08-08T11:22:01.8585157Z",
-    "status":  "active",
+    "heartbeat_at":  "2026-08-08T11:42:06.3604658Z",
+    "status":  "released",
     "unit":  "Post-merge state: #7 complete, frontier is #13",
     "pr":  80,
     "risk_class":  "LOW"

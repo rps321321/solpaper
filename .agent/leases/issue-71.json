@@ -1,0 +1,12 @@
+{
+  "issue": 71,
+  "owner": "agent:chatgpt-maintenance",
+  "branch": "docs/oss-readme-roadmap",
+  "claimed_at": "2026-08-07T05:18:37Z",
+  "expires_at": "2026-08-07T07:19:06Z",
+  "heartbeat_at": "2026-08-07T05:19:06Z",
+  "status": "active",
+  "unit": "Rewrite public README and reconcile roadmap metadata",
+  "pr": 72,
+  "risk_class": "LOW"
+}

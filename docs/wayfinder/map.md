@@ -1,169 +1,135 @@
-# solpaper desktop-surface wayfinder map
+# Solpaper roadmap mirror
 
-**Canonical tracker issue:** https://github.com/rps321321/solpaper/issues/1  
-**Label:** `wayfinder:map`
+**Canonical roadmap:** [GitHub Issue #1](https://github.com/rps321321/solpaper/issues/1)  
+**Engineering-readiness map:** [GitHub Issue #30](https://github.com/rps321321/solpaper/issues/30)  
+**Detailed execution ledger:** [`IMPLEMENTATION_PLAN.md`](../../IMPLEMENTATION_PLAN.md)
 
-This file is the **in-repo mirror**. GitHub Issue #1 is authoritative when they disagree. Update this file when the map issue changes (especially Decisions so far).
+This file is the in-repository mirror of the public roadmap. GitHub issues remain authoritative for live state. Last refreshed: **2026-08-07**.
 
----
+## Product destination
 
-## Destination
+Solpaper is a local-first Windows 11 desktop companion written in Rust. It is intended to show a few useful things directly on the desktop without behaving like a full dashboard or replacement shell.
 
-Working Windows 11 x64 application in Rust:
+The planned v1 experience includes:
 
-> Solpaper is a lightweight, local-first desktop-surface application. A user-session runtime owns desktop widget surfaces, productivity state, tray/settings interaction, and wallpaper management. Pomodoro and a read-only Google Calendar agenda are first-class widget use cases. Wallpaper fetching/cycling is one subsystem, not the product root.
+- a Pomodoro widget;
+- a read-only Google Calendar agenda;
+- simple wallpaper management, beginning with local folders;
+- movable, resizable widgets with a passive Normal Mode and an explicit Edit Mode;
+- tray and settings controls;
+- local storage, bounded diagnostics, and no Solpaper cloud backend.
 
-Overlay topology default is **Approach A** (per-widget HWND; ADR-0001). Renderer remains a small native placeholder (ADR-0003). First remote wallpaper provider still TBD (#22).
+Wallpaper management is one part of the product, not the product's central architecture.
 
-## Current status
+## Current verified state
 
-**BOOTSTRAP COMPLETE; FOUNDATION RESEARCH + ENGINEERING SYSTEMS NEXT.**
+| Work | State |
+|---|---|
+| Product definition (#17) | Complete |
+| Windows overlay feasibility (#18) | Complete; per-widget top-level windows are the default direction |
+| Agent governance and human-only risk gates (#31) | Complete |
+| Production Rust workspace and ADRs (#16) | Complete |
+| Windows CI and protected `main` (#32) | Complete |
+| Pomodoro state machine (#19) | Complete |
+| Test and Windows evidence strategy (#33) | Complete; physical evidence remains open |
+| Accessibility requirements (#41) | Complete; physical assistive-technology sessions remain open |
+| UX flows and interaction specification (#34) | Complete; human usability session remains open |
+| Non-functional requirements and budgets (#35) | Complete; named-hardware performance evidence remains open |
+| Threat model and security architecture (#36) | In review in PR #70; HIGH-risk and human-merge only |
+| Usable Alpha 1 application (#20) | Not started |
 
-- #17 product destination: complete.
-- #18 overlay spike: complete (Approach A recommended; PR #28).
-- #31 agent governance: complete (PR #47).
-- #16 production ADRs + workspace: complete (crates under `crates/`, ADRs under `docs/adr/`).
-- #32 CI + protected main + quality gates: complete (PR #53).
-- Engineering program: #30 with remaining children #33–#45 (and product issues).
-- Alpha features (Pomodoro UI, tray polish, wallpaper apply) not implemented yet.
+The repository currently contains a compilable Windows scaffold, basic settings and layout foundations, and a tested platform-neutral Pomodoro engine. It does **not** yet contain the finished tray, widget UI, Calendar connection, wallpaper workflow, installer, or public release.
 
-## Immediate frontier
+## Current execution order
 
-1. ~~[#17 Redefine Solpaper as a Windows desktop-surface application](https://github.com/rps321321/solpaper/issues/17)~~ — **done**.
-2. ~~[#18 Prototype desktop overlay feasibility on Windows 11](https://github.com/rps321321/solpaper/issues/18)~~ — **done** (Approach A; PR #28).
-3. ~~[#31 Harden autonomous-agent governance and change-risk controls](https://github.com/rps321321/solpaper/issues/31)~~ — **done** (PR #47).
-4. ~~[#16 Record post-spike architecture and scaffold the production workspace](https://github.com/rps321321/solpaper/issues/16)~~ — **done** (ADRs + `crates/*` workspace).
-5. ~~[#32 Establish CI, protected-main policy, and required quality gates](https://github.com/rps321321/solpaper/issues/32)~~ — **done** (PR #53; required checks on `main`).
-6. [#13 Define measurable desktop-surface v1 acceptance criteria](https://github.com/rps321321/solpaper/issues/13) — human v1 boundary.
-7. [#7](https://github.com/rps321321/solpaper/issues/7) / [#5](https://github.com/rps321321/solpaper/issues/5) / [#19](https://github.com/rps321321/solpaper/issues/19) foundation research (unblocked).
+The deterministic foundation sequence is:
 
-Engineering map: [#30](https://github.com/rps321321/solpaper/issues/30).
+1. **#36** — merge the reviewed threat model and security architecture.
+2. **#38** — establish dependency, license, SBOM, and supply-chain controls.
+3. **#40** — define bounded logging, diagnostics, and crash recovery.
+4. **#5 and #7** — complete the Windows wallpaper adapter and tray/runtime decisions.
+5. **#13** — freeze measurable acceptance rows and the human-approved v1 boundary.
+6. **#20** — integrate the first useful offline Alpha.
 
-## Blocked execution path
+Work after Alpha 1 follows the product stages below.
 
-### Foundation
+## Product stages
 
-- [#7 Decide tray runtime, autostart, and single-instance behaviour](https://github.com/rps321321/solpaper/issues/7) — after the overlay/process architecture is known.
-- [#5 Research IDesktopWallpaper as the wallpaper subsystem adapter](https://github.com/rps321321/solpaper/issues/5) — local files only, after the production boundary exists.
-- [#19 Design the Pomodoro state machine and recovery semantics](https://github.com/rps321321/solpaper/issues/19) — platform-neutral domain design after #16.
+### Alpha 1 — useful offline foundation
 
-### Alpha 1
+Issue: [#20](https://github.com/rps321321/solpaper/issues/20)
 
-- [#20 Build Alpha 1: tray, persistent layout, Pomodoro, and local wallpapers](https://github.com/rps321321/solpaper/issues/20).
+- one Windows user-session runtime and tray;
+- passive desktop widgets plus Edit Mode;
+- persistent size, position, monitor binding, and opacity;
+- Pomodoro widget and recovery behaviour;
+- local-folder wallpaper application;
+- safe settings and basic diagnostics.
 
-### Alpha 2
+### Alpha 2 — read-only Calendar
 
-- [#6 Research secret storage and Google Calendar desktop OAuth](https://github.com/rps321321/solpaper/issues/6).
-- [#21 Build Alpha 2: read-only Google Calendar agenda widget](https://github.com/rps321321/solpaper/issues/21).
+Issues: [#6](https://github.com/rps321321/solpaper/issues/6), [#37](https://github.com/rps321321/solpaper/issues/37), [#42](https://github.com/rps321321/solpaper/issues/42), and [#21](https://github.com/rps321321/solpaper/issues/21)
 
-### Beta
+- system-browser OAuth with least-privilege read-only scopes;
+- refresh tokens protected by Windows Credential Manager;
+- selected calendars, recurring and all-day event handling;
+- offline cache with clear stale state;
+- full-title, private-detail, and Busy-only privacy modes.
 
-- [#22 Research and select the first remote wallpaper provider](https://github.com/rps321321/solpaper/issues/22).
-- [#23 Build Beta wallpaper scheduling, cache fallback, and selected remote provider](https://github.com/rps321321/solpaper/issues/23).
+### Beta — reliability and optional remote wallpaper source
 
-### v1 release
+Issues: [#22](https://github.com/rps321321/solpaper/issues/22) and [#23](https://github.com/rps321321/solpaper/issues/23)
 
-- [#24 Harden, package, and validate Solpaper v1 on Windows 11](https://github.com/rps321321/solpaper/issues/24).
+A remote wallpaper provider is optional, not assumed. At most one provider may enter v1, and only after its API stability, terms, attribution, content defaults, caching rules, and maintenance cost are acceptable.
+
+### v1 — packaged and evidenced release
+
+Issues: [#24](https://github.com/rps321321/solpaper/issues/24), [#44](https://github.com/rps321321/solpaper/issues/44), and [#45](https://github.com/rps321321/solpaper/issues/45)
+
+A stable release requires an installable candidate, completed acceptance evidence, documented privacy and security behaviour, accessibility checks, upgrade and rollback rules, external testing, and explicit human approval.
 
 ## Locked principles
 
-- Windows 11 x64 only for the initial effort.
-- Rust.
-- Local-first; no Solpaper cloud backend for v1.
-- User-session application, not a Windows SCM service.
-- Live Pomodoro/calendar content is rendered as UI, never baked into wallpaper files.
-- Documented Win32 approaches are preferred.
-- WorkerW/Progman or other undocumented Explorer techniques must never be the sole supported architecture.
-- The TUI is not the primary v1 UI; tray, direct Edit Mode, and a visual settings surface are the default direction.
-- Google Calendar is read-only and uses least-privilege scopes.
-- Secrets and refresh tokens are not stored in plaintext configuration.
-- Local-folder wallpapers precede remote-provider complexity.
-- At most one remote wallpaper provider enters v1 without a new justification.
-- Pomodoro is required for Alpha 1 and intended for v1.
-- Calendar is Alpha 2 and remains intended for v1.
-- Calendar privacy default: show ordinary titles; replace private details with `Private`; Busy-only mode must also exist.
-- Wallpaper management is a peer subsystem, not the product root.
+- Windows 11 x64 and Rust for v1.
+- Local-first operation with no Solpaper cloud backend.
+- A normal user-session application, not a Windows service.
+- Live information is rendered as UI and is never baked into wallpaper images.
+- Documented Win32 APIs are preferred; undocumented Explorer techniques cannot be the only supported path.
+- Tray, Edit Mode, and visual settings are the primary interface; a TUI is post-v1.
+- Calendar access is read-only and least-privilege.
+- Credentials and private Calendar content must not enter ordinary configuration, logs, issues, pull requests, screenshots, or test evidence.
+- Local wallpapers come before remote-provider complexity.
+- No hidden telemetry or remote crash upload in v1 without a separate human-approved decision.
+- Public release, signing-key use, destructive migration approval, and acceptance of critical security risk are human-only actions.
 
-## Decisions so far
+## Manual evidence that remains open
 
-### 2026-08-05 — Issue #17 product destination
+Automation cannot close these items by assertion:
 
-- **Destination confirmed:** desktop-surface application (Runtime + Surfaces + Widgets + wallpaper subsystem), not a wallpaper-cycler-with-TUI product.
-- **Primary v1 UI:** tray + Edit Mode + visual settings surface. TUI deferred post-v1.
-- **Pomodoro:** required (Alpha 1).
-- **Google Calendar:** read-only; Alpha 2; intended for v1.
-- **Calendar privacy:** default titles with private → `Private`; Busy-only mode required.
-- **Wallpaper:** peer subsystem; local folders first; ≤1 remote provider in v1.
-- **Platform locks retained:** Windows 11 x64, Rust, local-first, no Solpaper cloud.
-- **Still provisional until #18:** window topology, renderer, process/Cargo boundaries.
+- sleep/resume and lock/unlock;
+- Explorer restart;
+- single and multiple monitors;
+- mixed DPI, monitor hotplug, reorder, and primary-monitor changes;
+- Win+D and fullscreen behaviour;
+- prolonged idle and named-hardware performance measurements;
+- Narrator, keyboard, high-contrast, and scaling sessions;
+- human usability sessions.
 
-### Superseded product (closed issues)
-
-Closed as `not planned` because they described the old wallpaper/TUI architecture or prematurely selected provider/UI details:
-
-- #2 Wallhaven API research.
-- #3 Bing fetch research.
-- #4 Unsplash research.
-- #8 TUI↔agent IPC.
-- #9 TUI information architecture.
-- #10 cron semantics.
-- #11 cache defaults.
-- #12 purity/source defaults.
-- #14 fixed 2560×1440-oriented fit policy.
-- #15 TUI prototype.
-
-Relevant questions re-enter only after their subsystem is reached under the new map.
-
-## Decisions still requiring evidence
-
-- Independent widget HWNDs vs monitor-sized surface HWNDs vs hybrid.
-- Exact click-through and selective interaction model.
-- Exact z-order and Win+D behaviour.
-- Explorer restart recovery strategy.
-- Per-monitor layout and monitor identity model.
-- Rendering backend.
-- Settings UI toolkit.
-- One-process runtime details and whether local IPC is needed.
-- Production Cargo crate boundaries.
-- First remote wallpaper provider.
-- Virtual-desktop behaviour.
-- Whether Calendar is a hard v1 gate or may slip after Alpha 2 (default: intended for v1).
-
-## Planned product slices
-
-### Prototype 0
-
-Overlay feasibility only: transparency, input, Edit Mode, dragging/resizing, DPI, display changes, Explorer restart, sleep/resume, and resource baseline.
-
-### Alpha 1
-
-Tray/runtime + persistent widget layout + Pomodoro widget + local-folder wallpaper apply.
-
-### Alpha 2
-
-Read-only Google Calendar OAuth, offline event cache, privacy modes, and agenda widget.
-
-### Beta
-
-One researched remote wallpaper provider, scheduling, cache/failure policy, packaging preparation, diagnostics, and reliability hardening.
-
-### v1
-
-Validated Windows 11 build with overlay, Pomodoro, Calendar if retained as required scope, wallpaper subsystem, installation/autostart, recovery behaviour, and measurable acceptance tests.
+Evidence is tracked in [`docs/testing/manual-debt-register.md`](../testing/manual-debt-register.md).
 
 ## Out of scope for v1
 
-- Linux and macOS.
-- Windows SCM service.
-- Solpaper cloud sync or cross-machine profiles.
-- Mobile companion or remote network control.
-- AI-generated wallpapers.
-- Write access to Google Calendar.
-- Plugin marketplace.
-- TUI as a required product surface.
-- More than one remote wallpaper provider unless it is nearly free after the first is stable.
-- Automatic screen-sharing detection unless a reliable documented Windows mechanism is approved.
+- Linux or macOS;
+- Windows service deployment;
+- Solpaper accounts, cloud sync, or cross-machine profiles;
+- mobile companion or remote control;
+- Google Calendar write access;
+- AI-generated wallpapers;
+- a plugin marketplace;
+- a required terminal interface;
+- more than one remote wallpaper provider;
+- automatic screen-sharing detection without a reliable documented Windows mechanism.
 
-## Map completion rule
+## Completion rule
 
-This map can close only when #24 demonstrates every required v1 criterion from #13 with a packaged build. A successful overlay spike alone does not complete the map.
+The roadmap closes only when #24 demonstrates the required #13 acceptance criteria with a packaged candidate, #44 records external validation and explicit human release approval, #45 establishes post-release ownership, and all release-blocking engineering work in #30 is complete or explicitly waived by a human with a recorded reason.

@@ -1,10 +1,10 @@
-﻿{
+{
     "issue":  7,
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "chore/post-7-dev-state",
     "claimed_at":  "2026-08-08T10:01:51.5586821Z",
-    "expires_at":  "2026-08-08T13:02:55.0752599Z",
-    "heartbeat_at":  "2026-08-08T11:02:55.0752599Z",
+    "expires_at":  "2026-08-08T13:22:01.8585157Z",
+    "heartbeat_at":  "2026-08-08T11:22:01.8585157Z",
     "status":  "active",
     "unit":  "Post-merge state: #7 complete, frontier is #13",
     "pr":  80,

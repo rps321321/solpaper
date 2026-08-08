@@ -3,7 +3,7 @@
 Status: READY
 Current issue: none (post-#5)
 Current branch: main / chore/post-5-dev-state
-Current PR: (pending)
+Current PR: #78
 Last completed action: human-merged PR #77 (#5); released implementation lease; frontier is #7
 Next action: claim #7 (tray runtime / autostart / single instance) per blueprint after this state lands
 Repeated failure count: 0

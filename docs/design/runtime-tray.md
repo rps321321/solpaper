@@ -1,10 +1,10 @@
 # Tray runtime, autostart, and single-instance
 
 **Issue:** [#7](https://github.com/rps321321/solpaper/issues/7)  
-**Status:** design + pure seams + registry/activation adapters  
+**Status:** design + pure seams + registry/activation + **Runtime tray host (#20 bullet 1)**  
 **Pack:** [`deterministic-execution-blueprint.md` § #7](../engineering/deterministic-execution-blueprint.md)  
 **Related:** ADR-0002 process · ADR-0007 IPC deferred · [ADR-0008](../adr/0008-second-launch-activation.md) · #40 diagnostics · #19 Pomodoro · #20 Alpha 1  
-**Code:** `solpaper-core::tray`, `solpaper-windows::{activation,autostart,single_instance}`
+**Code:** `solpaper-core::tray`, `solpaper-windows::{activation,autostart,single_instance,runtime}`
 
 ## Purpose
 
@@ -132,13 +132,13 @@ Sequence (`SHUTDOWN_SEQUENCE`):
 
 | ID | Requirement |
 |----|-------------|
-| RT-A1-01 | Register control window class `Solpaper.Runtime.Control.v1` before tray |
-| RT-A1-02 | Full tray icon GUID + menu host using `build_tray_menu` |
-| RT-A1-03 | TaskbarCreated re-add |
-| RT-A1-04 | Autostart toggle only when installed_build |
-| RT-A1-05 | Shutdown sequence honors 2 s worker wait |
-| RT-A1-06 | Balloon dedupe with phase instance id |
-| RT-A1-07 | Second launch posts WM_APP_SHOW_SETTINGS |
+| RT-A1-01 | Register control window class `Solpaper.Runtime.Control.v1` before tray — **done** (`runtime.rs`) |
+| RT-A1-02 | Tray icon + menu host using `build_tray_menu` — **done** (uid-based icon; product GUID resource later) |
+| RT-A1-03 | TaskbarCreated re-add — **done** |
+| RT-A1-04 | Autostart toggle only when installed_build — store ready; tray UI still scaffold-disabled |
+| RT-A1-05 | Shutdown sequence honors 2 s worker wait — tray remove + destroy; worker wait when worker lands |
+| RT-A1-06 | Balloon dedupe with phase instance id — pure deduper ready; NIF_INFO balloon wire later |
+| RT-A1-07 | Second launch posts WM_APP_SHOW_SETTINGS — **done** (FindWindow finds control HWND) |
 
 ## Manual evidence
 

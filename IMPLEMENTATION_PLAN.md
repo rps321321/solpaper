@@ -12,28 +12,29 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 **Accessibility:** [docs/accessibility/](docs/accessibility/)  
 **Design:** [docs/design/](docs/design/)  
 **NFR / budgets:** [docs/engineering/non-functional-requirements.md](docs/engineering/non-functional-requirements.md)  
-**Security:** [docs/security/](docs/security/) · [SECURITY.md](SECURITY.md)
+**Security:** [docs/security/](docs/security/) · [SECURITY.md](SECURITY.md)  
+**Operations:** [docs/operations/](docs/operations/)
 
 **Product order:** #16 → #13 → (#7, #5, #19) → #20 → (#6, #21) → (#22, #23) → #24  
 **Blueprint order:** #33 → #41 → #34 → #35 → #36 → #38 → #40 → (#5, #7) → #13 → #20 → …
 
 ## Current frontier
 
-- **#38** — Supply-chain PR [#74](https://github.com/rps321321/solpaper/pull/74) **CI green**, risk **HIGH** → **human merge only** (no auto-merge).
-- Then **#40** (diagnostics / crash recovery) per blueprint after #38 lands.
+- **#40** — Logging / diagnostics / crash recovery: PR [#75](https://github.com/rps321321/solpaper/pull/75) on `issue-40-diagnostics` (MEDIUM, CI pending).
+- After #40 merges: foundation gates through #40 complete; next **#5 / #7** (wallpaper adapter / tray runtime) per blueprint.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
-- **#36 / #35 / #34 / #41 / #33 / #19 complete.**
+- **#38 / #36 / #35 / #34 / #41 / #33 / #19 complete.**
 
 ## Active work
 
-- **#38** lease `agent:solpaper-dev-loop` branch `issue-38-supply-chain` PR **#74** risk **HIGH** — blocked on human merge.
+- **#40** lease `agent:solpaper-dev-loop` branch `issue-40-diagnostics` PR **#75** risk **MEDIUM** — awaiting CI; review VERIFIED.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #40 | Logging, diagnostics, crash recovery | After #38 merge per blueprint |
-| #5 / #7 | Wallpaper adapter / tray runtime | After foundation packs |
+| #5 / #7 | Wallpaper adapter / tray runtime | After #40 merge per blueprint |
+| #13 | Acceptance matrix | human v1 boundary + earlier packs |
 
 ## Blocked
 
@@ -51,6 +52,7 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Recently completed
 
+- **#38** — Supply-chain policy, MIT reconcile, deny/audit CI, SBOM scripts. PR #74 (HIGH, human-merged).
 - **#36** — Threat model and security architecture. PR #70 (HIGH, human-merged).
 - **#35** — NFR / quality budgets. PR #68.
 - **#34** — UX flows. PR #66.
@@ -62,12 +64,12 @@ From #18 and later packs: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03;
 
 ## Discovered defects
 
-- None currently open for #38.
+- None currently open for #40.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-07T09:30:00Z
-- **Branch:** `issue-38-supply-chain` (from `main` @ `7a44bfa`)
-- **Open implementation PRs:** #38 in progress; docs draft #72 may coexist
+- **Date (UTC):** 2026-08-08
+- **Branch:** `issue-40-diagnostics` (from `main` @ `4bd7bb1`)
+- **Open implementation PRs:** #40 in progress; docs draft #72 may coexist
 - **Production workspace:** present
-- **Closed complete (recent):** #33, #41, #34, #35, #36
+- **Closed complete (recent):** #33, #41, #34, #35, #36, #38

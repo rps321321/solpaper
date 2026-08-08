@@ -74,6 +74,17 @@ These rows are **implementation gates** for later issues. #13 acceptance matrix 
 | SEC-RC-06 | Installer/uninstall: data preserve default; Purge explicit | PERF-UPG-03 | Release suite |
 | SEC-RC-07 | No updater/IPC surprise in v1 binary surface | AC-INST-01, AC-IPC-01 | Feature audit |
 
+## #40 — logging / diagnostics (supportability)
+
+Full OPS rows: [`../operations/diagnostics.md`](../operations/diagnostics.md). Security-relevant gates:
+
+| Req ID | Requirement | Control refs | Evidence intent |
+|--------|-------------|--------------|-----------------|
+| SEC-OPS-01 | Field allowlist; never tokens/titles in default logs | AC-LOG-01, PERF-LOG-04 | Unit allowlist tests |
+| SEC-OPS-02 | Diagnostic bundle user-initiated; exclude secrets/DB/titles | AC-LOG-02, PERF-LOG-03 | Unit + manual preview |
+| SEC-OPS-03 | No remote crash upload / telemetry in v1 | Pack #40 owner gate | Feature audit |
+| SEC-OPS-04 | Crash markers redacted; no auto-restart loop | PERF-REL-04 | Unit safe-mode policy |
+
 ## Cross-cutting (any issue)
 
 | Req ID | Requirement | When |

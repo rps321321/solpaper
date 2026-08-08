@@ -20,14 +20,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#40** — Logging / diagnostics / crash recovery design + pure policy in `solpaper-core` (PR in flight on `issue-40-diagnostics`).
-- After #40: Alpha 1 foundation complete per blueprint; next **#5 / #7** (wallpaper adapter / tray runtime) or product order per pack.
+- **#40** — Logging / diagnostics / crash recovery: PR [#75](https://github.com/rps321321/solpaper/pull/75) on `issue-40-diagnostics` (MEDIUM, CI pending).
+- After #40 merges: foundation gates through #40 complete; next **#5 / #7** (wallpaper adapter / tray runtime) per blueprint.
 - Manual evidence: physical matrix + MD-A11Y-* + MD-UX-01 + MD-PERF-01..03.
 - **#38 / #36 / #35 / #34 / #41 / #33 / #19 complete.**
 
 ## Active work
 
-- **#40** lease `agent:solpaper-dev-loop` branch `issue-40-diagnostics` risk **MEDIUM** — design docs + core diagnostics policy tests.
+- **#40** lease `agent:solpaper-dev-loop` branch `issue-40-diagnostics` PR **#75** risk **MEDIUM** — awaiting CI; review VERIFIED.
 
 ## Ready
 

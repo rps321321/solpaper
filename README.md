@@ -40,12 +40,18 @@ For the live execution order, see the [roadmap issue](https://github.com/rps3213
 
 ## Roadmap
 
-| Stage | Intended result |
-|---|---|
-| **Alpha 1** | Tray app, movable desktop widgets, Pomodoro UI, persistent layout, and local-folder wallpapers |
-| **Alpha 2** | Read-only Google Calendar connection, privacy modes, offline cache, and agenda widget |
-| **Beta** | Reliability work and, only if it is worth the policy and maintenance cost, one remote wallpaper provider |
-| **v1** | Installable and documented Windows 11 release with security, privacy, accessibility, recovery, and release evidence |
+| Artifact | Where |
+|----------|--------|
+| **Wayfinder map (tracker)** | [Issue #1](https://github.com/rps321321/solpaper/issues/1) |
+| **Engineering map** | [Issue #30](https://github.com/rps321321/solpaper/issues/30) |
+| **Wayfinder map (in-repo)** | [`docs/wayfinder/map.md`](docs/wayfinder/map.md) |
+| **Ticket index** | [`docs/wayfinder/tickets.md`](docs/wayfinder/tickets.md) |
+| **Domain glossary** | [`CONTEXT.md`](CONTEXT.md) |
+| **Agent rules** | [`AGENTS.md`](AGENTS.md) |
+| **Governance** | [`docs/engineering/agent-governance.md`](docs/engineering/agent-governance.md) |
+| **Implementation ledger** | [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) |
+| **Research notes** | [`docs/research/`](docs/research/) |
+| **Security / threat model** | [`docs/security/`](docs/security/) · [`SECURITY.md`](SECURITY.md) |
 
 The roadmap is deliberately evidence-driven. A planned feature may be simplified or removed when it adds more maintenance or privacy cost than user value.
 
@@ -142,4 +148,8 @@ Please do not report suspected vulnerabilities in a public issue. Follow [`SECUR
 
 ## License
 
-Solpaper is available under the [MIT License](LICENSE).
+Solpaper is licensed under the [MIT License](LICENSE). Contributions are inbound=outbound MIT; see [CONTRIBUTING.md](CONTRIBUTING.md). Supply-chain and dependency policy: [docs/security/supply-chain.md](docs/security/supply-chain.md).
+
+## License
+
+See [LICENSE](LICENSE).

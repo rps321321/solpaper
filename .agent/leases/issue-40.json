@@ -1,0 +1,12 @@
+{
+    "issue":  40,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "chore/post-40-dev-state",
+    "claimed_at":  "2026-08-08T07:42:06.1941397Z",
+    "expires_at":  "2026-08-08T09:42:42.1155439Z",
+    "heartbeat_at":  "2026-08-08T07:42:42.1155439Z",
+    "status":  "active",
+    "unit":  "Post-merge state: #40 complete, frontier is #5",
+    "pr":  76,
+    "risk_class":  "LOW"
+}

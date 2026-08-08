@@ -21,20 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 1** (Runtime tray host) on PR [#84](https://github.com/rps321321/solpaper/pull/84): **CI green**, blocked on **human HIGH merge**. Autonomous loop stopped after 3 consecutive same-reason blocks.
-- Remaining #20 bullets (after #84 lands): widget host/Edit Mode → settings persistence polish → Pomodoro UI → wallpaper folders → diagnostics UI → physical evidence.
+- **#20** — Alpha 1 tracer **bullet 1** complete (PR [#84](https://github.com/rps321321/solpaper/pull/84) squash-merged under owner override 2026-08-08). Next: **bullet 2** — production widget host using ADR topology and Normal/Edit Mode.
+- Remaining #20 bullets after bullet 2: settings/layout persistence polish → Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20** lease `agent:solpaper-dev-loop` branch `issue-20-runtime-tray-host` risk **HIGH** (Win32 tray/control HWND) — PR #84 awaiting human merge (all CI SUCCESS). Loop schedule deleted until human merges.
+- None. Lease `issue-20` released after bullet 1. Next fire claims #20 for bullet 2.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 later bullets | Widget host, Pomodoro UI, wallpaper | after bullet 1 merges |
+| #20 bullet 2 | Widget host + Normal/Edit Mode | claim lease + implement |
+| #20 later bullets | Settings, Pomodoro UI, wallpaper | after bullet 2 |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -52,6 +53,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
+- **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -71,6 +73,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-08
-- **Branch:** `issue-20-runtime-tray-host`
-- **Checks (local):** clippy -D warnings PASS; workspace tests PASS; `solpaper --smoke` PASS
-- **Open implementation PRs:** #20 bullet 1 in progress
+- **Branch:** `main` @ `9f23ed71` (PR #84 merge)
+- **Checks (CI on #84):** Windows Rust quality, Governance tooling, CI policy, Supply chain, Dependency review — all SUCCESS
+- **Open implementation PRs:** none

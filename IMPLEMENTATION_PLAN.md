@@ -21,14 +21,14 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 1** (Runtime tray host) on PR [#84](https://github.com/rps321321/solpaper/pull/84): **CI green**, blocked on **human HIGH merge**.
+- **#20** — Alpha 1 tracer **bullet 1** (Runtime tray host) on PR [#84](https://github.com/rps321321/solpaper/pull/84): **CI green**, blocked on **human HIGH merge**. Autonomous loop stopped after 3 consecutive same-reason blocks.
 - Remaining #20 bullets (after #84 lands): widget host/Edit Mode → settings persistence polish → Pomodoro UI → wallpaper folders → diagnostics UI → physical evidence.
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20** lease `agent:solpaper-dev-loop` branch `issue-20-runtime-tray-host` risk **HIGH** (Win32 tray/control HWND) — PR #84 awaiting human merge (all CI SUCCESS).
+- **#20** lease `agent:solpaper-dev-loop` branch `issue-20-runtime-tray-host` risk **HIGH** (Win32 tray/control HWND) — PR #84 awaiting human merge (all CI SUCCESS). Loop schedule deleted until human merges.
 
 ## Ready
 

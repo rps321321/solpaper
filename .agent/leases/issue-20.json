@@ -1,4 +1,4 @@
-{
+﻿{
     "issue":  20,
     "owner":  "agent:solpaper-dev-loop",
     "branch":  "issue-20-runtime-tray-host",
@@ -7,6 +7,6 @@
     "heartbeat_at":  "2026-08-08T13:21:52.4907240Z",
     "status":  "active",
     "unit":  "Alpha1 tracer1: control HWND + Shell_NotifyIcon tray host + message loop",
-    "pr":  null,
+    "pr":  84,
     "risk_class":  "HIGH"
 }

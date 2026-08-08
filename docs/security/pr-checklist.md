@@ -74,7 +74,8 @@ Mark each item: `[x]` done · `[ ]` not done · `N/A` with one-line reason.
 - [ ] New runtime dependency justified (need, license, unsafe, features, removal)
 - [ ] At most one dependency addition per unit without separate justification
 - [ ] `Cargo.lock` updated; Actions pinned to full SHAs when workflows change
-- [ ] Advisories considered (`cargo audit` / deny when pack #38 tooling present)
+- [ ] `cargo deny check` and `cargo audit` considered; deny.toml exceptions only with issue-bound expiring waiver ([supply-chain.md](./supply-chain.md))
+- [ ] Project license story unchanged or deliberately updated (MIT `LICENSE` + Cargo `license`)
 
 ## I. Threat model maintenance
 

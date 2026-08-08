@@ -81,4 +81,8 @@ Windows 11 x64 only for v1. Linux/macOS are out of scope for this effort.
 
 ## License
 
+Solpaper is licensed under the [MIT License](LICENSE). Contributions are inbound=outbound MIT; see [CONTRIBUTING.md](CONTRIBUTING.md). Supply-chain and dependency policy: [docs/security/supply-chain.md](docs/security/supply-chain.md).
+
+## License
+
 See [LICENSE](LICENSE).

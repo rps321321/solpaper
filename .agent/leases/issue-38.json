@@ -1,0 +1,12 @@
+{
+    "issue":  38,
+    "owner":  "agent:solpaper-dev-loop",
+    "branch":  "issue-38-supply-chain",
+    "claimed_at":  "2026-08-07T08:17:10.0662567Z",
+    "expires_at":  "2026-08-07T12:36:48.1233471Z",
+    "heartbeat_at":  "2026-08-07T10:36:48.1233471Z",
+    "status":  "active",
+    "unit":  "Supply-chain policy, license reconcile, cargo-deny/audit, SBOM, release manifest",
+    "pr":  74,
+    "risk_class":  "HIGH"
+}

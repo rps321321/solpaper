@@ -32,6 +32,9 @@ Desktop.ini
 *.pem
 *.p12
 
+# Generated SBOMs (scripts/generate-sbom.ps1 moves these under target/sbom/)
+**/*.cdx.json
+
 # Logs / local data
 *.log
 /tmp/

@@ -18,8 +18,8 @@ This document is the repository policy for continuous integration, required chec
 
 | Workflow file | Name | When | Purpose |
 |---------------|------|------|---------|
-| `ci.yml` | **CI** | every PR; push to `main`; manual | Required quality gates |
-| `release-build.yml` | **Release build check** | push to `main`; manual | Unsigned release binary build (not publication) |
+| `ci.yml` | **CI** | every PR; push to `main`; manual | Required quality gates + supply-chain |
+| `release-build.yml` | **Release build check** | push to `main`; manual | Unsigned release binary, SBOM, notices, release manifest (not publication) |
 
 Disposable spikes under `spikes/` are **excluded** from the production Cargo workspace and are not required to pass production CI. Spike authors run scoped checks locally when changing spike crates.
 
@@ -32,16 +32,17 @@ These names are what branch protection and the autonomous loop must require:
 | `Windows Rust quality` | `windows-latest` | All PRs into `main`; push to `main` |
 | `Governance tooling` | `windows-latest` | All PRs into `main`; push to `main` |
 | `CI policy present` | `ubuntu-latest` | All PRs into `main`; push to `main` |
-| `Dependency review` | `ubuntu-latest` | PRs only (soft gate; see below) |
+| `Supply chain` | `ubuntu-latest` | All PRs into `main`; push to `main` |
+| `Dependency review` | `ubuntu-latest` | PRs only (critical severity hard fail; licenses via cargo-deny) |
 
 `Windows Rust quality` runs, in order:
 
 ```text
 cargo fmt --all -- --check
-cargo check --workspace --all-targets
-cargo test --workspace --all-targets
-cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo build --workspace --all-targets
+cargo check --workspace --all-targets --locked
+cargo test --workspace --all-targets --locked
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo build --workspace --all-targets --locked
 ```
 
 `RUSTFLAGS=-D warnings` is set for the job so warnings fail the build.
@@ -54,7 +55,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/agent-lease.Te
 
 ### Caching
 
-- `Swatinem/rust-cache@v2` caches registry and `target/` keyed with lockfile awareness.
+- `Swatinem/rust-cache` is pinned to a full commit SHA and caches registry/`target/` with lockfile awareness.
+- Third-party Actions are pinned to **full commit SHAs** (supply-chain policy #38).
+- When `dtolnay/rust-toolchain` is SHA-pinned, pass `toolchain: stable` explicitly (tag-based default no longer applies).
 - Do not configure cache restore keys that hide `Cargo.lock` changes.
 - Concurrency group `ci-${{ workflow }}-${{ pr number || ref }}` cancels superseded runs.
 
@@ -76,16 +79,18 @@ Risk classes are defined in [agent-governance.md](./agent-governance.md). Merge 
 
 | Risk class | Required CI checks | Additional gates | Agent merge |
 |------------|--------------------|------------------|-------------|
-| **LOW** | `Windows Rust quality`, `Governance tooling`, `CI policy present` | Focused review of docs/test/plan delta | May auto-merge when checks green |
+| **LOW** | `Windows Rust quality`, `Governance tooling`, `CI policy present`, `Supply chain` | Focused review of docs/test/plan delta | May auto-merge when checks green |
 | **MEDIUM** | Same as LOW | Independent `solpaper-review` + `solpaper-verifier` → `VERIFIED` | May auto-merge when CI green and `VERIFIED` |
-| **HIGH** | Same as LOW; `Dependency review` must not be ignored if it reports critical findings | Verified PR; **human merge approval** | **No auto-merge** |
+| **HIGH** | Same as LOW; address `Dependency review` critical findings | Verified PR; **human merge approval** | **No auto-merge** |
 | **CRITICAL** | N/A autonomous | Human-only; do not execute | **No autonomous PR/merge** |
 
 Notes:
 
-- `Dependency review` is currently a **soft** PR job (`continue-on-error: true`) until an owner-approved license deny-list and severity policy land (related: engineering map #38). Critical findings must still be read and addressed on HIGH work.
+- `Supply chain` runs `cargo deny check advisories bans licenses sources` and `cargo audit` (hard fail). Policy: [supply-chain.md](../security/supply-chain.md), config: root `deny.toml`.
+- `Dependency review` fails the job on **critical** severities (no `continue-on-error`). License allow/deny is enforced by cargo-deny, not only dependency-review.
 - Spike-only changes that do not touch the production workspace should still open PRs against `main` with CI green; spike compile is not a production required check.
 - Security-sensitive paths (Credential Manager, OAuth, autostart, installer, signing) remain **HIGH** regardless of CI green.
+- Branch protection should add `Supply chain` as a required check when the owner updates protection settings after #38 merges.
 
 ## Branch protection (protected `main`)
 
@@ -181,11 +186,13 @@ GitHub secret scanning and push protection should remain enabled at the reposito
 
 | Mechanism | Status |
 |-----------|--------|
-| `actions/dependency-review-action` on PRs | Soft gate; fails open on infra errors; `fail-on-severity: critical` |
-| `cargo deny` / SBOM (#38) | Not required for #32; track under supply-chain workstream |
-| License field on workspace packages | `MIT OR Apache-2.0` in root `Cargo.toml` |
+| `cargo deny` (`deny.toml`) | **Hard** CI job `Supply chain` — advisories, bans, licenses, sources |
+| `cargo audit` | **Hard** CI job `Supply chain` (RustSec) |
+| `actions/dependency-review-action` on PRs | Hard fail on critical severity; complements cargo-deny |
+| CycloneDX SBOM + notices + release manifest | `release-build.yml` candidate artifacts (unsigned) |
+| License field on workspace packages | `MIT` (matches root `LICENSE`) |
 
-Adding network, crypto, auth, or installer dependencies remains at least **MEDIUM** / often **HIGH** per governance, independent of soft dependency review.
+Policy detail: [docs/security/supply-chain.md](../security/supply-chain.md). Adding network, crypto, auth, or installer dependencies remains at least **MEDIUM** / often **HIGH** per governance.
 
 ## Flaky tests and external outages
 
@@ -197,7 +204,7 @@ Adding network, crypto, auth, or installer dependencies remains at least **MEDIU
 
 ## Release-artifact build
 
-`release-build.yml` proves the workspace builds in `--release` on Windows and uploads an **unsigned** binary artifact. It is **not**:
+`release-build.yml` proves the workspace builds in `--release --locked` on Windows and uploads an **unsigned** binary artifact plus optional provenance bundle (CycloneDX SBOM, third-party notices stub, `release-manifest.json` with `signing_state: unsigned`). It is **not**:
 
 - a public release,
 - a signed installer,
@@ -229,6 +236,6 @@ Before declaring a production PR mergeable, the loop must:
 ## Non-goals (this document)
 
 - Full multi-OS matrix (Solpaper is Windows 11 local-first; expand only if crates become multi-target).
-- Owner-approved license deny-list automation (#38).
 - Production observability pipelines (#40).
 - Public release engineering (#39, #24).
+- Claiming that clean scans prove application security (see supply-chain blind spots).

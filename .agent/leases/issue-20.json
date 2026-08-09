@@ -4,8 +4,8 @@
     "branch":  "issue-20-widget-host-edit-mode",
     "claimed_at":  "2026-08-08T16:27:12.3144772Z",
     "expires_at":  "2026-08-08T18:37:28.8189160Z",
-    "heartbeat_at":  "2026-08-08T16:37:28.8189160Z",
-    "status":  "active",
+    "heartbeat_at":  "2026-08-09T07:46:53.2396508Z",
+    "status":  "released",
     "unit":  "Alpha1 tracer2: Approach A widget host + Normal/Edit Mode (tray + Ctrl+Alt+F2 + Escape)",
     "pr":  87,
     "risk_class":  "HIGH"

@@ -21,20 +21,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 2** in PR (Approach A widget host + Normal/Edit Mode). Bullet 1 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84)).
-- Remaining #20 bullets after bullet 2: versioned settings/layout persistence + off-screen clamping → Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
+- **#20** — Alpha 1 tracer **bullet 3** next: versioned settings/layout persistence + off-screen clamping. Bullets 1–2 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87)).
+- Remaining #20 after bullet 3: Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20 bullet 2** — branch `issue-20-widget-host-edit-mode`, lease `issue-20`, risk HIGH (unsafe Win32 host).
+- None. Lease `issue-20` released after #87 merge.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 3 | Settings/layout persistence polish | after bullet 2 merges |
+| #20 bullet 3 | Settings/layout persistence + clamp | claim lease next fire |
 | #20 later bullets | Pomodoro UI, wallpaper | after bullet 3 |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
@@ -53,6 +53,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
+- **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
 - **State PRs** — #85 / #86 reconciled frontier after #84.
 - **#13 draft** — Acceptance matrix. PR #82.
@@ -73,7 +74,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Last verified repository state
 
-- **Date (UTC):** 2026-08-08
-- **Branch:** `issue-20-widget-host-edit-mode` (bullet 2 implement)
-- **Local gates:** `cargo fmt --check`, `cargo test --workspace --all-targets`, `cargo clippy -D warnings`, `solpaper --smoke` — PASS
-- **Open implementation PRs:** bullet 2 (this fire)
+- **Date (UTC):** 2026-08-09
+- **Branch:** `main` @ `f2fd52a` (PR #87 squash-merge)
+- **Local gates (on #87):** `cargo fmt --check`, `cargo test --workspace --all-targets`, `cargo clippy -D warnings`, `solpaper --smoke` — PASS; CI all SUCCESS
+- **Open implementation PRs:** none

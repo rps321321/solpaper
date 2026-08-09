@@ -697,6 +697,33 @@ impl RecoveryAction {
             Self::ExportBundle => "Export diagnostic bundle (user-initiated)",
         }
     }
+
+    /// Actions the Runtime may execute automatically after user consent (Alpha 1).
+    ///
+    /// RestartApp / EnterSafeMode / ExportBundle remain user-driven (quit + relaunch,
+    /// already-in-safe-mode, or deferred bundle zip).
+    pub fn is_runtime_executable(self) -> bool {
+        matches!(
+            self,
+            Self::RecreateSurfaces | Self::OpenEditMode | Self::RescanWallpapers
+        )
+    }
+}
+
+/// Ordered recovery steps the Runtime will run when the user confirms recovery.
+///
+/// Safe mode never recreates widgets. Wallpaper rescan remains available when
+/// wallpaper errors exist or when a full (non–safe-mode) recovery runs.
+pub fn runtime_recovery_plan(safe_mode: bool, has_wallpaper_error: bool) -> Vec<RecoveryAction> {
+    let mut plan = Vec::new();
+    if !safe_mode {
+        plan.push(RecoveryAction::RecreateSurfaces);
+        plan.push(RecoveryAction::OpenEditMode);
+        plan.push(RecoveryAction::RescanWallpapers);
+    } else if has_wallpaper_error {
+        plan.push(RecoveryAction::RescanWallpapers);
+    }
+    plan
 }
 
 /// Support counters with no private payloads.
@@ -1256,5 +1283,24 @@ mod tests {
         let m = CrashMarker::panic_marker(999, "abc");
         assert_eq!(m.error_code, "InternalPanic");
         assert_eq!(categorize_error_code(m.error_code), ErrorCategory::Internal);
+    }
+
+    #[test]
+    fn runtime_recovery_plan_safe_mode_skips_widgets() {
+        let plan = runtime_recovery_plan(true, true);
+        assert!(!plan.contains(&RecoveryAction::RecreateSurfaces));
+        assert!(!plan.contains(&RecoveryAction::OpenEditMode));
+        assert!(plan.contains(&RecoveryAction::RescanWallpapers));
+        assert!(plan.iter().all(|a| a.is_runtime_executable()));
+    }
+
+    #[test]
+    fn runtime_recovery_plan_normal_includes_recreate_and_rescan() {
+        let plan = runtime_recovery_plan(false, false);
+        assert!(plan.contains(&RecoveryAction::RecreateSurfaces));
+        assert!(plan.contains(&RecoveryAction::OpenEditMode));
+        assert!(plan.contains(&RecoveryAction::RescanWallpapers));
+        assert!(!RecoveryAction::RestartApp.is_runtime_executable());
+        assert!(!RecoveryAction::ExportBundle.is_runtime_executable());
     }
 }

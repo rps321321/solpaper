@@ -13,16 +13,19 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
-    alpha1_wallpaper_flags, build_tray_menu, phase_instance_key, pomodoro_command_for_tray,
-    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines, ActiveError,
-    ActiveErrorLog, Component, CorrelationId, CorrelationScope, DiagnosticsPathDisplay,
-    DiagnosticsSnapshot, LocalWallpaperController, NotificationDeduper, PhaseInstanceId,
-    PomodoroCommand, PomodoroEvent, PomodoroState, StartupRecord, SupportCounters, SurfaceMode,
+    alpha1_wallpaper_flags, build_tray_menu, clamp_rect_visible, phase_instance_key,
+    pomodoro_command_for_tray, pomodoro_completion_balloon, pomodoro_tray_tip,
+    pomodoro_widget_lines, runtime_recovery_plan, ActiveError, ActiveErrorLog, Component,
+    CorrelationId, CorrelationScope, DiagnosticsPathDisplay, DiagnosticsSnapshot,
+    LocalWallpaperController, NotificationDeduper, PhaseInstanceId, PomodoroCommand, PomodoroEvent,
+    PomodoroState, RecoveryAction, StartupRecord, SupportCounters, SurfaceMode, SurfaceRect,
     TrayCommand, TrayMenuEntry, WallpaperCycleKind, WallpaperCycleRecord, WidgetId,
     WidgetLayoutEntry, WidgetLayoutSet, XorShift64, CONTROL_WINDOW_CLASS, REMOTE_CRASH_UPLOAD,
     TELEMETRY_ENABLED,
 };
-use solpaper_storage::{save_layout, save_pomodoro, write_diagnostics_status, SettingsDocument};
+use solpaper_storage::{
+    load_layout, save_layout, save_pomodoro, write_diagnostics_status, SettingsDocument,
+};
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -39,18 +42,19 @@ use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, GetCursorPos, GetMessageW, KillTimer, LoadCursorW, LoadIconW, MessageBoxW,
     PeekMessageW, PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW,
     SetForegroundWindow, SetMenuDefaultItem, SetTimer, TrackPopupMenu, TranslateMessage,
-    CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW, IDI_APPLICATION, MB_ICONINFORMATION, MB_OK,
-    MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PM_REMOVE, TPM_BOTTOMALIGN,
-    TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_HOTKEY, WM_NULL, WM_QUIT,
-    WM_RBUTTONUP, WM_TIMER, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
+    CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW, IDI_APPLICATION, IDYES, MB_ICONINFORMATION,
+    MB_ICONQUESTION, MB_OK, MB_YESNO, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING,
+    MSG, PM_REMOVE, TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND,
+    WM_DESTROY, WM_HOTKEY, WM_NULL, WM_QUIT, WM_RBUTTONUP, WM_TIMER, WNDCLASSW, WS_EX_NOACTIVATE,
+    WS_EX_TOOLWINDOW, WS_POPUP,
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
 use crate::wallpaper::{prepare_owned_wallpaper, ComDesktopWallpaper, DesktopWallpaper};
 use crate::widget_host::{
-    clear_layout_dirty, create_widget_host, destroy_all_widgets, set_pomodoro_projection,
-    set_surface_mode, snapshot_widget_rects, surface_mode, toggle_surface_mode,
-    WidgetSurfaceConfig,
+    clear_layout_dirty, create_widget_host, destroy_all_widgets, primary_work_area,
+    set_pomodoro_projection, set_surface_mode, snapshot_widget_rects, surface_mode,
+    toggle_surface_mode, WidgetSurfaceConfig,
 };
 
 /// Tray callback message (WM_APP + 2). Control window only.
@@ -523,6 +527,149 @@ fn open_diagnostics_ui() {
             MB_OK | MB_ICONINFORMATION,
         );
     }
+
+    // Bullet 8: offer runtime recovery after the status view (user consent).
+    let has_wp = snap
+        .active_errors
+        .iter()
+        .any(|e| e.component == Component::Wallpaper)
+        || snap
+            .last_wallpaper_cycle
+            .as_ref()
+            .map(|w| !w.ok)
+            .unwrap_or(false);
+    let plan = runtime_recovery_plan(snap.safe_mode, has_wp);
+    if plan.is_empty() {
+        return;
+    }
+    let mut prompt = String::from("Run recovery now?\n\n");
+    for a in &plan {
+        prompt.push_str(&format!("• {}\n", a.label()));
+    }
+    prompt.push_str("\nYes = run these steps. No = dismiss.");
+    let pbody = wide_z(&prompt);
+    let ptitle = wide_z("Solpaper Recovery");
+    let answer = unsafe {
+        MessageBoxW(
+            None,
+            PCWSTR(pbody.as_ptr()),
+            PCWSTR(ptitle.as_ptr()),
+            MB_YESNO | MB_ICONQUESTION,
+        )
+    };
+    if answer == IDYES {
+        run_recovery_plan(&plan);
+    }
+}
+
+/// Execute consented recovery steps (widgets + wallpaper + Edit Mode).
+fn run_recovery_plan(plan: &[RecoveryAction]) {
+    for step in plan {
+        match step {
+            RecoveryAction::RecreateSurfaces => {
+                if let Err(e) = recreate_surfaces_from_disk() {
+                    eprintln!("solpaper: recovery recreate failed: {e}");
+                    push_active_error(ActiveError::new(
+                        "SurfaceRecreateFailed",
+                        Component::Surface,
+                        Some("recreate recovery failed"),
+                    ));
+                } else {
+                    eprintln!("solpaper: recovery recreated widget surfaces (clamped)");
+                }
+            }
+            RecoveryAction::OpenEditMode => {
+                if let Some(hwnd) = control_hwnd() {
+                    if !surface_mode().is_edit() {
+                        apply_edit_mode(hwnd, SurfaceMode::Edit);
+                        eprintln!("solpaper: recovery entered Edit Mode");
+                    }
+                }
+            }
+            RecoveryAction::RescanWallpapers => {
+                recovery_rescan_wallpapers();
+            }
+            RecoveryAction::RestartApp
+            | RecoveryAction::EnterSafeMode
+            | RecoveryAction::ExportBundle => {
+                // Not runtime-auto; listed for docs only.
+            }
+        }
+    }
+}
+
+fn recovery_rescan_wallpapers() {
+    let mut ctl = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+    if let Some(ctl) = ctl.as_mut() {
+        let before = ctl.bag.source_len();
+        ctl.rescan();
+        eprintln!(
+            "solpaper: recovery wallpaper rescan (catalog {} → {})",
+            before,
+            ctl.bag.source_len()
+        );
+    }
+}
+
+/// Destroy widgets, reload layout.json, clamp to work area, recreate host.
+fn recreate_surfaces_from_disk() -> Result<(), RuntimeError> {
+    let path = {
+        let g = LAYOUT_PATH.lock().expect("layout path");
+        g.clone()
+    };
+    let Some(path) = path else {
+        return Err(RuntimeError::Message(
+            "layout path not configured for recovery".into(),
+        ));
+    };
+    let (set, _outcome) =
+        load_layout(&path).map_err(|e| RuntimeError::Message(format!("load layout: {e}")))?;
+    let configs = layout_set_to_surface_configs(&set);
+    destroy_all_widgets();
+    if configs.is_empty() {
+        eprintln!("solpaper: recovery layout empty — no widgets recreated");
+        return Ok(());
+    }
+    create_widget_host(&configs)
+        .map_err(|e| RuntimeError::Message(format!("create widgets: {e}")))?;
+    set_surface_mode(SurfaceMode::Normal);
+    record_surface_recreate();
+    if let Some(hwnd) = control_hwnd() {
+        refresh_pomodoro_projection(hwnd);
+    }
+    Ok(())
+}
+
+fn layout_set_to_surface_configs(set: &WidgetLayoutSet) -> Vec<WidgetSurfaceConfig> {
+    let work = primary_work_area();
+    set.widgets
+        .iter()
+        .map(|entry| {
+            let origin = WidgetLayoutSet::resolve_top_left(entry, work.width, work.height);
+            let raw = SurfaceRect::new(
+                origin.x,
+                origin.y,
+                entry.size_dip.width.max(1.0),
+                entry.size_dip.height.max(1.0),
+            )
+            .unwrap_or(SurfaceRect {
+                x: work.x + 48.0,
+                y: work.y + 48.0,
+                width: 280.0,
+                height: 160.0,
+            });
+            let placed = clamp_rect_visible(raw, work);
+            WidgetSurfaceConfig {
+                id: entry.id.as_str().to_string(),
+                title: format!("Solpaper · {}", entry.id.as_str()),
+                x: placed.x as i32,
+                y: placed.y as i32,
+                width: placed.width.max(1.0) as i32,
+                height: placed.height.max(1.0) as i32,
+                opacity: entry.opacity,
+            }
+        })
+        .collect()
 }
 
 fn wallpaper_next() {

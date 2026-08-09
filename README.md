@@ -15,7 +15,7 @@ The planned experience combines:
 Solpaper runs in the signed-in Windows user session. It does not require a Solpaper account or a Solpaper cloud service. Settings, layouts, cached data, and future Calendar credentials are designed to remain on the user's computer.
 
 > [!IMPORTANT]
-> **Solpaper is pre-Alpha.** There is no installer or everyday-use release yet. The current executable is a development scaffold with a placeholder window, not a finished product preview.
+> **Solpaper is Alpha 1 development-only.** There is no installer, updater, or stable release. The current build is a local-first tray + Pomodoro widget + local wallpaper host for Windows 11 development and manual evidence — not a finished product.
 
 ## Why this project exists
 
@@ -27,13 +27,14 @@ The project is intentionally narrow. It is not trying to become a general widget
 
 | Area | State |
 |---|---|
-| Windows desktop-window feasibility | Proven through a disposable prototype |
-| Rust workspace and Windows host | Scaffolded and compiling |
-| Settings and widget-layout foundations | Implemented at a basic level |
-| Pomodoro state machine | Implemented and unit-tested |
-| CI, test strategy, UX, accessibility, and performance budgets | Defined |
-| Threat model and security architecture | In review in [PR #70](https://github.com/rps321321/solpaper/pull/70) |
-| Usable Alpha 1 application | Not built yet |
+| Windows desktop-window feasibility | Proven; Approach A widget HWNDs in production host |
+| Rust workspace and Windows host | Runtime + tray + single-instance compiling under CI |
+| Settings / layout / Pomodoro persistence | Atomic JSON under `%LOCALAPPDATA%\solpaper\` |
+| Pomodoro domain + widget projection | Implemented; tray Start/Pause/Skip/Reset |
+| Local wallpapers | Folder source + tray Next/Hold via IDesktopWallpaper |
+| Diagnostics / recovery baseline | Tray Diagnostics + crash markers + safe mode + recovery prompt |
+| CI, test strategy, UX, a11y, NFR, security packs | Defined; threat model and supply-chain docs landed |
+| Physical Windows evidence (MD-\*) | **Open** — see [`docs/testing/manual-debt-register.md`](docs/testing/manual-debt-register.md) |
 | Public release | Not available |
 
 For the live execution order, see the [roadmap issue](https://github.com/rps321321/solpaper/issues/1) and [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
@@ -86,14 +87,16 @@ The roadmap is deliberately evidence-driven. A planned feature may be simplified
 git clone https://github.com/rps321321/solpaper.git
 cd solpaper
 
-# Open the current placeholder host.
+# Interactive Alpha 1 host (tray + Pomodoro widget + local wallpapers).
 cargo run -p solpaper-app
 
-# Create the host, pump briefly, and exit.
+# Create control/tray/widgets, smoke a few paths, tear down.
 cargo run -p solpaper-app -- --smoke
 ```
 
-The interactive command currently opens a placeholder surface. It does not yet provide the tray, Pomodoro widget, Calendar, or wallpaper workflow described above.
+**What works today (dev build):** single-instance tray host, Edit Mode (Ctrl+Alt+F2), Pomodoro tray actions + widget projection, local wallpaper Next/Hold (drop images under `%LOCALAPPDATA%\solpaper\wallpapers`), Diagnostics status + optional recovery (recreate/clamp widgets, rescan folders), corrupt-config quarantine.
+
+**What does not:** Google Calendar/OAuth, remote wallpaper providers, installer/autostart UX for end users, Settings chrome, diagnostic-bundle zip, or cleared physical evidence rows (MD-\*).
 
 ### Run the project checks
 

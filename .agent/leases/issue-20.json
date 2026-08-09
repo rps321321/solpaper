@@ -1,12 +1,12 @@
 {
     "issue":  20,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-20-diagnostics-baseline",
-    "claimed_at":  "2026-08-09T09:57:08.0021693Z",
-    "expires_at":  "2026-08-09T11:57:08.0021693Z",
-    "heartbeat_at":  "2026-08-09T10:06:49.3165813Z",
-    "status":  "released",
-    "unit":  "Alpha1 tracer7: diagnostics/status baseline from #40",
+    "branch":  "issue-20-recovery-evidence",
+    "claimed_at":  "2026-08-09T10:17:05.3414648Z",
+    "expires_at":  "2026-08-09T12:17:05.3414648Z",
+    "heartbeat_at":  "2026-08-09T10:17:05.3414648Z",
+    "status":  "active",
+    "unit":  "Alpha1 tracer8: recovery paths + evidence pack (MD-RT/MD-WP remain open)",
     "pr":  null,
     "risk_class":  "MEDIUM"
 }

@@ -366,7 +366,7 @@ Security vulnerabilities: root [`SECURITY.md`](../../SECURITY.md) only — not p
 | `solpaper-app` / Runtime | Panic hook, startup correlation id, safe-mode gate, tray Diagnostics MessageBox baseline |
 | Docs / templates | This file, troubleshooting, GitHub issue templates |
 
-**Alpha 1 baseline (bullet 7):** tray **Diagnostics** shows a MessageBox + writes redacted `logs/diagnostics-status.txt`. Full Settings → Diagnostics UI and diagnostic-bundle zip remain later. Production `tracing` dependency addition remains a **MEDIUM** unit when file logging begins.
+**Alpha 1 baseline (bullet 7–8):** tray **Diagnostics** shows a MessageBox + writes redacted `logs/diagnostics-status.txt`, then offers a **Yes/No recovery** prompt that can recreate/clamp widgets from `layout.json`, enter Edit Mode, and re-scan wallpaper folders (`runtime_recovery_plan`). Full Settings → Diagnostics chrome and diagnostic-bundle zip remain later. Production `tracing` dependency addition remains a **MEDIUM** unit when file logging begins. Physical MD-RT/MD-WP evidence remains owner-run ([alpha1-recovery-checklist.md](../testing/evidence/20/alpha1-recovery-checklist.md)).
 
 ## Known limitations
 

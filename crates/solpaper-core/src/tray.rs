@@ -241,6 +241,16 @@ impl NotificationDeduper {
         Self::default()
     }
 
+    /// Empty deduper for static / cold start.
+    pub const fn empty() -> Self {
+        Self { last: None }
+    }
+
+    /// Seed from durable `last_completion_id` so restart does not re-balloon.
+    pub fn seed_from_completion_id(&mut self, completion_id: Option<u64>) {
+        self.last = completion_id.map(|id| PhaseInstanceId::new(crate::phase_instance_key(id)));
+    }
+
     /// Returns true if this instance id has not yet been notified (and records it).
     pub fn try_notify(&mut self, id: &PhaseInstanceId) -> bool {
         if self.last.as_ref() == Some(id) {
@@ -477,6 +487,16 @@ mod tests {
         assert!(!d.try_notify(&b));
         d.reset();
         assert!(d.try_notify(&a));
+    }
+
+    #[test]
+    fn seed_from_completion_suppresses_same_id() {
+        let mut d = NotificationDeduper::empty();
+        d.seed_from_completion_id(Some(7));
+        let id = PhaseInstanceId::new(crate::phase_instance_key(7));
+        assert!(!d.try_notify(&id));
+        let other = PhaseInstanceId::new(crate::phase_instance_key(8));
+        assert!(d.try_notify(&other));
     }
 
     #[test]

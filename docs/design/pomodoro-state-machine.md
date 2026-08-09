@@ -1,8 +1,8 @@
 # Pomodoro state machine and recovery
 
 **Issue:** [#19](https://github.com/rps321321/solpaper/issues/19)  
-**Status:** domain in `solpaper-core`; durable file + tray actions in #20 bullet 4  
-**Code:** [`crates/solpaper-core/src/pomodoro.rs`](../../crates/solpaper-core/src/pomodoro.rs), `solpaper-storage` `pomodoro.json`, `solpaper-windows::runtime` tray handlers  
+**Status:** domain + persist + tray + widget projection + balloon dedupe (#20 bullets 4–5)  
+**Code:** [`crates/solpaper-core/src/pomodoro.rs`](../../crates/solpaper-core/src/pomodoro.rs), `solpaper-storage` `pomodoro.json`, `solpaper-windows::{runtime,widget_host}`  
 **Pack:** `docs/engineering/deterministic-execution-blueprint.md` § #19 (sole decision store)
 
 Platform-neutral domain design for Alpha 1. No overlay/UI choices here.
@@ -97,18 +97,19 @@ No secrets. No SQLite history in Alpha 1.
 
 ## Non-goals
 
-- Overlay / widget projection of phase remaining (#20 bullet 5)
-- Tray balloon completion UI (#20 bullet 5; dedupe policy already in core)
 - Sound playback implementation
 - Multi-timer or concurrent sessions
 - Claiming physical sleep/resume evidence (open under #33/#24)
+- Full UIA fragment provider (still MD-A11Y debt)
 
-## Runtime integration (#20 bullet 4)
+## Runtime integration (#20 bullets 4–5)
 
 - Path: `%LOCALAPPDATA%\solpaper\pomodoro.json` (atomic write + `.bak`; corrupt → quarantine + idle defaults).
 - Restore: `Sync` once (at most one completion; never auto-start).
 - Tray: Start/Pause/Resume, Skip, Reset via `pomodoro_command_for_tray` + domain `apply`.
 - Live process: 1 s control-window timer runs `LiveTick`; persist only when events fire.
+- Widget: GDI projection of phase / remaining / status; progress bar; `pomodoro` or legacy `placeholder` id.
+- Balloon: `Shell_NotifyIcon` + `NIF_INFO` on `PhaseCompleted`; `NotificationDeduper` by `phase-{id}`; seed from durable `last_completion_id` so restart does not re-balloon.
 
 ## Acceptance mapping
 

@@ -2,15 +2,15 @@
 
 Status: WAITING_FOR_CI
 Current issue: #20
-Current branch: chore/ready-after-94-20260809-110705
-Current PR: #95
-Last completed action: squash-merged PR #94; released lease; opened LOW READY state PR #95 (frontier bullet 5)
-Next action: after #95 CI green, squash-merge under owner override; then claim #20 bullet 5
+Current branch: issue-20-pomodoro-widget-notify
+Current PR: #96
+Last completed action: implemented #20 bullet 5 (widget projection + NIF_INFO dedupe); local gates green
+Next action: after #96 CI green; after CI green squash-merge under owner override
 Repeated failure count: 0
 Last failure signature: none
 Blocked consecutive same-reason: 0
 Manual evidence debt: MD-001..009, MD-A11Y-01..05, MD-UX-01, MD-PERF-01..03, MD-WP-01..06, MD-RT-01..05
-Risk class: none
-Lease: issue-20 released; no active claim
-Execution-pack defaults closed for bullets 1–4: tray/runtime; Approach A host; settings/layout; Pomodoro persist + tray actions
-Last updated: 2026-08-09T09:07:00Z
+Risk class: HIGH
+Lease: issue-20 active owner=agent:solpaper-dev-loop branch=issue-20-pomodoro-widget-notify
+Execution-pack defaults: GDI projection; NIF_INFO balloons; NotificationDeduper by phase instance; seed last_completion_id; 1s LiveTick refresh
+Last updated: 2026-08-09T09:20:00Z

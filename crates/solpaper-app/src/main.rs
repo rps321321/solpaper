@@ -1,7 +1,7 @@
 //! Solpaper user-session host (ADR-0002 / #7 / #20).
 //!
-//! Alpha 1 tracer bullet 4: Pomodoro domain persistence + tray actions (#19 machine).
-//! Bullets 1–3: runtime/tray, widget host Normal/Edit, settings/layout + clamp.
+//! Alpha 1 tracer bullet 5: Pomodoro widget projection + tray balloon dedupe.
+//! Bullets 1–4: runtime/tray, widget host, settings/layout, domain persist + tray.
 
 use std::env;
 use std::process::ExitCode;
@@ -144,7 +144,8 @@ fn entry_to_surface_config(
 fn default_widget_layout(opacity: u8) -> Result<WidgetLayoutSet, solpaper_core::CoreError> {
     let mut set = WidgetLayoutSet::new_empty();
     set.widgets.push(WidgetLayoutEntry {
-        id: WidgetId::new("placeholder")?,
+        // Prefer `pomodoro`; host also projects onto legacy `placeholder` ids.
+        id: WidgetId::new("pomodoro")?,
         monitor: MonitorMatch::Primary,
         anchor: Anchor::TopLeft,
         offset_dip: DipPoint::new(48.0, 48.0)?,

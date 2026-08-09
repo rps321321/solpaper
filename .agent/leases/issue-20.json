@@ -1,12 +1,12 @@
 {
-    "issue":  20,
-    "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-20-pomodoro-persist-tray",
-    "claimed_at":  "2026-08-09T08:56:53.7581553Z",
-    "expires_at":  "2026-08-09T10:56:53.7581553Z",
-    "heartbeat_at":  "2026-08-09T09:06:48.5988397Z",
-    "status":  "released",
-    "unit":  "Alpha1 tracer4: Pomodoro state persistence + tray Start/Pause/Resume/Skip/Reset",
-    "pr":  94,
-    "risk_class":  "HIGH"
+  "issue": 20,
+  "owner": "agent:solpaper-dev-loop",
+  "branch": "issue-20-pomodoro-widget-notify",
+  "claimed_at": "2026-08-09T09:12:00.0000000Z",
+  "expires_at": "2026-08-09T11:12:00.0000000Z",
+  "heartbeat_at": "2026-08-09T09:20:00.0000000Z",
+  "status": "active",
+  "unit": "Alpha1 tracer5: Pomodoro widget projection + NIF_INFO notification dedupe",
+  "pr": 96,
+  "risk_class": "HIGH"
 }

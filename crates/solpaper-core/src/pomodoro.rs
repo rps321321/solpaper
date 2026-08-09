@@ -540,6 +540,70 @@ pub struct PomodoroView {
     pub available: AvailableActions,
 }
 
+/// Format remaining duration as `MM:SS` (hours fold into minutes; never negative).
+///
+/// Sub-second remainders ceil to the next second so a live countdown does not
+/// flash `00:00` while a few hundred ms remain.
+pub fn format_remaining_mmss(remaining_ms: DurationMs) -> String {
+    let total_secs = if remaining_ms == 0 {
+        0
+    } else {
+        remaining_ms.saturating_add(999) / 1000
+    };
+    let mins = total_secs / 60;
+    let secs = total_secs % 60;
+    format!("{mins:02}:{secs:02}")
+}
+
+/// Lines painted on the Pomodoro widget surface (no private data).
+///
+/// Order: title (phase or Idle), remaining clock, status + cycle count.
+pub fn pomodoro_widget_lines(view: &PomodoroView) -> [String; 3] {
+    let title = if view.is_idle && view.phase.is_none() {
+        "Idle".to_string()
+    } else {
+        view.phase_label.to_string()
+    };
+    let clock = format_remaining_mmss(view.remaining_ms);
+    let status = if view.is_running {
+        format!("Running · focus #{}/cycle", view.completed_focuses_in_cycle)
+    } else if view.is_paused {
+        format!("Paused · focus #{}/cycle", view.completed_focuses_in_cycle)
+    } else {
+        format!("Ready · focus #{}/cycle", view.completed_focuses_in_cycle)
+    };
+    [title, clock, status]
+}
+
+/// Tray balloon title/body for a completed phase (no Calendar or private content).
+pub fn pomodoro_completion_balloon(phase: Phase) -> (&'static str, String) {
+    let title = "Solpaper";
+    let body = match phase {
+        Phase::Focus => "Focus complete — take a break.".to_string(),
+        Phase::ShortBreak => "Short break over — ready to focus.".to_string(),
+        Phase::LongBreak => "Long break over — ready to focus.".to_string(),
+    };
+    (title, body)
+}
+
+/// Stable notification identity string for [`crate::NotificationDeduper`].
+pub fn phase_instance_key(phase_instance_id: u64) -> String {
+    format!("phase-{phase_instance_id}")
+}
+
+/// Coarse tray tooltip fragment: phase + remaining (or idle).
+pub fn pomodoro_tray_tip(view: &PomodoroView) -> String {
+    if view.is_idle && view.phase.is_none() {
+        "Solpaper · idle".into()
+    } else {
+        format!(
+            "Solpaper · {} {}",
+            view.phase_label,
+            format_remaining_mmss(view.remaining_ms)
+        )
+    }
+}
+
 fn remaining_until(deadline_utc_ms: UnixMs, now_utc_ms: UnixMs, total: DurationMs) -> DurationMs {
     if now_utc_ms >= deadline_utc_ms {
         return 0;
@@ -929,6 +993,25 @@ mod tests {
         assert!(v.available.pause);
         assert!(!v.available.start);
         assert!((v.progress_0_1 - 0.25).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn format_remaining_and_widget_lines() {
+        assert_eq!(format_remaining_mmss(0), "00:00");
+        assert_eq!(format_remaining_mmss(65_000), "01:05");
+        assert_eq!(format_remaining_mmss(25 * 60 * 1000), "25:00");
+        let mut s = state();
+        s.apply(Command::Start, 0).unwrap();
+        let lines = pomodoro_widget_lines(&s.view(250));
+        assert_eq!(lines[0], "Focus");
+        assert_eq!(lines[1], "00:01"); // 750ms ceils to 1s
+        assert!(lines[2].starts_with("Running"));
+        let (title, body) = pomodoro_completion_balloon(Phase::Focus);
+        assert_eq!(title, "Solpaper");
+        assert!(body.contains("Focus"));
+        assert_eq!(phase_instance_key(3), "phase-3");
+        let tip = pomodoro_tray_tip(&s.view(250));
+        assert!(tip.contains("Focus"));
     }
 
     #[test]

@@ -34,18 +34,19 @@ pub use surface::{
     MIN_VISIBLE_DIP, MIN_WIDGET_SIZE_DIP, NUDGE_STEP_DIP, NUDGE_STEP_LARGE_DIP, RESIZE_GRIP_DIP,
 };
 pub use tray::{
-    alpha1_pomodoro_flags, alpha1_scaffold_flags, alpha1_widget_host_flags, autostart_command_line,
-    build_tray_menu, command_enabled, pomodoro_command_for_tray, pomodoro_status_label,
-    portable_allows_autostart_ui, NotificationDeduper, PhaseInstanceId, SecondLaunchAction,
-    ShutdownStep, TrayCommand, TrayFeatureFlags, TrayMenuEntry, AUTOSTART_BACKGROUND_FLAG,
-    AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS, SECOND_LAUNCH_ACTION, SHUTDOWN_SEQUENCE,
-    SHUTDOWN_WORKER_WAIT_MS,
+    alpha1_pomodoro_flags, alpha1_scaffold_flags, alpha1_wallpaper_flags, alpha1_widget_host_flags,
+    autostart_command_line, build_tray_menu, command_enabled, pomodoro_command_for_tray,
+    pomodoro_status_label, portable_allows_autostart_ui, NotificationDeduper, PhaseInstanceId,
+    SecondLaunchAction, ShutdownStep, TrayCommand, TrayFeatureFlags, TrayMenuEntry,
+    AUTOSTART_BACKGROUND_FLAG, AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS, SECOND_LAUNCH_ACTION,
+    SHUTDOWN_SEQUENCE, SHUTDOWN_WORKER_WAIT_MS,
 };
 pub use wallpaper::{
     check_decoded_pixels, check_local_file_size, fill_decision, fill_scale_factors,
-    is_accepted_extension, require_monitor_id, validate_source_path_shape, FillDecision, FitPolicy,
-    ImageRequest, MonitorFingerprint, Orientation, WallpaperErrorKind, WallpaperMonitor,
-    WallpaperMonitorId, WallpaperPinSet, WallpaperPosition, ACCEPTED_EXTENSIONS,
+    is_accepted_extension, list_local_images, require_monitor_id, validate_source_path_shape,
+    FillDecision, FitPolicy, ImageRequest, LocalWallpaperController, MonitorFingerprint,
+    Orientation, RandomSource, ShuffledBag, WallpaperErrorKind, WallpaperMonitor,
+    WallpaperMonitorId, WallpaperPinSet, WallpaperPosition, XorShift64, ACCEPTED_EXTENSIONS,
     DECODED_MAX_MEGAPIXELS, LOCAL_WALLPAPER_MAX_BYTES, MAX_UPSCALE_FACTOR,
 };
 

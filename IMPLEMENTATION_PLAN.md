@@ -21,21 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 6** next: local-folder wallpaper source + #5 adapter. Bullets 1–5 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94), PR [#96](https://github.com/rps321321/solpaper/pull/96)).
+- **#20** — Alpha 1 tracer **bullet 6** in progress: local-folder wallpaper source + #5 adapter (branch `issue-20-local-wallpaper`). Bullets 1–5 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94), PR [#96](https://github.com/rps321321/solpaper/pull/96)).
 - Remaining #20 after bullet 6: diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- None. Lease `issue-20` released after #96 merge.
+- **#20 bullet 6** — lease `issue-20` owner `agent:solpaper-dev-loop` branch `issue-20-local-wallpaper` (HIGH).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 6 | Local-folder wallpaper + #5 adapter | claim lease next fire |
-| #20 later bullets | Diagnostics UI, physical evidence | after bullet 6 |
+| #20 bullet 6 | Local-folder wallpaper + #5 adapter | PR + CI (this fire) |
+| #20 later bullets | Diagnostics UI, physical evidence | after bullet 6 merge |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -78,6 +78,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `a91a653` (PR #96 bullet 5 widget projection + balloons)
-- **Product HEAD:** `a91a653`; CI all SUCCESS on #96; squash-merged under owner override
-- **Open implementation PRs:** none
+- **Branch:** `main` @ `e3b3854` (PR #97 READY after #96)
+- **Product HEAD:** bullet 5 on main; bullet 6 on `issue-20-local-wallpaper`
+- **Open implementation PRs:** bullet 6 (opening)

@@ -1,14 +1,17 @@
-//! Desktop wallpaper adapter surface (Issue #5).
+//! Desktop wallpaper adapter surface (Issue #5 / #20 bullet 6).
 //!
 //! - [`DesktopWallpaper`] — platform interface (no HWND / overlay types).
 //! - [`FakeDesktopWallpaper`] — unit-test seam.
 //! - [`ComDesktopWallpaper`] — `IDesktopWallpaper` via the `windows` crate.
+//! - [`prepare_owned_wallpaper`] — cache copy after size/dimension policy checks.
 
 mod com;
 mod fake;
+mod prepare;
 
 pub use com::ComDesktopWallpaper;
 pub use fake::FakeDesktopWallpaper;
+pub use prepare::prepare_owned_wallpaper;
 
 use std::path::{Path, PathBuf};
 

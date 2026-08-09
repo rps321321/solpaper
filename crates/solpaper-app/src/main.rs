@@ -1,9 +1,10 @@
 //! Solpaper user-session host (ADR-0002 / #7 / #20).
 //!
-//! Alpha 1 tracer bullet 5: Pomodoro widget projection + tray balloon dedupe.
-//! Bullets 1–4: runtime/tray, widget host, settings/layout, domain persist + tray.
+//! Alpha 1 tracer bullet 6: local-folder wallpaper + tray Next/Hold + #5 adapter.
+//! Bullets 1–5: runtime, widgets, layout, Pomodoro persist/tray, projection/balloons.
 
 use std::env;
+use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -51,9 +52,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let paths = AppPaths::from_local_app_data()?;
     paths.ensure_dirs()?;
 
-    let (settings, settings_outcome) = SettingsDocument::load_or_default(&paths.settings)?;
+    let (mut settings, settings_outcome) = SettingsDocument::load_or_default(&paths.settings)?;
     if settings_outcome == LoadOutcome::RecoveredFromCorrupt {
         eprintln!("solpaper: recovered settings from corrupt file; writing defaults");
+    }
+    // Default drop-folder when user has not configured folders yet.
+    if settings.wallpaper_folders.is_empty() {
+        settings
+            .wallpaper_folders
+            .push(paths.wallpapers.to_string_lossy().into_owned());
     }
     settings.save(&paths.settings)?;
 
@@ -99,6 +106,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => eprintln!("solpaper: pomodoro Sync on restore failed: {e}"),
     }
 
+    let wallpaper_folders: Vec<PathBuf> = settings
+        .wallpaper_folders
+        .iter()
+        .map(PathBuf::from)
+        .collect();
+    if !smoke {
+        eprintln!(
+            "solpaper: wallpaper folders ({}): drop images or use tray Next/Hold",
+            wallpaper_folders.len()
+        );
+    }
+
     // Control window + tray + Approach A widgets. Smoke: create, toggle mode, tear down.
     // layout_path / pomodoro_path enable atomic flush on transitions and shutdown.
     run_runtime_host(&RuntimeHostConfig {
@@ -107,6 +126,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         layout_path: Some(paths.layout.clone()),
         pomodoro_path: Some(paths.pomodoro.clone()),
         pomodoro: Some(pomodoro),
+        wallpaper_folders,
+        wallpaper_hold: settings.wallpaper_hold,
+        wallpaper_cache: Some(paths.cache.clone()),
+        settings_path: Some(paths.settings.clone()),
     })?;
     Ok(())
 }

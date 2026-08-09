@@ -1,12 +1,12 @@
 {
-    "issue":  20,
-    "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-20-pomodoro-widget-notify",
-    "claimed_at":  "2026-08-09T09:12:00.0000000Z",
-    "expires_at":  "2026-08-09T11:12:00.0000000Z",
-    "heartbeat_at":  "2026-08-09T09:26:37.8759426Z",
-    "status":  "released",
-    "unit":  "Alpha1 tracer5: Pomodoro widget projection + NIF_INFO notification dedupe",
-    "pr":  96,
-    "risk_class":  "HIGH"
+  "issue": 20,
+  "owner": "agent:solpaper-dev-loop",
+  "branch": "issue-20-local-wallpaper",
+  "claimed_at": "2026-08-09T09:32:00.0000000Z",
+  "expires_at": "2026-08-09T11:32:00.0000000Z",
+  "heartbeat_at": "2026-08-09T09:40:00.0000000Z",
+  "status": "active",
+  "unit": "Alpha1 tracer6: local-folder wallpaper source + tray Next/Hold + #5 adapter",
+  "pr": 98,
+  "risk_class": "HIGH"
 }

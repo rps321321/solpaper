@@ -21,20 +21,19 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 7 in progress**: diagnostics/status baseline from #40 (branch `issue-20-diagnostics-baseline`). Bullets 1–6 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94), PR [#96](https://github.com/rps321321/solpaper/pull/96), PR [#98](https://github.com/rps321321/solpaper/pull/98)).
-- Remaining #20 after bullet 7: recovery + physical evidence (MD-RT-*, MD-WP-*).
+- **#20** — Alpha 1 tracer **bullet 8** next: recovery + physical evidence (MD-RT-*, MD-WP-*). Bullets 1–7 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94), PR [#96](https://github.com/rps321321/solpaper/pull/96), PR [#98](https://github.com/rps321321/solpaper/pull/98), PR [#100](https://github.com/rps321321/solpaper/pull/100)).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20 bullet 7** — Diagnostics/status baseline. Lease `issue-20` active on `issue-20-diagnostics-baseline` (MEDIUM).
+- None. Lease `issue-20` released after #100 merge.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 8 | Recovery + physical evidence | after bullet 7 merge |
+| #20 bullet 8 | Recovery + physical evidence | claim lease next fire |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -52,13 +51,14 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
+- **#20 bullet 7** — Diagnostics/status baseline from #40. PR #100 (merged 2026-08-09).
 - **#20 bullet 6** — Local-folder wallpaper + tray Next/Hold + #5 adapter. PR #98 (merged 2026-08-09).
 - **#20 bullet 5** — Pomodoro widget projection + NIF_INFO notification dedupe. PR #96 (merged 2026-08-09).
 - **#20 bullet 4** — Pomodoro state persistence + tray Start/Pause/Resume/Skip/Reset. PR #94 (merged 2026-08-09).
 - **#20 bullet 3** — Atomic settings/layout persistence + off-screen clamp. PR #92 (merged 2026-08-09).
 - **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
-- **State PRs** — #85 / #86 after #84; #88–#91 after #87; #93 after #92; #95 after #94; #97 after #96; #99 after #98.
+- **State PRs** — #85 / #86 after #84; #88–#91 after #87; #93 after #92; #95 after #94; #97 after #96; #99 after #98; post-#100 READY follows.
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -78,6 +78,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `issue-20-diagnostics-baseline` (from `main` @ `91660ff` post-#99)
-- **Product HEAD:** `91660ff`; implementing bullet 7 diagnostics baseline
-- **Open implementation PRs:** pending this branch
+- **Branch:** `main` @ `d65ab13` (PR #100 bullet 7 diagnostics baseline)
+- **Product HEAD:** `d65ab13`; CI all SUCCESS on #100; squash-merged under owner override
+- **Open implementation PRs:** none

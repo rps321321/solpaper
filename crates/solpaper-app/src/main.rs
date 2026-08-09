@@ -1,16 +1,17 @@
 //! Solpaper user-session host (ADR-0002 / #7 / #20).
 //!
-//! Alpha 1 tracer bullet 3: versioned settings + atomic layout persistence +
-//! off-screen clamping on restore (Edit Mode geometry flush from bullet 2 host).
+//! Alpha 1 tracer bullet 4: Pomodoro domain persistence + tray actions (#19 machine).
+//! Bullets 1–3: runtime/tray, widget host Normal/Edit, settings/layout + clamp.
 
 use std::env;
 use std::process::ExitCode;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
-    clamp_rect_visible, Anchor, DipPoint, DipSize, MonitorMatch, SurfaceRect, WidgetId,
-    WidgetLayoutEntry, WidgetLayoutSet,
+    clamp_rect_visible, Anchor, DipPoint, DipSize, MonitorMatch, PomodoroCommand, SurfaceRect,
+    WidgetId, WidgetLayoutEntry, WidgetLayoutSet,
 };
-use solpaper_storage::{load_layout, AppPaths, LoadOutcome, SettingsDocument};
+use solpaper_storage::{load_layout, load_pomodoro, AppPaths, LoadOutcome, SettingsDocument};
 use solpaper_windows::{
     activate_existing_show_settings, primary_work_area, run_runtime_host, second_launch_outcome,
     set_process_dpi_awareness, RuntimeHostConfig, SecondLaunchOutcome, SingleInstanceGuard,
@@ -72,12 +73,40 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .map(|entry| entry_to_surface_config(entry, work))
         .collect();
 
+    let (mut pomodoro, pomodoro_outcome) = load_pomodoro(&paths.pomodoro)?;
+    if pomodoro_outcome == LoadOutcome::RecoveredFromCorrupt {
+        eprintln!("solpaper: recovered pomodoro from corrupt file");
+    }
+    // Recovery path: complete at most one expired phase; never auto-start next.
+    let now_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0);
+    match pomodoro.apply(PomodoroCommand::Sync, now_ms) {
+        Ok(events) if !events.is_empty() => {
+            eprintln!(
+                "solpaper: pomodoro recovery completed {} event(s)",
+                events.len()
+            );
+            solpaper_storage::save_pomodoro(&paths.pomodoro, &pomodoro)?;
+        }
+        Ok(_) => {
+            // Ensure a durable file exists after first run / missing.
+            if pomodoro_outcome != LoadOutcome::Loaded {
+                solpaper_storage::save_pomodoro(&paths.pomodoro, &pomodoro)?;
+            }
+        }
+        Err(e) => eprintln!("solpaper: pomodoro Sync on restore failed: {e}"),
+    }
+
     // Control window + tray + Approach A widgets. Smoke: create, toggle mode, tear down.
-    // layout_path enables atomic flush on Edit→Normal and shutdown.
+    // layout_path / pomodoro_path enable atomic flush on transitions and shutdown.
     run_runtime_host(&RuntimeHostConfig {
         smoke,
         widgets,
         layout_path: Some(paths.layout.clone()),
+        pomodoro_path: Some(paths.pomodoro.clone()),
+        pomodoro: Some(pomodoro),
     })?;
     Ok(())
 }

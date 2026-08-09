@@ -4,16 +4,21 @@
 //! (NIM_ADD + NIM_SETVERSION), TaskbarCreated re-add, fixed-order context menu, and
 //! widget host Edit Mode hotkeys (Ctrl+Alt+F2, Escape while editing).
 //! Second launch finds this HWND via `FindWindowW`.
+//!
+//! Tracer bullet 4: durable Pomodoro state + tray Start/Pause/Resume/Skip/Reset
+//! (domain machine from #19). Widget projection / balloon dedupe is bullet 5.
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Mutex;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
-    alpha1_widget_host_flags, build_tray_menu, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId,
-    WidgetLayoutEntry, WidgetLayoutSet, CONTROL_WINDOW_CLASS,
+    alpha1_pomodoro_flags, build_tray_menu, pomodoro_command_for_tray, PomodoroCommand,
+    PomodoroState, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId, WidgetLayoutEntry,
+    WidgetLayoutSet, CONTROL_WINDOW_CLASS,
 };
-use solpaper_storage::save_layout;
+use solpaper_storage::{save_layout, save_pomodoro};
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -27,12 +32,13 @@ use windows::Win32::UI::Shell::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, CreateWindowExW, DefWindowProcW, DestroyMenu, DestroyWindow,
-    DispatchMessageW, GetCursorPos, GetMessageW, LoadCursorW, LoadIconW, PeekMessageW,
+    DispatchMessageW, GetCursorPos, GetMessageW, KillTimer, LoadCursorW, LoadIconW, PeekMessageW,
     PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow,
-    SetMenuDefaultItem, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW,
-    IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PM_REMOVE,
-    TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_HOTKEY,
-    WM_NULL, WM_QUIT, WM_RBUTTONUP, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
+    SetMenuDefaultItem, SetTimer, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON,
+    IDC_ARROW, IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG,
+    PM_REMOVE, TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY,
+    WM_HOTKEY, WM_NULL, WM_QUIT, WM_RBUTTONUP, WM_TIMER, WNDCLASSW, WS_EX_NOACTIVATE,
+    WS_EX_TOOLWINDOW, WS_POPUP,
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
@@ -50,6 +56,10 @@ const MENU_ID_BASE: u16 = 0xA000;
 /// Hotkey ids registered on the control HWND.
 const HOTKEY_TOGGLE_EDIT: i32 = 1;
 const HOTKEY_ESCAPE_EDIT: i32 = 2;
+
+/// Control-window timer for live Pomodoro deadline checks (not a persistence tick).
+const TIMER_POMODORO_LIVE: usize = 1;
+const POMODORO_LIVE_INTERVAL_MS: u32 = 1_000;
 
 static CONTROL_CLASS_REGISTERED: AtomicBool = AtomicBool::new(false);
 static TASKBAR_CREATED_MSG: AtomicU32 = AtomicU32::new(0);
@@ -95,9 +105,15 @@ pub struct RuntimeHostConfig {
     pub widgets: Vec<WidgetSurfaceConfig>,
     /// When set, flush layout JSON on Edit→Normal and shutdown (atomic write).
     pub layout_path: Option<PathBuf>,
+    /// When set, flush Pomodoro JSON on semantic transitions and shutdown.
+    pub pomodoro_path: Option<PathBuf>,
+    /// Initial Pomodoro machine (caller should already have applied recovery `Sync`).
+    pub pomodoro: Option<PomodoroState>,
 }
 
 static LAYOUT_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
+static POMODORO_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
+static POMODORO: Mutex<Option<PomodoroState>> = Mutex::new(None);
 
 /// Whether a second-launch activation requested Settings (for host / tests).
 pub fn take_settings_requested() -> bool {
@@ -117,6 +133,17 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
     {
         let mut guard = LAYOUT_PATH.lock().expect("layout path");
         *guard = config.layout_path.clone();
+    }
+    {
+        let mut guard = POMODORO_PATH.lock().expect("pomodoro path");
+        *guard = config.pomodoro_path.clone();
+    }
+    {
+        let mut guard = POMODORO.lock().expect("pomodoro state");
+        *guard = config
+            .pomodoro
+            .clone()
+            .or_else(|| Some(PomodoroState::idle_default()));
     }
 
     unsafe {
@@ -155,6 +182,13 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
 
         tray_add(control)?;
         register_toggle_edit_hotkey(control)?;
+        // Live deadline checks while the process is continuously running.
+        let _ = SetTimer(
+            control,
+            TIMER_POMODORO_LIVE,
+            POMODORO_LIVE_INTERVAL_MS,
+            None,
+        );
 
         let has_widgets = !config.widgets.is_empty();
         if has_widgets {
@@ -163,15 +197,19 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         }
 
         if config.smoke {
-            // Exercise mode toggle path once for smoke (no user interaction).
+            // Exercise mode toggle + one pomodoro Start/Reset path for smoke.
             if has_widgets {
                 let _ = toggle_surface_mode();
                 let _ = toggle_surface_mode();
             }
+            apply_pomodoro_tray_command(TrayCommand::PomodoroStartPauseResume);
+            apply_pomodoro_tray_command(TrayCommand::PomodoroReset);
             pump_peek(48);
             // Graceful teardown without full GetMessage loop.
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
             flush_layout_to_disk();
+            flush_pomodoro_to_disk();
+            let _ = KillTimer(control, TIMER_POMODORO_LIVE);
             unregister_all_hotkeys(control);
             let _ = tray_delete(control);
             if has_widgets {
@@ -179,7 +217,7 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             }
             let _ = DestroyWindow(control);
             pump_peek(16);
-            clear_layout_path();
+            clear_runtime_globals();
             return Ok(());
         }
 
@@ -196,8 +234,10 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             DispatchMessageW(&msg);
         }
 
-        // Loop exit: flush layout, then remove tray/hotkeys/widgets if still present.
+        // Loop exit: flush durable state, then remove tray/hotkeys/widgets if still present.
         flush_layout_to_disk();
+        flush_pomodoro_to_disk();
+        let _ = KillTimer(control, TIMER_POMODORO_LIVE);
         unregister_all_hotkeys(control);
         let _ = tray_delete(control);
         if has_widgets {
@@ -205,13 +245,111 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         }
     }
 
-    clear_layout_path();
+    clear_runtime_globals();
     Ok(())
 }
 
-fn clear_layout_path() {
-    let mut guard = LAYOUT_PATH.lock().expect("layout path");
-    *guard = None;
+fn clear_runtime_globals() {
+    {
+        let mut guard = LAYOUT_PATH.lock().expect("layout path");
+        *guard = None;
+    }
+    {
+        let mut guard = POMODORO_PATH.lock().expect("pomodoro path");
+        *guard = None;
+    }
+    {
+        let mut guard = POMODORO.lock().expect("pomodoro state");
+        *guard = None;
+    }
+}
+
+fn now_utc_ms() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0)
+}
+
+/// Apply a Pomodoro tray command; persist only on successful semantic transition.
+fn apply_pomodoro_tray_command(cmd: TrayCommand) {
+    let now = now_utc_ms();
+    let mut guard = POMODORO.lock().expect("pomodoro state");
+    let Some(state) = guard.as_mut() else {
+        return;
+    };
+    let Some(domain_cmd) = pomodoro_command_for_tray(cmd, &state.status) else {
+        return;
+    };
+    match state.apply(domain_cmd, now) {
+        Ok(events) => {
+            if !events.is_empty() || matches!(domain_cmd, PomodoroCommand::Reset) {
+                // Drop lock before disk I/O by cloning snapshot.
+                let snapshot = state.clone();
+                drop(guard);
+                persist_pomodoro_snapshot(&snapshot);
+                log_pomodoro_events(&events, domain_cmd);
+            }
+        }
+        Err(e) => {
+            eprintln!("solpaper: pomodoro {domain_cmd:?} rejected: {e}");
+        }
+    }
+}
+
+fn pomodoro_live_tick() {
+    let now = now_utc_ms();
+    let mut guard = POMODORO.lock().expect("pomodoro state");
+    let Some(state) = guard.as_mut() else {
+        return;
+    };
+    match state.apply(PomodoroCommand::LiveTick, now) {
+        Ok(events) if !events.is_empty() => {
+            let snapshot = state.clone();
+            drop(guard);
+            persist_pomodoro_snapshot(&snapshot);
+            // Balloon projection is bullet 5; log completion for diagnostics only.
+            for e in &events {
+                eprintln!("solpaper: pomodoro event {e:?}");
+            }
+        }
+        Ok(_) => {}
+        Err(e) => eprintln!("solpaper: pomodoro LiveTick error: {e}"),
+    }
+}
+
+fn log_pomodoro_events(events: &[solpaper_core::PomodoroEvent], cmd: PomodoroCommand) {
+    if events.is_empty() {
+        eprintln!("solpaper: pomodoro {cmd:?} applied");
+        return;
+    }
+    for e in events {
+        eprintln!("solpaper: pomodoro event {e:?}");
+    }
+}
+
+fn persist_pomodoro_snapshot(state: &PomodoroState) {
+    let path = {
+        let guard = POMODORO_PATH.lock().expect("pomodoro path");
+        guard.clone()
+    };
+    let Some(path) = path else {
+        return;
+    };
+    match save_pomodoro(&path, state) {
+        Ok(()) => {}
+        Err(e) => eprintln!("solpaper: pomodoro save failed: {e}"),
+    }
+}
+
+fn flush_pomodoro_to_disk() {
+    let snapshot = {
+        let guard = POMODORO.lock().expect("pomodoro state");
+        guard.clone()
+    };
+    if let Some(state) = snapshot {
+        persist_pomodoro_snapshot(&state);
+    }
 }
 
 /// Snapshot live widgets and atomically write `layout.json` when a path is configured.
@@ -425,7 +563,20 @@ unsafe fn show_tray_menu(hwnd: HWND) -> Result<(), RuntimeError> {
     if !ACCEPTING_WORK.load(Ordering::SeqCst) {
         return Ok(());
     }
-    let menu = build_tray_menu(alpha1_widget_host_flags(), None);
+    let available = {
+        let guard = POMODORO.lock().expect("pomodoro state");
+        guard
+            .as_ref()
+            .map(|s| s.view(now_utc_ms()).available)
+            .unwrap_or(solpaper_core::AvailableActions {
+                start: false,
+                pause: false,
+                resume: false,
+                skip: false,
+                reset: false,
+            })
+    };
+    let menu = build_tray_menu(alpha1_pomodoro_flags(), Some(available));
     let hmenu = CreatePopupMenu()?;
     for entry in &menu {
         match entry {
@@ -477,7 +628,9 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
         TrayCommand::Quit => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
             flush_layout_to_disk();
+            flush_pomodoro_to_disk();
             unsafe {
+                let _ = KillTimer(hwnd, TIMER_POMODORO_LIVE);
                 unregister_all_hotkeys(hwnd);
                 destroy_all_widgets();
                 let _ = tray_delete(hwnd);
@@ -495,13 +648,13 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
         TrayCommand::ToggleEditMode => {
             toggle_edit_from_user(hwnd);
         }
-        // Deferred to later tracer bullets (Pomodoro / wallpaper / autostart).
         TrayCommand::PomodoroStartPauseResume
         | TrayCommand::PomodoroSkip
-        | TrayCommand::PomodoroReset
-        | TrayCommand::WallpaperNext
-        | TrayCommand::WallpaperHold
-        | TrayCommand::ToggleAutostart => {}
+        | TrayCommand::PomodoroReset => {
+            apply_pomodoro_tray_command(cmd);
+        }
+        // Deferred: wallpaper / autostart tracer bullets.
+        TrayCommand::WallpaperNext | TrayCommand::WallpaperHold | TrayCommand::ToggleAutostart => {}
     }
 }
 
@@ -557,9 +710,17 @@ unsafe extern "system" fn control_wnd_proc(
             }
             LRESULT(0)
         }
+        WM_TIMER => {
+            if wparam.0 == TIMER_POMODORO_LIVE && ACCEPTING_WORK.load(Ordering::SeqCst) {
+                pomodoro_live_tick();
+            }
+            LRESULT(0)
+        }
         WM_DESTROY => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
             flush_layout_to_disk();
+            flush_pomodoro_to_disk();
+            let _ = KillTimer(hwnd, TIMER_POMODORO_LIVE);
             unregister_all_hotkeys(hwnd);
             destroy_all_widgets();
             let _ = tray_delete(hwnd);

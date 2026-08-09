@@ -12,12 +12,13 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
-use solpaper_core::WidgetLayoutSet;
+use solpaper_core::{PomodoroState, WidgetLayoutSet};
 use thiserror::Error;
 
 const APP_FOLDER: &str = "solpaper";
 const SETTINGS_FILE: &str = "settings.json";
 const LAYOUT_FILE: &str = "layout.json";
+const POMODORO_FILE: &str = "pomodoro.json";
 
 #[derive(Debug, Error)]
 pub enum StorageError {
@@ -29,6 +30,8 @@ pub enum StorageError {
     Json(#[from] serde_json::Error),
     #[error("layout validation failed: {0}")]
     Layout(String),
+    #[error("pomodoro validation failed: {0}")]
+    Pomodoro(String),
 }
 
 /// Outcome of loading a versioned document (settings or layout).
@@ -48,6 +51,8 @@ pub struct AppPaths {
     pub root: PathBuf,
     pub settings: PathBuf,
     pub layout: PathBuf,
+    /// Durable Pomodoro machine state (no history / no secrets).
+    pub pomodoro: PathBuf,
     pub cache: PathBuf,
     pub logs: PathBuf,
 }
@@ -63,6 +68,7 @@ impl AppPaths {
         Self {
             settings: root.join(SETTINGS_FILE),
             layout: root.join(LAYOUT_FILE),
+            pomodoro: root.join(POMODORO_FILE),
             cache: root.join("cache"),
             logs: root.join("logs"),
             root,
@@ -155,6 +161,46 @@ pub fn save_layout(path: &Path, set: &WidgetLayoutSet) -> Result<(), StorageErro
     set.validate()
         .map_err(|e| StorageError::Layout(e.to_string()))?;
     let text = serde_json::to_string_pretty(set)?;
+    atomic_write(path, text.as_bytes())
+}
+
+/// Load durable Pomodoro state; missing/corrupt → idle defaults (quarantine corrupt).
+///
+/// Callers should apply [`solpaper_core::PomodoroCommand::Sync`] after load for recovery.
+pub fn load_pomodoro(path: &Path) -> Result<(PomodoroState, LoadOutcome), StorageError> {
+    if !path.exists() {
+        return Ok((PomodoroState::idle_default(), LoadOutcome::Missing));
+    }
+    match load_pomodoro_strict(path) {
+        Ok(state) => Ok((state, LoadOutcome::Loaded)),
+        Err(e) => {
+            eprintln!("solpaper: pomodoro load failed ({e}); quarantining and using idle defaults");
+            quarantine_corrupt(path)?;
+            Ok((
+                PomodoroState::idle_default(),
+                LoadOutcome::RecoveredFromCorrupt,
+            ))
+        }
+    }
+}
+
+fn load_pomodoro_strict(path: &Path) -> Result<PomodoroState, StorageError> {
+    let text = fs::read_to_string(path)?;
+    let state: PomodoroState = serde_json::from_str(&text)?;
+    state
+        .config
+        .validate()
+        .map_err(|e| StorageError::Pomodoro(e.to_string()))?;
+    Ok(state)
+}
+
+/// Atomically persist Pomodoro state (semantic transitions only; not every tick).
+pub fn save_pomodoro(path: &Path, state: &PomodoroState) -> Result<(), StorageError> {
+    state
+        .config
+        .validate()
+        .map_err(|e| StorageError::Pomodoro(e.to_string()))?;
+    let text = serde_json::to_string_pretty(state)?;
     atomic_write(path, text.as_bytes())
 }
 
@@ -349,6 +395,48 @@ mod tests {
         let (set, o2) = load_layout(&paths.layout).unwrap();
         assert_eq!(o2, LoadOutcome::Missing);
         assert!(set.widgets.is_empty());
+        let (pomo, o3) = load_pomodoro(&paths.pomodoro).unwrap();
+        assert_eq!(o3, LoadOutcome::Missing);
+        assert!(matches!(pomo.status, solpaper_core::TimerStatus::Idle));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn pomodoro_roundtrip_running() {
+        use solpaper_core::{PomodoroCommand, TimerStatus};
+        let root = temp_root();
+        let paths = AppPaths::from_root(root.clone());
+        paths.ensure_dirs().unwrap();
+        let mut state = PomodoroState::idle_default();
+        state.apply(PomodoroCommand::Start, 1_000_000).unwrap();
+        save_pomodoro(&paths.pomodoro, &state).unwrap();
+        let (loaded, outcome) = load_pomodoro(&paths.pomodoro).unwrap();
+        assert_eq!(outcome, LoadOutcome::Loaded);
+        assert_eq!(loaded, state);
+        assert!(matches!(loaded.status, TimerStatus::Running { .. }));
+        let raw = fs::read_to_string(&paths.pomodoro).unwrap();
+        assert!(!raw.to_lowercase().contains("token"));
+        assert!(!raw.to_lowercase().contains("secret"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn corrupt_pomodoro_quarantined_and_idle() {
+        let root = temp_root();
+        let paths = AppPaths::from_root(root.clone());
+        paths.ensure_dirs().unwrap();
+        fs::write(&paths.pomodoro, b"{not-json").unwrap();
+        let (state, outcome) = load_pomodoro(&paths.pomodoro).unwrap();
+        assert_eq!(outcome, LoadOutcome::RecoveredFromCorrupt);
+        assert_eq!(state, PomodoroState::idle_default());
+        assert!(!paths.pomodoro.exists());
+        let quarantined: Vec<_> = fs::read_dir(&paths.root)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .filter(|n| n.contains("corrupt"))
+            .collect();
+        assert_eq!(quarantined.len(), 1);
         let _ = fs::remove_dir_all(root);
     }
 }

@@ -4,8 +4,8 @@
     "branch":  "issue-20-diagnostics-baseline",
     "claimed_at":  "2026-08-09T09:57:08.0021693Z",
     "expires_at":  "2026-08-09T11:57:08.0021693Z",
-    "heartbeat_at":  "2026-08-09T09:57:08.0021693Z",
-    "status":  "active",
+    "heartbeat_at":  "2026-08-09T10:06:49.3165813Z",
+    "status":  "released",
     "unit":  "Alpha1 tracer7: diagnostics/status baseline from #40",
     "pr":  null,
     "risk_class":  "MEDIUM"

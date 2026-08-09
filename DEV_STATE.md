@@ -3,9 +3,9 @@
 Status: WAITING_FOR_CI
 Current issue: #20
 Current branch: issue-20-local-wallpaper
-Current PR: (opening)
+Current PR: #98
 Last completed action: implemented #20 bullet 6 local wallpaper + tray Next/Hold; local gates green
-Next action: open PR; after CI green squash-merge under owner override
+Next action: after #98 CI green; after CI green squash-merge under owner override
 Repeated failure count: 0
 Last failure signature: none
 Blocked consecutive same-reason: 0

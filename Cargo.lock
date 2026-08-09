@@ -107,6 +107,7 @@ name = "solpaper-windows"
 version = "0.1.0"
 dependencies = [
  "solpaper-core",
+ "solpaper-storage",
  "windows",
 ]
 

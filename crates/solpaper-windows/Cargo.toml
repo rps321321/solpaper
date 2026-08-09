@@ -9,4 +9,5 @@ description = "Win32 / COM adapters for Solpaper (tray, overlay host)"
 
 [dependencies]
 solpaper-core = { workspace = true }
+solpaper-storage = { workspace = true }
 windows = { workspace = true }

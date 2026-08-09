@@ -24,6 +24,7 @@ pub use runtime::{run_runtime_host, take_settings_requested, RuntimeError, Runti
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
 pub use wallpaper::{ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper, WallpaperError};
 pub use widget_host::{
-    create_widget_host, destroy_all_widgets, set_surface_mode, snapshot_widget_rects, surface_mode,
+    clear_layout_dirty, create_widget_host, destroy_all_widgets, layout_is_dirty,
+    mark_layout_dirty, primary_work_area, set_surface_mode, snapshot_widget_rects, surface_mode,
     toggle_surface_mode, WidgetSurfaceConfig, WIDGET_WINDOW_CLASS,
 };

@@ -115,7 +115,35 @@ impl WidgetLayoutEntry {
         if self.size_dip.width <= 0.0 || self.size_dip.height <= 0.0 {
             return Err(CoreError::InvalidLayout("size must be positive"));
         }
+        if !(self.offset_dip.x.is_finite() && self.offset_dip.y.is_finite()) {
+            return Err(CoreError::InvalidLayout("offset must be finite"));
+        }
+        if !(self.size_dip.width.is_finite() && self.size_dip.height.is_finite()) {
+            return Err(CoreError::InvalidLayout("size must be finite"));
+        }
         Ok(())
+    }
+
+    /// Build a TopLeft-anchored entry from absolute work-area coordinates (scaffold DIP).
+    ///
+    /// Used when persisting live HWND geometry after Edit Mode. Monitor match stays
+    /// Primary until multi-monitor restore deepens.
+    pub fn from_top_left_rect(
+        id: WidgetId,
+        x: f32,
+        y: f32,
+        width: f32,
+        height: f32,
+        opacity: u8,
+    ) -> Result<Self, CoreError> {
+        Ok(Self {
+            id,
+            monitor: MonitorMatch::Primary,
+            anchor: Anchor::TopLeft,
+            offset_dip: DipPoint::new(x, y)?,
+            size_dip: DipSize::new(width, height)?,
+            opacity,
+        })
     }
 }
 
@@ -240,5 +268,24 @@ mod tests {
             opacity: 220,
         });
         assert!(set.validate().is_ok());
+    }
+
+    #[test]
+    fn from_top_left_rect_round_trips_resolve() {
+        let entry = WidgetLayoutEntry::from_top_left_rect(
+            WidgetId::new("placeholder").unwrap(),
+            120.0,
+            80.0,
+            200.0,
+            100.0,
+            200,
+        )
+        .unwrap();
+        assert_eq!(entry.anchor, Anchor::TopLeft);
+        let p = WidgetLayoutSet::resolve_top_left(&entry, 1920.0, 1080.0);
+        assert_eq!(p.x, 120.0);
+        assert_eq!(p.y, 80.0);
+        assert_eq!(entry.size_dip.width, 200.0);
+        assert_eq!(entry.size_dip.height, 100.0);
     }
 }

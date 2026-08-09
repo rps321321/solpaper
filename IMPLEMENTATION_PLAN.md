@@ -21,19 +21,19 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 8 in progress**: recovery paths + evidence pack (MD-RT-\*, MD-WP-\* remain open). Bullets 1–7 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84)–[#100](https://github.com/rps321321/solpaper/pull/100)).
-- After bullet 8 code merge: #20 stays open until owner clears required MD rows / Alpha acceptance.
-- **#13** — Matrix draft landed (PR #82); human freeze still open.
+- **#20** — Alpha 1 **implementation tracers complete** (bullets 1–8). PR [#84](https://github.com/rps321321/solpaper/pull/84)–[#102](https://github.com/rps321321/solpaper/pull/102). Issue remains **open** until owner clears required MD evidence / acceptance (see `docs/testing/evidence/20/alpha1-recovery-checklist.md`).
+- **Agent-eligible next:** none on #20; #13 freeze and #6/#21 are owner-gated or blocked on #20 close.
+- Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20 bullet 8** — Recovery + evidence checklist. Lease `issue-20` on `issue-20-recovery-evidence` (MEDIUM).
+- None. Lease `issue-20` released after #102 merge.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 close | Alpha 1 complete | owner MD evidence + acceptance |
+| #20 close | Alpha 1 acceptance | owner MD evidence + human gate |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -51,6 +51,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05. Operato
 
 ## Recently completed
 
+- **#20 bullet 8** — Recovery paths + evidence checklist (MD remain open). PR #102 (merged 2026-08-09).
 - **#20 bullet 7** — Diagnostics/status baseline from #40. PR #100 (merged 2026-08-09).
 - **#20 bullet 6** — Local-folder wallpaper + tray Next/Hold + #5 adapter. PR #98 (merged 2026-08-09).
 - **#20 bullet 5** — Pomodoro widget projection + NIF_INFO notification dedupe. PR #96 (merged 2026-08-09).
@@ -59,8 +60,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05. Operato
 - **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
 - **State PRs** — #99 after #98; #101 after #100.
-- **#13 draft** — Acceptance matrix. PR #82.
-- **#7 / #5 / #40 / #38 / #36** — foundation packs.
+- Foundation: #13 draft, #7, #5, #40, #38, #36, #35, #34, #41, #33, #19.
 
 ## Discovered defects
 
@@ -69,5 +69,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05. Operato
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `issue-20-recovery-evidence` (from `main` @ `318583b`)
-- **Open implementation PRs:** pending bullet 8
+- **Branch:** `main` @ `e500a7b` (PR #102 bullet 8 recovery)
+- **Product HEAD:** `e500a7b`; CI all SUCCESS on #102; squash-merged under owner override
+- **Open implementation PRs:** none
+- **Agent frontier:** exhausted for autonomous #20 implementation; remaining work is human/manual

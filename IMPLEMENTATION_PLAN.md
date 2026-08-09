@@ -21,20 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 3** in progress: versioned settings + atomic layout persistence + off-screen clamping. Bullets 1–2 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87)).
-- Remaining #20 after bullet 3: Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
+- **#20** — Alpha 1 tracer **bullet 4** next: Pomodoro domain/state persistence and tray actions from #19. Bullets 1–3 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92)).
+- Remaining #20 after bullet 4: Pomodoro widget projection + notification dedupe → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20 bullet 3** — branch `issue-20-settings-layout-persist`; lease held by `agent:solpaper-dev-loop` (HIGH).
+- None. Lease `issue-20` released after #92 merge.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 later bullets | Pomodoro UI, wallpaper | after bullet 3 merge |
+| #20 bullet 4 | Pomodoro domain/state + tray actions | claim lease next fire |
+| #20 later bullets | Widget projection, wallpaper | after bullet 4 |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -52,9 +53,10 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
+- **#20 bullet 3** — Atomic settings/layout persistence + off-screen clamp. PR #92 (merged 2026-08-09).
 - **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
-- **State PRs** — #85 / #86 after #84; #88 after #87; #89 after #88; #90 after #89 (bullet 3 frontier READY).
+- **State PRs** — #85 / #86 after #84; #88–#91 after #87; post-#92 READY follows.
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -74,6 +76,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `d131c3f` (PR #90 state after #89)
-- **Product HEAD:** `f2fd52a` (PR #87 widget host); CI all SUCCESS on #87–#90
+- **Branch:** `main` @ `8175e43` (PR #92 bullet 3 persistence)
+- **Product HEAD:** `8175e43` (settings/layout persist + clamp); CI all SUCCESS on #92
 - **Open implementation PRs:** none

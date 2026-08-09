@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
-use solpaper_core::{PomodoroState, WidgetLayoutSet};
+use solpaper_core::{CrashMarker, PomodoroState, WidgetLayoutSet};
 use thiserror::Error;
 
 const APP_FOLDER: &str = "solpaper";
@@ -20,6 +20,10 @@ const SETTINGS_FILE: &str = "settings.json";
 const LAYOUT_FILE: &str = "layout.json";
 const POMODORO_FILE: &str = "pomodoro.json";
 const WALLPAPERS_DIR: &str = "wallpapers";
+const CRASH_MARKERS_FILE: &str = "crash_markers.json";
+const DIAGNOSTICS_STATUS_FILE: &str = "diagnostics-status.txt";
+/// Cap retained crash markers on disk (window is 5 minutes; keep a little history).
+const MAX_CRASH_MARKERS_STORED: usize = 32;
 
 #[derive(Debug, Error)]
 pub enum StorageError {
@@ -58,6 +62,10 @@ pub struct AppPaths {
     pub wallpapers: PathBuf,
     pub cache: PathBuf,
     pub logs: PathBuf,
+    /// Durable crash-marker list (redacted; #40 / #20 bullet 7).
+    pub crash_markers: PathBuf,
+    /// Last Diagnostics status text written when the user opens Diagnostics.
+    pub diagnostics_status: PathBuf,
 }
 
 impl AppPaths {
@@ -68,13 +76,16 @@ impl AppPaths {
     }
 
     pub fn from_root(root: PathBuf) -> Self {
+        let logs = root.join("logs");
         Self {
             settings: root.join(SETTINGS_FILE),
             layout: root.join(LAYOUT_FILE),
             pomodoro: root.join(POMODORO_FILE),
             wallpapers: root.join(WALLPAPERS_DIR),
             cache: root.join("cache"),
-            logs: root.join("logs"),
+            crash_markers: root.join(CRASH_MARKERS_FILE),
+            diagnostics_status: logs.join(DIAGNOSTICS_STATUS_FILE),
+            logs,
             root,
         }
     }
@@ -86,6 +97,72 @@ impl AppPaths {
         fs::create_dir_all(&self.wallpapers)?;
         Ok(())
     }
+}
+
+/// On-disk crash marker list (no stacks, paths, or secrets).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CrashMarkerDocument {
+    pub version: u32,
+    /// Unix-ms timestamps of startup/panic markers (oldest first).
+    pub times_ms: Vec<i64>,
+    /// Last marker error code (stable token only).
+    #[serde(default)]
+    pub last_code: Option<String>,
+    /// Last build sha recorded with a marker.
+    #[serde(default)]
+    pub last_build_sha: Option<String>,
+}
+
+impl CrashMarkerDocument {
+    pub const CURRENT_VERSION: u32 = 1;
+
+    pub fn empty() -> Self {
+        Self {
+            version: Self::CURRENT_VERSION,
+            times_ms: Vec::new(),
+            last_code: None,
+            last_build_sha: None,
+        }
+    }
+
+    pub fn load_or_empty(path: &Path) -> Self {
+        if !path.exists() {
+            return Self::empty();
+        }
+        match fs::read_to_string(path) {
+            Ok(text) => match serde_json::from_str::<CrashMarkerDocument>(&text) {
+                Ok(doc) if doc.version >= 1 => doc,
+                _ => Self::empty(),
+            },
+            Err(_) => Self::empty(),
+        }
+    }
+
+    pub fn append_marker(&mut self, marker: &CrashMarker) {
+        self.times_ms.push(marker.at_ms);
+        while self.times_ms.len() > MAX_CRASH_MARKERS_STORED {
+            self.times_ms.remove(0);
+        }
+        self.last_code = Some(marker.error_code.to_string());
+        self.last_build_sha = Some(marker.build_sha.clone());
+    }
+
+    pub fn save(&self, path: &Path) -> Result<(), StorageError> {
+        let text = serde_json::to_string_pretty(self)?;
+        atomic_write(path, text.as_bytes())
+    }
+}
+
+/// Append a redacted crash marker and persist (best-effort for panic hook).
+pub fn append_crash_marker(path: &Path, marker: &CrashMarker) -> Result<(), StorageError> {
+    let mut doc = CrashMarkerDocument::load_or_empty(path);
+    doc.append_marker(marker);
+    doc.save(path)
+}
+
+/// Write Diagnostics status text under logs (user-visible, redacted by construction).
+pub fn write_diagnostics_status(path: &Path, text: &str) -> Result<(), StorageError> {
+    atomic_write(path, text.as_bytes())
 }
 
 /// Versioned human-readable settings. **No secret fields.**
@@ -377,6 +454,29 @@ mod tests {
         );
         let cur = fs::read_to_string(&path).unwrap();
         assert!(cur.contains("\"default_opacity\": 2") || cur.contains("\"default_opacity\":2"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn crash_markers_roundtrip_no_paths() {
+        let root = temp_root();
+        let paths = AppPaths::from_root(root.clone());
+        paths.ensure_dirs().unwrap();
+        let marker = solpaper_core::CrashMarker::panic_marker(1_234_567, "deadbeef");
+        append_crash_marker(&paths.crash_markers, &marker).unwrap();
+        append_crash_marker(
+            &paths.crash_markers,
+            &solpaper_core::CrashMarker::panic_marker(1_234_890, "deadbeef"),
+        )
+        .unwrap();
+        let doc = CrashMarkerDocument::load_or_empty(&paths.crash_markers);
+        assert_eq!(doc.times_ms.len(), 2);
+        assert_eq!(doc.last_code.as_deref(), Some("InternalPanic"));
+        let raw = fs::read_to_string(&paths.crash_markers).unwrap();
+        assert!(!raw.to_lowercase().contains("token"));
+        assert!(!raw.contains("Users\\"));
+        write_diagnostics_status(&paths.diagnostics_status, "Version: 0.1.0\n").unwrap();
+        assert!(paths.diagnostics_status.exists());
         let _ = fs::remove_dir_all(root);
     }
 

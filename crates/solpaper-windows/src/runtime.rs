@@ -5,8 +5,7 @@
 //! widget host Edit Mode hotkeys (Ctrl+Alt+F2, Escape while editing).
 //! Second launch finds this HWND via `FindWindowW`.
 //!
-//! Tracer bullets 4–5: durable Pomodoro state + tray actions (#19), widget
-//! projection (GDI), and `NIF_INFO` completion balloons with phase-instance dedupe.
+//! Tracer bullets 4–7: Pomodoro, wallpaper, diagnostics/status baseline (#40).
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -15,12 +14,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
     alpha1_wallpaper_flags, build_tray_menu, phase_instance_key, pomodoro_command_for_tray,
-    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines,
-    LocalWallpaperController, NotificationDeduper, PhaseInstanceId, PomodoroCommand, PomodoroEvent,
-    PomodoroState, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId, WidgetLayoutEntry,
-    WidgetLayoutSet, XorShift64, CONTROL_WINDOW_CLASS,
+    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines, ActiveError,
+    ActiveErrorLog, Component, CorrelationId, CorrelationScope, DiagnosticsPathDisplay,
+    DiagnosticsSnapshot, LocalWallpaperController, NotificationDeduper, PhaseInstanceId,
+    PomodoroCommand, PomodoroEvent, PomodoroState, StartupRecord, SupportCounters, SurfaceMode,
+    TrayCommand, TrayMenuEntry, WallpaperCycleKind, WallpaperCycleRecord, WidgetId,
+    WidgetLayoutEntry, WidgetLayoutSet, XorShift64, CONTROL_WINDOW_CLASS, REMOTE_CRASH_UPLOAD,
+    TELEMETRY_ENABLED,
 };
-use solpaper_storage::{save_layout, save_pomodoro, SettingsDocument};
+use solpaper_storage::{save_layout, save_pomodoro, write_diagnostics_status, SettingsDocument};
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -34,13 +36,13 @@ use windows::Win32::UI::Shell::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, CreateWindowExW, DefWindowProcW, DestroyMenu, DestroyWindow,
-    DispatchMessageW, GetCursorPos, GetMessageW, KillTimer, LoadCursorW, LoadIconW, PeekMessageW,
-    PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow,
-    SetMenuDefaultItem, SetTimer, TrackPopupMenu, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HICON,
-    IDC_ARROW, IDI_APPLICATION, MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG,
-    PM_REMOVE, TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY,
-    WM_HOTKEY, WM_NULL, WM_QUIT, WM_RBUTTONUP, WM_TIMER, WNDCLASSW, WS_EX_NOACTIVATE,
-    WS_EX_TOOLWINDOW, WS_POPUP,
+    DispatchMessageW, GetCursorPos, GetMessageW, KillTimer, LoadCursorW, LoadIconW, MessageBoxW,
+    PeekMessageW, PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW,
+    SetForegroundWindow, SetMenuDefaultItem, SetTimer, TrackPopupMenu, TranslateMessage,
+    CS_HREDRAW, CS_VREDRAW, HICON, IDC_ARROW, IDI_APPLICATION, MB_ICONINFORMATION, MB_OK,
+    MF_DISABLED, MF_ENABLED, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PM_REMOVE, TPM_BOTTOMALIGN,
+    TPM_LEFTALIGN, TPM_RIGHTBUTTON, WM_APP, WM_COMMAND, WM_DESTROY, WM_HOTKEY, WM_NULL, WM_QUIT,
+    WM_RBUTTONUP, WM_TIMER, WNDCLASSW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP,
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
@@ -120,6 +122,28 @@ pub struct RuntimeHostConfig {
     pub wallpaper_cache: Option<PathBuf>,
     /// Settings path for persisting hold + folder prefs.
     pub settings_path: Option<PathBuf>,
+    /// Diagnostics baseline (#20 bullet 7 / #40).
+    pub diagnostics: Option<DiagnosticsHostConfig>,
+}
+
+/// Diagnostics inputs owned by the Runtime for the status surface.
+#[derive(Debug, Clone)]
+pub struct DiagnosticsHostConfig {
+    pub version: String,
+    pub build_sha: String,
+    pub config_schema_version: u32,
+    pub startup: StartupRecord,
+    pub safe_mode: bool,
+    pub safe_mode_reason: Option<&'static str>,
+    /// Absolute paths (will be redacted for display).
+    pub data_dir: PathBuf,
+    pub cache_dir: PathBuf,
+    pub logs_dir: PathBuf,
+    /// Where to write the last Diagnostics status text.
+    pub status_path: PathBuf,
+    /// Seed active errors from startup recovery (settings/layout corrupt, etc.).
+    pub initial_errors: Vec<ActiveError>,
+    pub initial_counters: SupportCounters,
 }
 
 static LAYOUT_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
@@ -132,6 +156,24 @@ static WALLPAPER_CTL: Mutex<Option<LocalWallpaperController>> = Mutex::new(None)
 static WALLPAPER_RNG: Mutex<Option<XorShift64>> = Mutex::new(None);
 static WALLPAPER_CACHE: Mutex<Option<PathBuf>> = Mutex::new(None);
 static SETTINGS_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
+static DIAGNOSTICS: Mutex<Option<RuntimeDiagnostics>> = Mutex::new(None);
+
+#[derive(Debug)]
+struct RuntimeDiagnostics {
+    version: String,
+    build_sha: String,
+    config_schema_version: u32,
+    startup: StartupRecord,
+    safe_mode: bool,
+    safe_mode_reason: Option<&'static str>,
+    data_dir: PathBuf,
+    cache_dir: PathBuf,
+    logs_dir: PathBuf,
+    status_path: PathBuf,
+    errors: ActiveErrorLog,
+    counters: SupportCounters,
+    last_wallpaper: Option<WallpaperCycleRecord>,
+}
 
 /// HWND is not Send in the windows crate; UI-thread Runtime only.
 #[derive(Clone, Copy)]
@@ -193,6 +235,40 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         *dedupe = NotificationDeduper::empty();
         dedupe.seed_from_completion_id(seed);
     }
+    {
+        let mut guard = DIAGNOSTICS.lock().expect("diagnostics");
+        *guard = config.diagnostics.as_ref().map(|d| {
+            let mut errors = ActiveErrorLog::new();
+            for e in &d.initial_errors {
+                errors.push(e.clone());
+            }
+            let mut counters = d.initial_counters.clone();
+            if d.safe_mode {
+                counters.safe_mode_entries = counters.safe_mode_entries.saturating_add(1);
+            }
+            RuntimeDiagnostics {
+                version: d.version.clone(),
+                build_sha: d.build_sha.clone(),
+                config_schema_version: d.config_schema_version,
+                startup: d.startup.clone(),
+                safe_mode: d.safe_mode,
+                safe_mode_reason: d.safe_mode_reason,
+                data_dir: d.data_dir.clone(),
+                cache_dir: d.cache_dir.clone(),
+                logs_dir: d.logs_dir.clone(),
+                status_path: d.status_path.clone(),
+                errors,
+                counters,
+                last_wallpaper: None,
+            }
+        });
+    }
+
+    let safe_mode = config
+        .diagnostics
+        .as_ref()
+        .map(|d| d.safe_mode)
+        .unwrap_or(false);
 
     unsafe {
         let hinstance = GetModuleHandleW(None)?;
@@ -242,10 +318,14 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             None,
         );
 
-        let has_widgets = !config.widgets.is_empty();
+        // Safe mode (#40): no widgets; settings/diagnostics remain via tray.
+        let has_widgets = !config.widgets.is_empty() && !safe_mode;
         if has_widgets {
             create_widget_host(&config.widgets)?;
             set_surface_mode(SurfaceMode::Normal);
+            record_surface_recreate();
+        } else if safe_mode {
+            eprintln!("solpaper: safe mode — widgets disabled; open Diagnostics from tray");
         }
         refresh_pomodoro_projection(control);
 
@@ -339,6 +419,110 @@ fn clear_runtime_globals() {
         let mut guard = SETTINGS_PATH.lock().expect("settings path");
         *guard = None;
     }
+    {
+        let mut guard = DIAGNOSTICS.lock().expect("diagnostics");
+        *guard = None;
+    }
+}
+
+fn record_surface_recreate() {
+    if let Ok(mut g) = DIAGNOSTICS.lock() {
+        if let Some(d) = g.as_mut() {
+            d.counters.surface_recreates = d.counters.surface_recreates.saturating_add(1);
+        }
+    }
+}
+
+fn push_active_error(err: ActiveError) {
+    if let Ok(mut g) = DIAGNOSTICS.lock() {
+        if let Some(d) = g.as_mut() {
+            if err.component == Component::Wallpaper {
+                d.counters.wallpaper_failures = d.counters.wallpaper_failures.saturating_add(1);
+            }
+            if err.component == Component::Storage {
+                d.counters.storage_recoveries = d.counters.storage_recoveries.saturating_add(1);
+            }
+            d.errors.push(err);
+        }
+    }
+}
+
+fn note_wallpaper_cycle(ok: bool, error_code: Option<&str>) {
+    let now = now_utc_ms();
+    let salt = now as u64 ^ 0xA11_FA5E_u64;
+    let id = CorrelationId::mint(
+        CorrelationScope::WallpaperCycle,
+        now,
+        std::process::id(),
+        salt,
+    );
+    if let Ok(mut g) = DIAGNOSTICS.lock() {
+        if let Some(d) = g.as_mut() {
+            d.last_wallpaper = Some(WallpaperCycleRecord {
+                at_ms: now,
+                kind: WallpaperCycleKind::Local,
+                ok,
+                error_code: error_code.map(|s| s.to_string()),
+                correlation_id: Some(id),
+            });
+        }
+    }
+}
+
+fn build_diagnostics_snapshot() -> Option<DiagnosticsSnapshot> {
+    let g = DIAGNOSTICS.lock().ok()?;
+    let d = g.as_ref()?;
+    let has_wp =
+        d.errors.has_wallpaper_error() || d.last_wallpaper.as_ref().map(|w| !w.ok).unwrap_or(false);
+    Some(DiagnosticsSnapshot {
+        version: d.version.clone(),
+        build_sha: d.build_sha.clone(),
+        config_schema_version: d.config_schema_version,
+        last_startup: Some(d.startup.clone()),
+        last_calendar_sync_label: "not connected".into(),
+        last_wallpaper_cycle: d.last_wallpaper.clone(),
+        active_errors: d.errors.as_slice().to_vec(),
+        safe_mode: d.safe_mode,
+        safe_mode_reason: d.safe_mode_reason,
+        paths: DiagnosticsPathDisplay {
+            data_dir: solpaper_core::redact_user_path(&d.data_dir.to_string_lossy()),
+            cache_dir: solpaper_core::redact_user_path(&d.cache_dir.to_string_lossy()),
+            logs_dir: solpaper_core::redact_user_path(&d.logs_dir.to_string_lossy()),
+        },
+        recovery_actions: DiagnosticsSnapshot::default_recovery_actions(d.safe_mode, has_wp),
+        counters: d.counters.clone(),
+        telemetry_enabled: TELEMETRY_ENABLED,
+        remote_crash_upload: REMOTE_CRASH_UPLOAD,
+    })
+}
+
+fn open_diagnostics_ui() {
+    let Some(snap) = build_diagnostics_snapshot() else {
+        eprintln!("solpaper: Diagnostics unavailable (not configured)");
+        return;
+    };
+    let text = snap.format_text();
+    if let Ok(g) = DIAGNOSTICS.lock() {
+        if let Some(d) = g.as_ref() {
+            if let Err(e) = write_diagnostics_status(&d.status_path, &text) {
+                eprintln!("solpaper: diagnostics status write failed: {e}");
+            } else {
+                let redacted = solpaper_core::redact_user_path(&d.status_path.to_string_lossy());
+                eprintln!("solpaper: diagnostics status written to {redacted}");
+            }
+        }
+    }
+    // MessageBox baseline until Settings → Diagnostics UI lands.
+    let body = wide_z(&text);
+    let title = wide_z("Solpaper Diagnostics");
+    unsafe {
+        let _ = MessageBoxW(
+            None,
+            PCWSTR(body.as_ptr()),
+            PCWSTR(title.as_ptr()),
+            MB_OK | MB_ICONINFORMATION,
+        );
+    }
 }
 
 fn wallpaper_next() {
@@ -348,6 +532,12 @@ fn wallpaper_next() {
     };
     let Some(cache_dir) = cache else {
         eprintln!("solpaper: wallpaper cache path not configured");
+        push_active_error(ActiveError::new(
+            "WallpaperCacheMissing",
+            Component::Wallpaper,
+            Some("cache path not configured"),
+        ));
+        note_wallpaper_cycle(false, Some("WallpaperCacheMissing"));
         return;
     };
 
@@ -359,6 +549,12 @@ fn wallpaper_next() {
         ctl.rescan();
         if ctl.bag.is_empty() {
             eprintln!("solpaper: no local wallpapers in configured folders");
+            push_active_error(ActiveError::new(
+                "WallpaperPathInvalid",
+                Component::Wallpaper,
+                Some("no images in folders"),
+            ));
+            note_wallpaper_cycle(false, Some("WallpaperPathInvalid"));
             return;
         }
         let mut rng_guard = WALLPAPER_RNG.lock().expect("wallpaper rng");
@@ -367,6 +563,7 @@ fn wallpaper_next() {
     };
     let Some(source) = source else {
         eprintln!("solpaper: wallpaper bag empty");
+        note_wallpaper_cycle(false, Some("WallpaperPathInvalid"));
         return;
     };
 
@@ -374,6 +571,12 @@ fn wallpaper_next() {
         Ok(p) => p,
         Err(e) => {
             eprintln!("solpaper: wallpaper prepare failed: {e}");
+            push_active_error(ActiveError::new(
+                "WallpaperFileTooLarge",
+                Component::Wallpaper,
+                Some("prepare failed"),
+            ));
+            note_wallpaper_cycle(false, Some("WallpaperFileTooLarge"));
             return;
         }
     };
@@ -382,6 +585,12 @@ fn wallpaper_next() {
         Ok(a) => a,
         Err(e) => {
             eprintln!("solpaper: wallpaper COM init failed: {e}");
+            push_active_error(ActiveError::new(
+                "WallpaperPlatform",
+                Component::Wallpaper,
+                Some("com init failed"),
+            ));
+            note_wallpaper_cycle(false, Some("WallpaperPlatform"));
             return;
         }
     };
@@ -394,6 +603,12 @@ fn wallpaper_next() {
         Ok(m) => m,
         Err(e) => {
             eprintln!("solpaper: enumerate monitors failed: {e}");
+            push_active_error(ActiveError::new(
+                "WallpaperMonitorUnavailable",
+                Component::Wallpaper,
+                Some("enumerate failed"),
+            ));
+            note_wallpaper_cycle(false, Some("WallpaperMonitorUnavailable"));
             return;
         }
     };
@@ -418,6 +633,14 @@ fn wallpaper_next() {
         if let Some(ctl) = ctl.as_mut() {
             ctl.note_applied(owned);
         }
+        note_wallpaper_cycle(true, None);
+    } else {
+        push_active_error(ActiveError::new(
+            "WallpaperPlatform",
+            Component::Wallpaper,
+            Some("apply failed"),
+        ));
+        note_wallpaper_cycle(false, Some("WallpaperPlatform"));
     }
 }
 
@@ -933,7 +1156,7 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
             eprintln!("solpaper: Open Settings (host UI deferred)");
         }
         TrayCommand::OpenDiagnostics => {
-            eprintln!("solpaper: Diagnostics (host UI deferred)");
+            open_diagnostics_ui();
         }
         TrayCommand::ToggleEditMode => {
             toggle_edit_from_user(hwnd);

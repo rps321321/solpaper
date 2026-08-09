@@ -1,7 +1,7 @@
 # Observability, diagnostics, crash recovery, and supportability
 
 **Issue:** [#40](https://github.com/rps321321/solpaper/issues/40)  
-**Status:** initial design (policy + pure logic; production file logging lands with Runtime)  
+**Status:** design + Alpha 1 status baseline (#20 bullet 7); production `tracing` file logging still deferred  
 **Pack source:** [`deterministic-execution-blueprint.md` § #40](../engineering/deterministic-execution-blueprint.md)  
 **Related:** NFR PERF-LOG-*, PERF-REL-04 · [threat-model.md](../security/threat-model.md) AC-LOG-* · [#37](https://github.com/rps321321/solpaper/issues/37) privacy · [#20](https://github.com/rps321321/solpaper/issues/20) Alpha 1 · [#21](https://github.com/rps321321/solpaper/issues/21) Calendar · root issue templates
 
@@ -361,12 +361,12 @@ Security vulnerabilities: root [`SECURITY.md`](../../SECURITY.md) only — not p
 
 | Layer | Owns |
 |-------|------|
-| `solpaper-core::diagnostics` | Policy constants, allowlist, redaction, safe mode, rotation decisions |
-| `solpaper-storage` | Paths for logs/markers; future atomic marker write |
-| `solpaper-app` / Runtime | `tracing` subscriber, panic hook install, Diagnostics UI, bundle zip |
+| `solpaper-core::diagnostics` | Policy constants, allowlist, redaction, safe mode, rotation, `DiagnosticsSnapshot` |
+| `solpaper-storage` | Paths for logs/markers; `crash_markers.json`; diagnostics-status.txt write |
+| `solpaper-app` / Runtime | Panic hook, startup correlation id, safe-mode gate, tray Diagnostics MessageBox baseline |
 | Docs / templates | This file, troubleshooting, GitHub issue templates |
 
-Production logging dependency addition remains a **MEDIUM** unit when Runtime wiring begins; this issue does **not** add `tracing` crates.
+**Alpha 1 baseline (bullet 7):** tray **Diagnostics** shows a MessageBox + writes redacted `logs/diagnostics-status.txt`. Full Settings → Diagnostics UI and diagnostic-bundle zip remain later. Production `tracing` dependency addition remains a **MEDIUM** unit when file logging begins.
 
 ## Known limitations
 

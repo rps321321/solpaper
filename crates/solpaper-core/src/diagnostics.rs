@@ -181,10 +181,32 @@ pub fn categorize_error_code(code: &str) -> ErrorCategory {
     if c.contains("migration") {
         return ErrorCategory::Migration;
     }
-    if c.contains("config") || c.contains("settings_corrupt") {
+    if c.contains("config")
+        || c.contains("settings_corrupt")
+        || c.contains("settingscorrupt")
+        || c.contains("layoutcorrupt")
+        || c.contains("pomodorocorrupt")
+    {
         return ErrorCategory::Config;
     }
-    if c.contains("layout") || c.contains("monitor") || c.contains("offscreen") {
+    if c.contains("layout") || c.contains("offscreen") {
+        return ErrorCategory::Layout;
+    }
+    // Wallpaper domain codes (see WallpaperErrorKind::as_error_code).
+    if c.starts_with("wallpaper") {
+        if c.contains("platform") || c.contains("monitor") {
+            return ErrorCategory::Surface;
+        }
+        if c.contains("upscale") || c.contains("policy") {
+            return ErrorCategory::ProviderPolicy;
+        }
+        if c.contains("internal") {
+            return ErrorCategory::Internal;
+        }
+        // Path/format/size/decode → storage-class local IO.
+        return ErrorCategory::Storage;
+    }
+    if c.contains("monitor") {
         return ErrorCategory::Layout;
     }
     if c.contains("pomodoro") || c.contains("timer") {
@@ -526,6 +548,356 @@ impl CorrelationScope {
     }
 }
 
+// --- Diagnostics / status baseline (Issue #20 bullet 7 / OPS-A1-*) ----------
+
+/// Maximum active error rows retained for the Diagnostics surface.
+pub const MAX_ACTIVE_ERRORS: usize = 16;
+
+/// Opaque correlation id (hex, not derived from user content).
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CorrelationId(String);
+
+impl CorrelationId {
+    /// Mint a fresh opaque id from injectable entropy bits.
+    ///
+    /// Callers pass `now_ms`, process id, and a counter/random u64. Not a CSPRNG;
+    /// only needs opacity for log correlation.
+    pub fn mint(scope: CorrelationScope, now_ms: UnixMs, pid: u32, salt: u64) -> Self {
+        // Mix scope tag + time + pid + salt into 64-bit then hex (no user payload).
+        let mut h = 0xcbf2_9ce4_8422_2325_u64; // FNV-1a offset
+        for b in scope.as_str().as_bytes() {
+            h ^= u64::from(*b);
+            h = h.wrapping_mul(0x100_0000_01b3);
+        }
+        for b in now_ms.to_le_bytes() {
+            h ^= u64::from(b);
+            h = h.wrapping_mul(0x100_0000_01b3);
+        }
+        for b in pid.to_le_bytes() {
+            h ^= u64::from(b);
+            h = h.wrapping_mul(0x100_0000_01b3);
+        }
+        for b in salt.to_le_bytes() {
+            h ^= u64::from(b);
+            h = h.wrapping_mul(0x100_0000_01b3);
+        }
+        Self(format!("{:016x}", h))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for CorrelationId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+/// One active error for Diagnostics (codes + categories only; no private payload).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActiveError {
+    pub code: String,
+    pub category: ErrorCategory,
+    pub component: Component,
+    /// Optional short safe message (must not contain secrets/titles/paths).
+    pub message: Option<&'static str>,
+}
+
+impl ActiveError {
+    pub fn new(
+        code: impl Into<String>,
+        component: Component,
+        message: Option<&'static str>,
+    ) -> Self {
+        let code = code.into();
+        let category = categorize_error_code(&code);
+        Self {
+            code,
+            category,
+            component,
+            message,
+        }
+    }
+}
+
+/// Last startup record for Diagnostics UI.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StartupRecord {
+    pub at_ms: UnixMs,
+    pub ok: bool,
+    pub correlation_id: CorrelationId,
+}
+
+/// Kind of last wallpaper cycle (no full path).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WallpaperCycleKind {
+    None,
+    Local,
+    Remote,
+}
+
+impl WallpaperCycleKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::Local => "local",
+            Self::Remote => "remote",
+        }
+    }
+}
+
+/// Last wallpaper cycle for Diagnostics (kind + outcome only).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WallpaperCycleRecord {
+    pub at_ms: UnixMs,
+    pub kind: WallpaperCycleKind,
+    pub ok: bool,
+    pub error_code: Option<String>,
+    pub correlation_id: Option<CorrelationId>,
+}
+
+/// User-facing recovery action tokens (Diagnostics UI / status text).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum RecoveryAction {
+    /// Recreate widget surfaces and clamp off-screen.
+    RecreateSurfaces,
+    /// Enter Edit Mode for layout recovery.
+    OpenEditMode,
+    /// Restart the app once (single-instance / tray recovery).
+    RestartApp,
+    /// Recommend safe mode (crash loop).
+    EnterSafeMode,
+    /// Re-scan local wallpaper folders.
+    RescanWallpapers,
+    /// Export a privacy-safe diagnostic bundle (user-initiated; format later).
+    ExportBundle,
+}
+
+impl RecoveryAction {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::RecreateSurfaces => "recreate_surfaces",
+            Self::OpenEditMode => "open_edit_mode",
+            Self::RestartApp => "restart_app",
+            Self::EnterSafeMode => "enter_safe_mode",
+            Self::RescanWallpapers => "rescan_wallpapers",
+            Self::ExportBundle => "export_bundle",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::RecreateSurfaces => "Recreate widgets / clamp off-screen",
+            Self::OpenEditMode => "Open Edit Mode",
+            Self::RestartApp => "Restart Solpaper once",
+            Self::EnterSafeMode => "Continue in safe mode",
+            Self::RescanWallpapers => "Re-scan local wallpaper folders",
+            Self::ExportBundle => "Export diagnostic bundle (user-initiated)",
+        }
+    }
+}
+
+/// Support counters with no private payloads.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SupportCounters {
+    pub failed_syncs: u64,
+    pub provider_cooldowns: u64,
+    pub duplicate_prevention: u64,
+    pub migrations_run: u64,
+    pub migrations_failed: u64,
+    pub surface_recreates: u64,
+    pub safe_mode_entries: u64,
+    pub wallpaper_failures: u64,
+    pub storage_recoveries: u64,
+}
+
+/// Redacted path labels for Diagnostics (never raw personal paths in display helpers).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagnosticsPathDisplay {
+    pub data_dir: String,
+    pub cache_dir: String,
+    pub logs_dir: String,
+}
+
+/// Full Diagnostics / About status snapshot (OPS-A1-05).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagnosticsSnapshot {
+    pub version: String,
+    pub build_sha: String,
+    pub config_schema_version: u32,
+    pub last_startup: Option<StartupRecord>,
+    /// Alpha 1: always "not connected" until Calendar lands.
+    pub last_calendar_sync_label: String,
+    pub last_wallpaper_cycle: Option<WallpaperCycleRecord>,
+    pub active_errors: Vec<ActiveError>,
+    pub safe_mode: bool,
+    pub safe_mode_reason: Option<&'static str>,
+    pub paths: DiagnosticsPathDisplay,
+    pub recovery_actions: Vec<RecoveryAction>,
+    pub counters: SupportCounters,
+    pub telemetry_enabled: bool,
+    pub remote_crash_upload: bool,
+}
+
+impl DiagnosticsSnapshot {
+    /// Build recommended recovery actions from current health.
+    pub fn default_recovery_actions(
+        safe_mode: bool,
+        has_wallpaper_error: bool,
+    ) -> Vec<RecoveryAction> {
+        let mut actions = vec![
+            RecoveryAction::RecreateSurfaces,
+            RecoveryAction::OpenEditMode,
+            RecoveryAction::RestartApp,
+        ];
+        if has_wallpaper_error {
+            actions.push(RecoveryAction::RescanWallpapers);
+        }
+        if safe_mode {
+            actions.insert(0, RecoveryAction::EnterSafeMode);
+        }
+        actions.push(RecoveryAction::ExportBundle);
+        actions
+    }
+
+    /// Human-readable status for tray Diagnostics / status file (no secrets).
+    pub fn format_text(&self) -> String {
+        let mut out = String::with_capacity(1024);
+        out.push_str("Solpaper Diagnostics\n");
+        out.push_str("====================\n");
+        out.push_str(&format!("Version: {}\n", self.version));
+        out.push_str(&format!("Build: {}\n", self.build_sha));
+        out.push_str(&format!("Config schema: {}\n", self.config_schema_version));
+        match &self.last_startup {
+            Some(s) => out.push_str(&format!(
+                "Last startup: {} at_ms={} id={}\n",
+                if s.ok { "ok" } else { "failed" },
+                s.at_ms,
+                s.correlation_id
+            )),
+            None => out.push_str("Last startup: never\n"),
+        }
+        out.push_str(&format!(
+            "Calendar sync: {}\n",
+            self.last_calendar_sync_label
+        ));
+        match &self.last_wallpaper_cycle {
+            Some(w) => out.push_str(&format!(
+                "Last wallpaper: {} {} at_ms={}{}\n",
+                w.kind.as_str(),
+                if w.ok { "ok" } else { "failed" },
+                w.at_ms,
+                w.error_code
+                    .as_ref()
+                    .map(|c| format!(" code={c}"))
+                    .unwrap_or_default()
+            )),
+            None => out.push_str("Last wallpaper: never\n"),
+        }
+        out.push_str(&format!(
+            "Safe mode: {}{}\n",
+            if self.safe_mode { "yes" } else { "no" },
+            self.safe_mode_reason
+                .map(|r| format!(" ({r})"))
+                .unwrap_or_default()
+        ));
+        if self.active_errors.is_empty() {
+            out.push_str("Active errors: none\n");
+        } else {
+            out.push_str("Active errors:\n");
+            for e in &self.active_errors {
+                out.push_str(&format!(
+                    "  - {} category={} component={}\n",
+                    e.code,
+                    e.category.as_str(),
+                    e.component.as_str()
+                ));
+            }
+        }
+        out.push_str(&format!("Data dir: {}\n", self.paths.data_dir));
+        out.push_str(&format!("Cache dir: {}\n", self.paths.cache_dir));
+        out.push_str(&format!("Logs dir: {}\n", self.paths.logs_dir));
+        out.push_str(&format!(
+            "Telemetry: {} | Remote crash upload: {}\n",
+            self.telemetry_enabled, self.remote_crash_upload
+        ));
+        out.push_str("Recovery actions:\n");
+        for a in &self.recovery_actions {
+            out.push_str(&format!("  - {} ({})\n", a.label(), a.as_str()));
+        }
+        out.push_str(&format!(
+            "Counters: storage_recoveries={} wallpaper_failures={} surface_recreates={} safe_mode_entries={} duplicate_prevention={}\n",
+            self.counters.storage_recoveries,
+            self.counters.wallpaper_failures,
+            self.counters.surface_recreates,
+            self.counters.safe_mode_entries,
+            self.counters.duplicate_prevention
+        ));
+        out
+    }
+}
+
+/// Minimal redacted crash marker payload (no stacks with paths/tokens).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrashMarker {
+    pub at_ms: UnixMs,
+    pub error_code: &'static str,
+    pub build_sha: String,
+    pub component: Option<Component>,
+}
+
+impl CrashMarker {
+    pub const INTERNAL_PANIC: &'static str = "InternalPanic";
+
+    pub fn panic_marker(at_ms: UnixMs, build_sha: impl Into<String>) -> Self {
+        Self {
+            at_ms,
+            error_code: Self::INTERNAL_PANIC,
+            build_sha: build_sha.into(),
+            component: Some(Component::Runtime),
+        }
+    }
+}
+
+/// Ring buffer of active errors (newest last; capped).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ActiveErrorLog {
+    errors: Vec<ActiveError>,
+}
+
+impl ActiveErrorLog {
+    pub fn new() -> Self {
+        Self { errors: Vec::new() }
+    }
+
+    pub fn push(&mut self, err: ActiveError) {
+        // Dedupe consecutive identical codes.
+        if self.errors.last().map(|e| e.code.as_str()) == Some(err.code.as_str()) {
+            return;
+        }
+        self.errors.push(err);
+        while self.errors.len() > MAX_ACTIVE_ERRORS {
+            self.errors.remove(0);
+        }
+    }
+
+    pub fn as_slice(&self) -> &[ActiveError] {
+        &self.errors
+    }
+
+    pub fn clear(&mut self) {
+        self.errors.clear();
+    }
+
+    pub fn has_wallpaper_error(&self) -> bool {
+        self.errors
+            .iter()
+            .any(|e| e.component == Component::Wallpaper)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -795,5 +1167,94 @@ mod tests {
         ] {
             assert_eq!(Component::parse(c.as_str()), Some(c));
         }
+    }
+
+    #[test]
+    fn correlation_id_opaque_and_stable_mix() {
+        let a = CorrelationId::mint(CorrelationScope::Startup, 1_000, 42, 7);
+        let b = CorrelationId::mint(CorrelationScope::Startup, 1_000, 42, 7);
+        let c = CorrelationId::mint(CorrelationScope::Startup, 1_000, 42, 8);
+        assert_eq!(a, b);
+        assert_ne!(a, c);
+        assert_eq!(a.as_str().len(), 16);
+        assert!(!a.as_str().contains(' '));
+    }
+
+    #[test]
+    fn active_error_log_caps_and_categorizes() {
+        let mut log = ActiveErrorLog::new();
+        for i in 0..20 {
+            log.push(ActiveError::new(
+                format!("StorageIo{i}"),
+                Component::Storage,
+                None,
+            ));
+        }
+        assert_eq!(log.as_slice().len(), MAX_ACTIVE_ERRORS);
+        let path_err = ActiveError::new("WallpaperPathInvalid", Component::Wallpaper, None);
+        assert_eq!(path_err.category, ErrorCategory::Storage);
+        let platform = ActiveError::new("WallpaperPlatform", Component::Wallpaper, Some("com"));
+        assert_eq!(platform.category, ErrorCategory::Surface);
+        log.push(platform);
+        assert!(log.has_wallpaper_error());
+    }
+
+    #[test]
+    fn snapshot_format_has_no_private_payloads() {
+        let snap = DiagnosticsSnapshot {
+            version: "0.1.0".into(),
+            build_sha: "deadbeef".into(),
+            config_schema_version: 1,
+            last_startup: Some(StartupRecord {
+                at_ms: 100,
+                ok: true,
+                correlation_id: CorrelationId::mint(CorrelationScope::Startup, 100, 1, 2),
+            }),
+            last_calendar_sync_label: "not connected".into(),
+            last_wallpaper_cycle: Some(WallpaperCycleRecord {
+                at_ms: 200,
+                kind: WallpaperCycleKind::Local,
+                ok: false,
+                error_code: Some("WallpaperApplyFailed".into()),
+                correlation_id: None,
+            }),
+            active_errors: vec![ActiveError::new(
+                "SettingsCorruptRecovered",
+                Component::Storage,
+                Some("recovered"),
+            )],
+            safe_mode: false,
+            safe_mode_reason: None,
+            paths: DiagnosticsPathDisplay {
+                data_dir: r"C:\Users\<redacted>\AppData\Local\solpaper".into(),
+                cache_dir: r"C:\Users\<redacted>\AppData\Local\solpaper\cache".into(),
+                logs_dir: r"C:\Users\<redacted>\AppData\Local\solpaper\logs".into(),
+            },
+            recovery_actions: DiagnosticsSnapshot::default_recovery_actions(false, true),
+            counters: SupportCounters {
+                storage_recoveries: 1,
+                wallpaper_failures: 1,
+                ..SupportCounters::default()
+            },
+            telemetry_enabled: TELEMETRY_ENABLED,
+            remote_crash_upload: REMOTE_CRASH_UPLOAD,
+        };
+        let text = snap.format_text();
+        assert!(text.contains("Version: 0.1.0"));
+        assert!(text.contains("not connected"));
+        assert!(text.contains("SettingsCorruptRecovered"));
+        assert!(text.contains("<redacted>"));
+        assert!(!text.to_ascii_lowercase().contains("alice"));
+        assert!(!text.to_ascii_lowercase().contains("token"));
+        assert!(!text.to_ascii_lowercase().contains("refresh"));
+        assert!(text.contains("Telemetry: false"));
+        assert!(text.contains(&format!("Telemetry: {TELEMETRY_ENABLED}")));
+    }
+
+    #[test]
+    fn crash_marker_panic_code() {
+        let m = CrashMarker::panic_marker(999, "abc");
+        assert_eq!(m.error_code, "InternalPanic");
+        assert_eq!(categorize_error_code(m.error_code), ErrorCategory::Internal);
     }
 }

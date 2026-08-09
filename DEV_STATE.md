@@ -3,9 +3,9 @@
 Status: WAITING_FOR_CI
 Current issue: #20
 Current branch: issue-20-pomodoro-widget-notify
-Current PR: (opening)
+Current PR: #96
 Last completed action: implemented #20 bullet 5 (widget projection + NIF_INFO dedupe); local gates green
-Next action: open PR #??; after CI green squash-merge under owner override
+Next action: after #96 CI green; after CI green squash-merge under owner override
 Repeated failure count: 0
 Last failure signature: none
 Blocked consecutive same-reason: 0

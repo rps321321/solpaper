@@ -28,7 +28,7 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Active work
 
-- None. Lease `issue-20` released after #87 merge.
+- None. Lease `issue-20` released; PR #89 merged. Next fire claims bullet 3.
 
 ## Ready
 
@@ -55,7 +55,7 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 - **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
-- **State PRs** — #85 / #86 after #84; #88 after #87 (bullet 3 frontier).
+- **State PRs** — #85 / #86 after #84; #88 after #87; #89 after #88 (bullet 3 frontier READY).
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -75,6 +75,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `936345d` (PR #88 state after #87)
-- **Product HEAD:** `f2fd52a` (PR #87 widget host); CI all SUCCESS on #87 and #88
+- **Branch:** `main` @ `086d10f` (PR #89 state after #88)
+- **Product HEAD:** `f2fd52a` (PR #87 widget host); CI all SUCCESS on #87, #88, #89
 - **Open implementation PRs:** none

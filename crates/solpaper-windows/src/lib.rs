@@ -22,7 +22,10 @@ pub use placeholder::{
 };
 pub use runtime::{run_runtime_host, take_settings_requested, RuntimeError, RuntimeHostConfig};
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
-pub use wallpaper::{ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper, WallpaperError};
+pub use wallpaper::{
+    prepare_owned_wallpaper, ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper,
+    WallpaperError,
+};
 pub use widget_host::{
     clear_layout_dirty, create_widget_host, destroy_all_widgets, invalidate_all_widgets,
     is_pomodoro_widget_id, layout_is_dirty, mark_layout_dirty, primary_work_area,

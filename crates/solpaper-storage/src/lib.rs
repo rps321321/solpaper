@@ -19,6 +19,7 @@ const APP_FOLDER: &str = "solpaper";
 const SETTINGS_FILE: &str = "settings.json";
 const LAYOUT_FILE: &str = "layout.json";
 const POMODORO_FILE: &str = "pomodoro.json";
+const WALLPAPERS_DIR: &str = "wallpapers";
 
 #[derive(Debug, Error)]
 pub enum StorageError {
@@ -53,6 +54,8 @@ pub struct AppPaths {
     pub layout: PathBuf,
     /// Durable Pomodoro machine state (no history / no secrets).
     pub pomodoro: PathBuf,
+    /// Default drop-folder for local wallpapers (Alpha 1).
+    pub wallpapers: PathBuf,
     pub cache: PathBuf,
     pub logs: PathBuf,
 }
@@ -69,6 +72,7 @@ impl AppPaths {
             settings: root.join(SETTINGS_FILE),
             layout: root.join(LAYOUT_FILE),
             pomodoro: root.join(POMODORO_FILE),
+            wallpapers: root.join(WALLPAPERS_DIR),
             cache: root.join("cache"),
             logs: root.join("logs"),
             root,
@@ -79,6 +83,7 @@ impl AppPaths {
         fs::create_dir_all(&self.root)?;
         fs::create_dir_all(&self.cache)?;
         fs::create_dir_all(&self.logs)?;
+        fs::create_dir_all(&self.wallpapers)?;
         Ok(())
     }
 }
@@ -89,6 +94,12 @@ pub struct SettingsDocument {
     pub version: u32,
     /// Global default widget opacity 0–255.
     pub default_opacity: u8,
+    /// Local wallpaper folders (absolute paths). Empty → use default `wallpapers` dir only.
+    #[serde(default)]
+    pub wallpaper_folders: Vec<String>,
+    /// Hold automatic wallpaper changes (pack #20; Alpha 1 has no schedule).
+    #[serde(default)]
+    pub wallpaper_hold: bool,
 }
 
 impl Default for SettingsDocument {
@@ -96,6 +107,8 @@ impl Default for SettingsDocument {
         Self {
             version: Self::CURRENT_VERSION,
             default_opacity: 230,
+            wallpaper_folders: Vec::new(),
+            wallpaper_hold: false,
         }
     }
 }
@@ -301,6 +314,8 @@ mod tests {
         let doc = SettingsDocument {
             version: 1,
             default_opacity: 200,
+            wallpaper_folders: vec![paths.wallpapers.to_string_lossy().into_owned()],
+            wallpaper_hold: true,
         };
         doc.save(&paths.settings).unwrap();
         let (loaded, outcome) = SettingsDocument::load_or_default(&paths.settings).unwrap();
@@ -310,6 +325,19 @@ mod tests {
         assert!(!raw.to_lowercase().contains("token"));
         assert!(!raw.to_lowercase().contains("secret"));
         assert!(!raw.to_lowercase().contains("password"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn settings_missing_wallpaper_fields_default() {
+        let root = temp_root();
+        let paths = AppPaths::from_root(root.clone());
+        paths.ensure_dirs().unwrap();
+        fs::write(&paths.settings, br#"{"version":1,"default_opacity":210}"#).unwrap();
+        let (doc, _) = SettingsDocument::load_or_default(&paths.settings).unwrap();
+        assert!(doc.wallpaper_folders.is_empty());
+        assert!(!doc.wallpaper_hold);
+        assert_eq!(doc.default_opacity, 210);
         let _ = fs::remove_dir_all(root);
     }
 

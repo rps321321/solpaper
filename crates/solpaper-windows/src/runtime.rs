@@ -14,12 +14,13 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
-    alpha1_pomodoro_flags, build_tray_menu, phase_instance_key, pomodoro_command_for_tray,
-    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines, NotificationDeduper,
-    PhaseInstanceId, PomodoroCommand, PomodoroEvent, PomodoroState, SurfaceMode, TrayCommand,
-    TrayMenuEntry, WidgetId, WidgetLayoutEntry, WidgetLayoutSet, CONTROL_WINDOW_CLASS,
+    alpha1_wallpaper_flags, build_tray_menu, phase_instance_key, pomodoro_command_for_tray,
+    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines,
+    LocalWallpaperController, NotificationDeduper, PhaseInstanceId, PomodoroCommand, PomodoroEvent,
+    PomodoroState, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId, WidgetLayoutEntry,
+    WidgetLayoutSet, XorShift64, CONTROL_WINDOW_CLASS,
 };
-use solpaper_storage::{save_layout, save_pomodoro};
+use solpaper_storage::{save_layout, save_pomodoro, SettingsDocument};
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -43,6 +44,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 };
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
+use crate::wallpaper::{prepare_owned_wallpaper, ComDesktopWallpaper, DesktopWallpaper};
 use crate::widget_host::{
     clear_layout_dirty, create_widget_host, destroy_all_widgets, set_pomodoro_projection,
     set_surface_mode, snapshot_widget_rects, surface_mode, toggle_surface_mode,
@@ -111,6 +113,13 @@ pub struct RuntimeHostConfig {
     pub pomodoro_path: Option<PathBuf>,
     /// Initial Pomodoro machine (caller should already have applied recovery `Sync`).
     pub pomodoro: Option<PomodoroState>,
+    /// Local wallpaper folders (empty → host uses no catalog until set).
+    pub wallpaper_folders: Vec<PathBuf>,
+    pub wallpaper_hold: bool,
+    /// Cache directory for owned wallpaper files.
+    pub wallpaper_cache: Option<PathBuf>,
+    /// Settings path for persisting hold + folder prefs.
+    pub settings_path: Option<PathBuf>,
 }
 
 static LAYOUT_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
@@ -119,6 +128,10 @@ static POMODORO: Mutex<Option<PomodoroState>> = Mutex::new(None);
 static NOTIFY_DEDUPER: Mutex<NotificationDeduper> = Mutex::new(NotificationDeduper::empty());
 /// Control HWND for tray NIM_MODIFY (tip + balloons).
 static CONTROL_HWND: Mutex<Option<UiHwnd>> = Mutex::new(None);
+static WALLPAPER_CTL: Mutex<Option<LocalWallpaperController>> = Mutex::new(None);
+static WALLPAPER_RNG: Mutex<Option<XorShift64>> = Mutex::new(None);
+static WALLPAPER_CACHE: Mutex<Option<PathBuf>> = Mutex::new(None);
+static SETTINGS_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
 
 /// HWND is not Send in the windows crate; UI-thread Runtime only.
 #[derive(Clone, Copy)]
@@ -149,6 +162,25 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
     {
         let mut guard = POMODORO_PATH.lock().expect("pomodoro path");
         *guard = config.pomodoro_path.clone();
+    }
+    {
+        let mut guard = WALLPAPER_CACHE.lock().expect("wp cache");
+        *guard = config.wallpaper_cache.clone();
+    }
+    {
+        let mut guard = SETTINGS_PATH.lock().expect("settings path");
+        *guard = config.settings_path.clone();
+    }
+    {
+        let mut guard = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+        *guard = Some(LocalWallpaperController::from_folders(
+            config.wallpaper_folders.clone(),
+            config.wallpaper_hold,
+        ));
+    }
+    {
+        let mut guard = WALLPAPER_RNG.lock().expect("wallpaper rng");
+        *guard = Some(XorShift64::from_entropy());
     }
     {
         let mut guard = POMODORO.lock().expect("pomodoro state");
@@ -290,6 +322,136 @@ fn clear_runtime_globals() {
     {
         let mut guard = NOTIFY_DEDUPER.lock().expect("deduper");
         *guard = NotificationDeduper::empty();
+    }
+    {
+        let mut guard = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+        *guard = None;
+    }
+    {
+        let mut guard = WALLPAPER_RNG.lock().expect("wallpaper rng");
+        *guard = None;
+    }
+    {
+        let mut guard = WALLPAPER_CACHE.lock().expect("wp cache");
+        *guard = None;
+    }
+    {
+        let mut guard = SETTINGS_PATH.lock().expect("settings path");
+        *guard = None;
+    }
+}
+
+fn wallpaper_next() {
+    let cache = {
+        let g = WALLPAPER_CACHE.lock().expect("wp cache");
+        g.clone()
+    };
+    let Some(cache_dir) = cache else {
+        eprintln!("solpaper: wallpaper cache path not configured");
+        return;
+    };
+
+    let source = {
+        let mut ctl = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+        let Some(ctl) = ctl.as_mut() else {
+            return;
+        };
+        ctl.rescan();
+        if ctl.bag.is_empty() {
+            eprintln!("solpaper: no local wallpapers in configured folders");
+            return;
+        }
+        let mut rng_guard = WALLPAPER_RNG.lock().expect("wallpaper rng");
+        let rng = rng_guard.get_or_insert_with(XorShift64::from_entropy);
+        ctl.pick_next(rng)
+    };
+    let Some(source) = source else {
+        eprintln!("solpaper: wallpaper bag empty");
+        return;
+    };
+
+    let owned = match prepare_owned_wallpaper(&source, &cache_dir) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("solpaper: wallpaper prepare failed: {e}");
+            return;
+        }
+    };
+
+    let adapter = match ComDesktopWallpaper::new() {
+        Ok(a) => a,
+        Err(e) => {
+            eprintln!("solpaper: wallpaper COM init failed: {e}");
+            return;
+        }
+    };
+    // Ensure global Fill (pack #5 DEFAULT).
+    if let Err(e) = adapter.set_position(solpaper_core::WallpaperPosition::Fill) {
+        eprintln!("solpaper: set wallpaper position: {e}");
+    }
+
+    let monitors = match adapter.monitors() {
+        Ok(m) => m,
+        Err(e) => {
+            eprintln!("solpaper: enumerate monitors failed: {e}");
+            return;
+        }
+    };
+    let mut any_ok = false;
+    for mon in monitors.into_iter().filter(|m| m.attached) {
+        match adapter.apply(&mon.id, &owned) {
+            Ok(()) => {
+                any_ok = true;
+                eprintln!("solpaper: wallpaper applied on {}", mon.id.as_str());
+            }
+            Err(e) => {
+                // Keep existing system wallpaper on failure (adapter contract).
+                eprintln!(
+                    "solpaper: wallpaper apply failed on {}: {e}",
+                    mon.id.as_str()
+                );
+            }
+        }
+    }
+    if any_ok {
+        let mut ctl = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+        if let Some(ctl) = ctl.as_mut() {
+            ctl.note_applied(owned);
+        }
+    }
+}
+
+fn wallpaper_toggle_hold() {
+    let hold = {
+        let mut ctl = WALLPAPER_CTL.lock().expect("wallpaper ctl");
+        let Some(ctl) = ctl.as_mut() else {
+            return;
+        };
+        ctl.toggle_hold()
+    };
+    eprintln!(
+        "solpaper: wallpaper hold {}",
+        if hold { "ON" } else { "OFF" }
+    );
+    persist_wallpaper_hold(hold);
+}
+
+fn persist_wallpaper_hold(hold: bool) {
+    let path = {
+        let g = SETTINGS_PATH.lock().expect("settings path");
+        g.clone()
+    };
+    let Some(path) = path else {
+        return;
+    };
+    match SettingsDocument::load_or_default(&path) {
+        Ok((mut doc, _)) => {
+            doc.wallpaper_hold = hold;
+            if let Err(e) = doc.save(&path) {
+                eprintln!("solpaper: settings save (hold) failed: {e}");
+            }
+        }
+        Err(e) => eprintln!("solpaper: settings load (hold) failed: {e}"),
     }
 }
 
@@ -704,7 +866,7 @@ unsafe fn show_tray_menu(hwnd: HWND) -> Result<(), RuntimeError> {
                 reset: false,
             })
     };
-    let menu = build_tray_menu(alpha1_pomodoro_flags(), Some(available));
+    let menu = build_tray_menu(alpha1_wallpaper_flags(), Some(available));
     let hmenu = CreatePopupMenu()?;
     for entry in &menu {
         match entry {
@@ -781,8 +943,10 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
         | TrayCommand::PomodoroReset => {
             apply_pomodoro_tray_command(cmd);
         }
-        // Deferred: wallpaper / autostart tracer bullets.
-        TrayCommand::WallpaperNext | TrayCommand::WallpaperHold | TrayCommand::ToggleAutostart => {}
+        TrayCommand::WallpaperNext => wallpaper_next(),
+        TrayCommand::WallpaperHold => wallpaper_toggle_hold(),
+        // Deferred: autostart tracer / installed-build only.
+        TrayCommand::ToggleAutostart => {}
     }
 }
 

@@ -324,6 +324,182 @@ pub fn require_monitor_id(id: &WallpaperMonitorId) -> Result<(), CoreError> {
     }
 }
 
+// --- Local folder catalog + shuffled bag (Issue #20 bullet 6 / pack #5+#20) ---
+
+/// Injectable RNG for deterministic bag shuffles (tests inject fixed sequence).
+pub trait RandomSource {
+    fn next_u64(&mut self) -> u64;
+}
+
+/// Tiny xorshift64* for production host (not crypto).
+#[derive(Debug, Clone)]
+pub struct XorShift64 {
+    state: u64,
+}
+
+impl XorShift64 {
+    pub fn new(seed: u64) -> Self {
+        Self {
+            state: if seed == 0 {
+                0x9E37_79B9_7F4A_7C15
+            } else {
+                seed
+            },
+        }
+    }
+
+    pub fn from_entropy() -> Self {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos() as u64)
+            .unwrap_or(1);
+        Self::new(nanos ^ std::process::id() as u64)
+    }
+}
+
+impl RandomSource for XorShift64 {
+    fn next_u64(&mut self) -> u64 {
+        let mut x = self.state;
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        self.state = x;
+        x.wrapping_mul(0x2545_F491_4F6C_DD1D)
+    }
+}
+
+/// Non-recursive enumeration of accepted image files under each folder.
+///
+/// Invalid entries are skipped. Paths are canonicalized when possible and sorted
+/// lexicographically for a stable bag source (shuffle is separate).
+pub fn list_local_images(folders: &[PathBuf]) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    for folder in folders {
+        let Ok(rd) = std::fs::read_dir(folder) else {
+            continue;
+        };
+        for entry in rd.flatten() {
+            let path = entry.path();
+            if !path.is_file() {
+                continue;
+            }
+            if !is_accepted_extension(&path) {
+                continue;
+            }
+            let canon = std::fs::canonicalize(&path).unwrap_or(path);
+            out.push(canon);
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+/// Fisher–Yates shuffled bag: no repeat until exhausted when ≥2 images.
+#[derive(Debug, Clone, Default)]
+pub struct ShuffledBag {
+    source: Vec<PathBuf>,
+    remaining: Vec<PathBuf>,
+}
+
+impl ShuffledBag {
+    pub fn new(source: Vec<PathBuf>) -> Self {
+        Self {
+            source,
+            remaining: Vec::new(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.source.is_empty()
+    }
+
+    pub fn source_len(&self) -> usize {
+        self.source.len()
+    }
+
+    /// Replace catalog (e.g. after folder rescan); clears remaining bag.
+    pub fn set_source(&mut self, source: Vec<PathBuf>) {
+        self.source = source;
+        self.remaining.clear();
+    }
+
+    fn refill<R: RandomSource>(&mut self, rng: &mut R) {
+        self.remaining = self.source.clone();
+        // Fisher–Yates
+        let n = self.remaining.len();
+        if n < 2 {
+            return;
+        }
+        for i in (1..n).rev() {
+            let j = (rng.next_u64() as usize) % (i + 1);
+            self.remaining.swap(i, j);
+        }
+    }
+
+    /// Next path for Manual Next. Refills when exhausted (≥2 sources) or always
+    /// returns the sole image when only one exists. `None` when catalog empty.
+    pub fn next<R: RandomSource>(&mut self, rng: &mut R) -> Option<PathBuf> {
+        if self.source.is_empty() {
+            return None;
+        }
+        if self.source.len() == 1 {
+            return self.source.first().cloned();
+        }
+        if self.remaining.is_empty() {
+            self.refill(rng);
+        }
+        self.remaining.pop()
+    }
+}
+
+/// Session-facing wallpaper controller state (pure; host owns COM apply).
+#[derive(Debug, Clone, Default)]
+pub struct LocalWallpaperController {
+    pub folders: Vec<PathBuf>,
+    /// When true, automatic cycle is suppressed (Alpha 1 has no schedule; flag is still toggled).
+    pub hold: bool,
+    pub bag: ShuffledBag,
+    pub last_applied: Option<PathBuf>,
+    pub pins: WallpaperPinSet,
+}
+
+impl LocalWallpaperController {
+    pub fn from_folders(folders: Vec<PathBuf>, hold: bool) -> Self {
+        let images = list_local_images(&folders);
+        Self {
+            folders,
+            hold,
+            bag: ShuffledBag::new(images),
+            last_applied: None,
+            pins: WallpaperPinSet::new(),
+        }
+    }
+
+    /// Rescan folders and rebuild bag source (keeps hold / pins / last_applied).
+    pub fn rescan(&mut self) {
+        let images = list_local_images(&self.folders);
+        self.bag.set_source(images);
+    }
+
+    /// Manual Next: pick next bag image path (does **not** apply; host does).
+    /// Hold does not block manual Next (pack: Hold prevents *automatic* change).
+    pub fn pick_next<R: RandomSource>(&mut self, rng: &mut R) -> Option<PathBuf> {
+        self.bag.next(rng)
+    }
+
+    pub fn toggle_hold(&mut self) -> bool {
+        self.hold = !self.hold;
+        self.hold
+    }
+
+    pub fn note_applied(&mut self, owned: PathBuf) {
+        self.pins.pin(owned.clone());
+        self.last_applied = Some(owned);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -420,5 +596,91 @@ mod tests {
     #[test]
     fn default_position_is_fill() {
         assert_eq!(WallpaperPosition::default(), WallpaperPosition::Fill);
+    }
+
+    #[derive(Default)]
+    struct SeqRng {
+        seq: Vec<u64>,
+        i: usize,
+    }
+    impl RandomSource for SeqRng {
+        fn next_u64(&mut self) -> u64 {
+            let v = self.seq.get(self.i).copied().unwrap_or(0);
+            self.i += 1;
+            v
+        }
+    }
+
+    #[test]
+    fn shuffled_bag_no_repeat_until_exhausted() {
+        let paths: Vec<PathBuf> = (0..4)
+            .map(|i| PathBuf::from(format!("img{i}.jpg")))
+            .collect();
+        let mut bag = ShuffledBag::new(paths.clone());
+        let mut rng = SeqRng {
+            seq: vec![0, 0, 0, 0, 0, 0, 0, 0],
+            i: 0,
+        };
+        let mut seen = Vec::new();
+        for _ in 0..4 {
+            let p = bag.next(&mut rng).unwrap();
+            assert!(!seen.contains(&p), "repeat before exhaust: {p:?}");
+            seen.push(p);
+        }
+        // After exhaust, refill may produce any order; all 4 unique first cycle.
+        assert_eq!(seen.len(), 4);
+        let fifth = bag.next(&mut rng).unwrap();
+        assert!(paths.contains(&fifth));
+    }
+
+    #[test]
+    fn single_image_always_returns_same() {
+        let mut bag = ShuffledBag::new(vec![PathBuf::from("only.png")]);
+        let mut rng = SeqRng::default();
+        assert_eq!(bag.next(&mut rng).unwrap(), PathBuf::from("only.png"));
+        assert_eq!(bag.next(&mut rng).unwrap(), PathBuf::from("only.png"));
+    }
+
+    #[test]
+    fn empty_bag_returns_none() {
+        let mut bag = ShuffledBag::new(vec![]);
+        let mut rng = SeqRng::default();
+        assert!(bag.next(&mut rng).is_none());
+    }
+
+    #[test]
+    fn list_local_images_non_recursive_sorted() {
+        let root = std::env::temp_dir().join(format!(
+            "solpaper-wp-list-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(root.join("nested")).unwrap();
+        std::fs::write(root.join("b.PNG"), b"x").unwrap();
+        std::fs::write(root.join("a.jpg"), b"x").unwrap();
+        std::fs::write(root.join("skip.gif"), b"x").unwrap();
+        std::fs::write(root.join("nested").join("deep.jpg"), b"x").unwrap();
+        let list = list_local_images(std::slice::from_ref(&root));
+        assert_eq!(list.len(), 2, "{list:?}");
+        // Sorted by full path; both files present; nested excluded.
+        assert!(list.iter().all(|p| is_accepted_extension(p)));
+        assert!(!list.iter().any(|p| p.to_string_lossy().contains("deep")));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn hold_toggle_does_not_block_pick() {
+        let mut ctl = LocalWallpaperController {
+            folders: vec![],
+            hold: false,
+            bag: ShuffledBag::new(vec![PathBuf::from("a.jpg")]),
+            last_applied: None,
+            pins: WallpaperPinSet::new(),
+        };
+        assert!(ctl.toggle_hold());
+        let mut rng = SeqRng::default();
+        assert_eq!(ctl.pick_next(&mut rng).unwrap(), PathBuf::from("a.jpg"));
     }
 }

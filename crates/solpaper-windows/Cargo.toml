@@ -8,6 +8,7 @@ rust-version.workspace = true
 description = "Win32 / COM adapters for Solpaper (tray, overlay host)"
 
 [dependencies]
+image = { workspace = true }
 solpaper-core = { workspace = true }
 solpaper-storage = { workspace = true }
 windows = { workspace = true }

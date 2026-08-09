@@ -110,6 +110,18 @@ pub fn alpha1_pomodoro_flags() -> TrayFeatureFlags {
     }
 }
 
+/// Alpha 1 after tracer bullet 6: local wallpaper Next/Hold enabled.
+pub fn alpha1_wallpaper_flags() -> TrayFeatureFlags {
+    TrayFeatureFlags {
+        settings: true,
+        edit_mode: true,
+        pomodoro: true,
+        wallpaper: true,
+        autostart_ui: false,
+        diagnostics: true,
+    }
+}
+
 /// Map a tray Pomodoro command to a domain command given the current timer status.
 ///
 /// Returns `None` for non-Pomodoro tray commands. Callers still apply domain legality
@@ -414,6 +426,25 @@ mod tests {
         assert!(command_enabled(&menu, TrayCommand::PomodoroReset));
         assert!(!command_enabled(&menu, TrayCommand::PomodoroSkip));
         assert!(!command_enabled(&menu, TrayCommand::WallpaperNext));
+    }
+
+    #[test]
+    fn wallpaper_flags_enable_next_hold() {
+        let flags = alpha1_wallpaper_flags();
+        let actions = AvailableActions {
+            start: true,
+            pause: false,
+            resume: false,
+            skip: false,
+            reset: true,
+        };
+        let menu = build_tray_menu(flags, Some(actions));
+        assert!(command_enabled(&menu, TrayCommand::WallpaperNext));
+        assert!(command_enabled(&menu, TrayCommand::WallpaperHold));
+        assert!(command_enabled(
+            &menu,
+            TrayCommand::PomodoroStartPauseResume
+        ));
     }
 
     #[test]

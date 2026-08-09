@@ -17,8 +17,9 @@ use solpaper_core::{
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{COLORREF, HWND, LPARAM, LRESULT, POINT, RECT, WPARAM};
 use windows::Win32::Graphics::Gdi::{
-    BeginPaint, CreateSolidBrush, DeleteObject, EndPaint, FillRect, FrameRect, InvalidateRect,
-    HBRUSH, PAINTSTRUCT,
+    BeginPaint, CreateSolidBrush, DeleteObject, EndPaint, FillRect, FrameRect, GetStockObject,
+    InvalidateRect, SelectObject, SetBkMode, SetTextColor, TextOutW, DEFAULT_GUI_FONT, HBRUSH,
+    HGDIOBJ, PAINTSTRUCT, TRANSPARENT,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::Input::KeyboardAndMouse::{ReleaseCapture, SetCapture};
@@ -94,12 +95,43 @@ struct WidgetSlot {
     opacity: u8,
 }
 
+/// Painted Pomodoro projection (bullet 5). Shared across pomodoro/placeholder widgets.
+#[derive(Debug, Clone)]
+struct WidgetProjection {
+    lines: [String; 3],
+    /// 0.0..=1.0 progress for a simple bottom bar.
+    progress_0_1: f32,
+}
+
+impl Default for WidgetProjection {
+    fn default() -> Self {
+        Self {
+            lines: [
+                "Idle".into(),
+                "00:00".into(),
+                "Ready · focus #0/cycle".into(),
+            ],
+            progress_0_1: 0.0,
+        }
+    }
+}
+
 static STATE: Mutex<Option<HostState>> = Mutex::new(None);
 /// Mirrors STATE.mode for fast hit-test path without lock contention on every NCHITTEST if needed.
 static EDIT_ACTIVE: AtomicBool = AtomicBool::new(false);
 static SELECTED: AtomicUsize = AtomicUsize::new(0);
 /// Set when Edit Mode geometry changes (drag/resize/nudge); cleared by layout flush.
 static LAYOUT_DIRTY: AtomicBool = AtomicBool::new(false);
+/// Latest Pomodoro lines for GDI paint (updated by Runtime).
+static PROJECTION: Mutex<WidgetProjection> = Mutex::new(WidgetProjection {
+    lines: [
+        // Lazy default until Runtime pushes a view; paint treats empty as skip.
+        String::new(),
+        String::new(),
+        String::new(),
+    ],
+    progress_0_1: 0.0,
+});
 
 /// Create all widget HWNDs (Approach A). Caller must pump messages; destroy with [`destroy_all_widgets`].
 pub fn create_widget_host(configs: &[WidgetSurfaceConfig]) -> windows::core::Result<Vec<HWND>> {
@@ -166,6 +198,58 @@ pub fn mark_layout_dirty() {
 /// Clear dirty flag after a successful flush.
 pub fn clear_layout_dirty() {
     LAYOUT_DIRTY.store(false, Ordering::SeqCst);
+}
+
+/// Update Pomodoro text/progress projected onto pomodoro (or placeholder) widgets.
+pub fn set_pomodoro_projection(lines: [String; 3], progress_0_1: f32) {
+    {
+        let mut guard = PROJECTION.lock().expect("projection");
+        guard.lines = lines;
+        guard.progress_0_1 = progress_0_1.clamp(0.0, 1.0);
+    }
+    invalidate_projection_widgets();
+}
+
+/// Whether this widget id is a Pomodoro surface (includes legacy `placeholder`).
+pub fn is_pomodoro_widget_id(id: &str) -> bool {
+    id.eq_ignore_ascii_case("pomodoro") || id.eq_ignore_ascii_case("placeholder")
+}
+
+/// Invalidate all widget HWNDs so the next paint shows current projection.
+pub fn invalidate_all_widgets() {
+    let guard = STATE.lock().expect("widget host state");
+    let Some(state) = guard.as_ref() else {
+        return;
+    };
+    for slot in &state.widgets {
+        unsafe {
+            let _ = InvalidateRect(slot.hwnd.0, None, true);
+        }
+    }
+}
+
+fn invalidate_projection_widgets() {
+    let guard = STATE.lock().expect("widget host state");
+    let Some(state) = guard.as_ref() else {
+        return;
+    };
+    for slot in &state.widgets {
+        if is_pomodoro_widget_id(&slot.id) {
+            unsafe {
+                let _ = InvalidateRect(slot.hwnd.0, None, true);
+            }
+        }
+    }
+}
+
+fn slot_id_for_hwnd(hwnd: HWND) -> Option<String> {
+    let guard = STATE.lock().expect("widget host state");
+    let state = guard.as_ref()?;
+    state
+        .widgets
+        .iter()
+        .find(|s| s.hwnd.0 == hwnd)
+        .map(|s| s.id.clone())
 }
 
 /// Current surface mode (Normal / Edit).
@@ -417,6 +501,14 @@ unsafe extern "system" fn widget_wnd_proc(
 
 unsafe fn paint_widget(hwnd: HWND) {
     let edit = EDIT_ACTIVE.load(Ordering::SeqCst);
+    let widget_id = slot_id_for_hwnd(hwnd).unwrap_or_default();
+    let show_pomodoro = is_pomodoro_widget_id(&widget_id);
+    let projection = if show_pomodoro {
+        PROJECTION.lock().expect("projection").clone()
+    } else {
+        WidgetProjection::default()
+    };
+
     let mut ps = PAINTSTRUCT::default();
     let hdc = BeginPaint(hwnd, &mut ps);
     if hdc.is_invalid() {
@@ -434,6 +526,24 @@ unsafe fn paint_widget(hwnd: HWND) {
     if !brush.is_invalid() {
         let _ = FillRect(hdc, &rc, brush);
         let _ = DeleteObject(HBRUSH(brush.0));
+    }
+
+    // Progress bar along the bottom (Normal + Edit).
+    if show_pomodoro && projection.progress_0_1 > 0.0 {
+        let bar_h = 6i32.min(rc.bottom - rc.top).max(2);
+        let max_w = (rc.right - rc.left).max(1);
+        let filled = ((max_w as f32) * projection.progress_0_1).round() as i32;
+        let bar = RECT {
+            left: rc.left,
+            top: rc.bottom - bar_h,
+            right: rc.left + filled.clamp(0, max_w),
+            bottom: rc.bottom,
+        };
+        let bar_brush = CreateSolidBrush(COLORREF(0x00_40_A0_60));
+        if !bar_brush.is_invalid() {
+            let _ = FillRect(hdc, &bar, bar_brush);
+            let _ = DeleteObject(HBRUSH(bar_brush.0));
+        }
     }
 
     if edit {
@@ -471,6 +581,38 @@ unsafe fn paint_widget(hwnd: HWND) {
         if !grip_brush.is_invalid() {
             let _ = FillRect(hdc, &grip_rc, grip_brush);
             let _ = DeleteObject(HBRUSH(grip_brush.0));
+        }
+    }
+
+    // Pomodoro projection text (GDI; ADR-0003).
+    if show_pomodoro {
+        let text_color = if edit {
+            COLORREF(0x00_F0_F0_F0)
+        } else {
+            COLORREF(0x00_20_20_20)
+        };
+        let _ = SetBkMode(hdc, TRANSPARENT);
+        let _ = SetTextColor(hdc, text_color);
+        let font = GetStockObject(DEFAULT_GUI_FONT);
+        let _ = SelectObject(hdc, HGDIOBJ(font.0));
+        let top_pad = if edit {
+            (DRAG_STRIP_DIP as i32) + 8
+        } else {
+            16
+        };
+        let mut y = rc.top + top_pad;
+        for (i, line) in projection.lines.iter().enumerate() {
+            if line.is_empty() {
+                continue;
+            }
+            let wide: Vec<u16> = line.encode_utf16().collect();
+            let x = rc.left + 16;
+            let _ = TextOutW(hdc, x, y, &wide);
+            y += if i == 1 { 28 } else { 22 };
+        }
+        if edit {
+            let tag: Vec<u16> = "[EDIT]".encode_utf16().collect();
+            let _ = TextOutW(hdc, rc.left + 16, rc.bottom - 28, &tag);
         }
     }
 
@@ -595,6 +737,14 @@ mod tests {
     #[test]
     fn widget_class_name_stable() {
         assert_eq!(WIDGET_WINDOW_CLASS, "Solpaper.Widget.Host.v1");
+    }
+
+    #[test]
+    fn pomodoro_and_placeholder_ids_project() {
+        assert!(is_pomodoro_widget_id("pomodoro"));
+        assert!(is_pomodoro_widget_id("placeholder"));
+        assert!(is_pomodoro_widget_id("Pomodoro"));
+        assert!(!is_pomodoro_widget_id("calendar"));
     }
 
     #[test]

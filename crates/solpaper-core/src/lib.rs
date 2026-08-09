@@ -22,9 +22,11 @@ pub use layout::{
     Anchor, DipPoint, DipRect, DipSize, MonitorMatch, WidgetId, WidgetLayoutEntry, WidgetLayoutSet,
 };
 pub use pomodoro::{
-    AvailableActions, Command as PomodoroCommand, DurationMs, Phase, PomodoroConfig, PomodoroEvent,
-    PomodoroState, PomodoroView, TimerStatus, UnixMs, DEFAULT_FOCUSES_BEFORE_LONG_BREAK,
-    DEFAULT_FOCUS_MS, DEFAULT_LONG_BREAK_MS, DEFAULT_SHORT_BREAK_MS,
+    format_remaining_mmss, phase_instance_key, pomodoro_completion_balloon, pomodoro_tray_tip,
+    pomodoro_widget_lines, AvailableActions, Command as PomodoroCommand, DurationMs, Phase,
+    PomodoroConfig, PomodoroEvent, PomodoroState, PomodoroView, TimerStatus, UnixMs,
+    DEFAULT_FOCUSES_BEFORE_LONG_BREAK, DEFAULT_FOCUS_MS, DEFAULT_LONG_BREAK_MS,
+    DEFAULT_SHORT_BREAK_MS,
 };
 pub use surface::{
     apply_edit_arrow, apply_move, apply_resize, clamp_rect_visible, classify_widget_hit,

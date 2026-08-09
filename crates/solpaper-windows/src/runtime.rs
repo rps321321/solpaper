@@ -5,8 +5,8 @@
 //! widget host Edit Mode hotkeys (Ctrl+Alt+F2, Escape while editing).
 //! Second launch finds this HWND via `FindWindowW`.
 //!
-//! Tracer bullet 4: durable Pomodoro state + tray Start/Pause/Resume/Skip/Reset
-//! (domain machine from #19). Widget projection / balloon dedupe is bullet 5.
+//! Tracer bullets 4–5: durable Pomodoro state + tray actions (#19), widget
+//! projection (GDI), and `NIF_INFO` completion balloons with phase-instance dedupe.
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -14,9 +14,10 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use solpaper_core::{
-    alpha1_pomodoro_flags, build_tray_menu, pomodoro_command_for_tray, PomodoroCommand,
-    PomodoroState, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId, WidgetLayoutEntry,
-    WidgetLayoutSet, CONTROL_WINDOW_CLASS,
+    alpha1_pomodoro_flags, build_tray_menu, phase_instance_key, pomodoro_command_for_tray,
+    pomodoro_completion_balloon, pomodoro_tray_tip, pomodoro_widget_lines, NotificationDeduper,
+    PhaseInstanceId, PomodoroCommand, PomodoroEvent, PomodoroState, SurfaceMode, TrayCommand,
+    TrayMenuEntry, WidgetId, WidgetLayoutEntry, WidgetLayoutSet, CONTROL_WINDOW_CLASS,
 };
 use solpaper_storage::{save_layout, save_pomodoro};
 use windows::core::{w, PCWSTR};
@@ -27,8 +28,8 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     VK_ESCAPE, VK_F2,
 };
 use windows::Win32::UI::Shell::{
-    Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_SETVERSION,
-    NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
+    Shell_NotifyIconW, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIIF_INFO, NIM_ADD, NIM_DELETE,
+    NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     AppendMenuW, CreatePopupMenu, CreateWindowExW, DefWindowProcW, DestroyMenu, DestroyWindow,
@@ -43,8 +44,9 @@ use windows::Win32::UI::WindowsAndMessaging::{
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
 use crate::widget_host::{
-    clear_layout_dirty, create_widget_host, destroy_all_widgets, set_surface_mode,
-    snapshot_widget_rects, surface_mode, toggle_surface_mode, WidgetSurfaceConfig,
+    clear_layout_dirty, create_widget_host, destroy_all_widgets, set_pomodoro_projection,
+    set_surface_mode, snapshot_widget_rects, surface_mode, toggle_surface_mode,
+    WidgetSurfaceConfig,
 };
 
 /// Tray callback message (WM_APP + 2). Control window only.
@@ -114,6 +116,16 @@ pub struct RuntimeHostConfig {
 static LAYOUT_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
 static POMODORO_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
 static POMODORO: Mutex<Option<PomodoroState>> = Mutex::new(None);
+static NOTIFY_DEDUPER: Mutex<NotificationDeduper> = Mutex::new(NotificationDeduper::empty());
+/// Control HWND for tray NIM_MODIFY (tip + balloons).
+static CONTROL_HWND: Mutex<Option<UiHwnd>> = Mutex::new(None);
+
+/// HWND is not Send in the windows crate; UI-thread Runtime only.
+#[derive(Clone, Copy)]
+struct UiHwnd(HWND);
+// SAFETY: set and used only on the UI thread that owns the message loop.
+unsafe impl Send for UiHwnd {}
+unsafe impl Sync for UiHwnd {}
 
 /// Whether a second-launch activation requested Settings (for host / tests).
 pub fn take_settings_requested() -> bool {
@@ -144,6 +156,10 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             .pomodoro
             .clone()
             .or_else(|| Some(PomodoroState::idle_default()));
+        let seed = guard.as_ref().and_then(|s| s.last_completion_id);
+        let mut dedupe = NOTIFY_DEDUPER.lock().expect("deduper");
+        *dedupe = NotificationDeduper::empty();
+        dedupe.seed_from_completion_id(seed);
     }
 
     unsafe {
@@ -179,6 +195,10 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         if control.is_invalid() {
             return Err(RuntimeError::Message("control window create failed".into()));
         }
+        {
+            let mut guard = CONTROL_HWND.lock().expect("control hwnd");
+            *guard = Some(UiHwnd(control));
+        }
 
         tray_add(control)?;
         register_toggle_edit_hotkey(control)?;
@@ -195,6 +215,7 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             create_widget_host(&config.widgets)?;
             set_surface_mode(SurfaceMode::Normal);
         }
+        refresh_pomodoro_projection(control);
 
         if config.smoke {
             // Exercise mode toggle + one pomodoro Start/Reset path for smoke.
@@ -262,6 +283,14 @@ fn clear_runtime_globals() {
         let mut guard = POMODORO.lock().expect("pomodoro state");
         *guard = None;
     }
+    {
+        let mut guard = CONTROL_HWND.lock().expect("control hwnd");
+        *guard = None;
+    }
+    {
+        let mut guard = NOTIFY_DEDUPER.lock().expect("deduper");
+        *guard = NotificationDeduper::empty();
+    }
 }
 
 fn now_utc_ms() -> i64 {
@@ -289,6 +318,12 @@ fn apply_pomodoro_tray_command(cmd: TrayCommand) {
                 drop(guard);
                 persist_pomodoro_snapshot(&snapshot);
                 log_pomodoro_events(&events, domain_cmd);
+                handle_pomodoro_side_effects(&events);
+            } else {
+                drop(guard);
+            }
+            if let Some(hwnd) = control_hwnd() {
+                refresh_pomodoro_projection(hwnd);
             }
         }
         Err(e) => {
@@ -304,21 +339,31 @@ fn pomodoro_live_tick() {
         return;
     };
     match state.apply(PomodoroCommand::LiveTick, now) {
-        Ok(events) if !events.is_empty() => {
-            let snapshot = state.clone();
-            drop(guard);
-            persist_pomodoro_snapshot(&snapshot);
-            // Balloon projection is bullet 5; log completion for diagnostics only.
-            for e in &events {
-                eprintln!("solpaper: pomodoro event {e:?}");
+        Ok(events) => {
+            let had_events = !events.is_empty();
+            if had_events {
+                let snapshot = state.clone();
+                drop(guard);
+                persist_pomodoro_snapshot(&snapshot);
+                log_pomodoro_events(&events, PomodoroCommand::LiveTick);
+                handle_pomodoro_side_effects(&events);
+            } else {
+                drop(guard);
+            }
+            // Always refresh projection while alive so remaining time ticks.
+            if let Some(hwnd) = control_hwnd() {
+                refresh_pomodoro_projection(hwnd);
             }
         }
-        Ok(_) => {}
         Err(e) => eprintln!("solpaper: pomodoro LiveTick error: {e}"),
     }
 }
 
-fn log_pomodoro_events(events: &[solpaper_core::PomodoroEvent], cmd: PomodoroCommand) {
+fn control_hwnd() -> Option<HWND> {
+    CONTROL_HWND.lock().expect("control hwnd").map(|h| h.0)
+}
+
+fn log_pomodoro_events(events: &[PomodoroEvent], cmd: PomodoroCommand) {
     if events.is_empty() {
         eprintln!("solpaper: pomodoro {cmd:?} applied");
         return;
@@ -326,6 +371,47 @@ fn log_pomodoro_events(events: &[solpaper_core::PomodoroEvent], cmd: PomodoroCom
     for e in events {
         eprintln!("solpaper: pomodoro event {e:?}");
     }
+}
+
+/// Balloon notifications for phase completions (deduped by phase instance id).
+fn handle_pomodoro_side_effects(events: &[PomodoroEvent]) {
+    let Some(hwnd) = control_hwnd() else {
+        return;
+    };
+    for e in events {
+        if let PomodoroEvent::PhaseCompleted {
+            phase,
+            completion_id,
+            ..
+        } = e
+        {
+            let key = PhaseInstanceId::new(phase_instance_key(*completion_id));
+            let should = {
+                let mut d = NOTIFY_DEDUPER.lock().expect("deduper");
+                d.try_notify(&key)
+            };
+            if should {
+                let (title, body) = pomodoro_completion_balloon(*phase);
+                tray_balloon(hwnd, title, &body);
+            }
+        }
+    }
+}
+
+/// Push `PomodoroView` into the widget host and tray tip.
+fn refresh_pomodoro_projection(hwnd: HWND) {
+    let now = now_utc_ms();
+    let view = {
+        let guard = POMODORO.lock().expect("pomodoro state");
+        guard.as_ref().map(|s| s.view(now))
+    };
+    let Some(view) = view else {
+        return;
+    };
+    let lines = pomodoro_widget_lines(&view);
+    set_pomodoro_projection(lines, view.progress_0_1);
+    let tip = pomodoro_tray_tip(&view);
+    tray_update_tip(hwnd, &tip);
 }
 
 fn persist_pomodoro_snapshot(state: &PomodoroState) {
@@ -557,6 +643,48 @@ unsafe fn tray_delete(hwnd: HWND) -> Result<(), RuntimeError> {
     };
     let _ = Shell_NotifyIconW(NIM_DELETE, &nid);
     Ok(())
+}
+
+fn copy_wide_fixed(dst: &mut [u16], text: &str) {
+    let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
+    let n = (dst.len() - 1).min(wide.len());
+    dst[..n].copy_from_slice(&wide[..n]);
+    if n < dst.len() {
+        dst[n] = 0;
+    }
+}
+
+/// Update tray tooltip (NIF_TIP only). Safe to call from UI thread.
+fn tray_update_tip(hwnd: HWND, tip: &str) {
+    let mut nid = NOTIFYICONDATAW {
+        cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
+        hWnd: hwnd,
+        uID: 1,
+        uFlags: NIF_TIP,
+        ..Default::default()
+    };
+    copy_wide_fixed(&mut nid.szTip, tip);
+    let _ = unsafe { Shell_NotifyIconW(NIM_MODIFY, &nid) };
+}
+
+/// Show a tray balloon for phase completion (`NIF_INFO` / pack #7 DEFAULT).
+fn tray_balloon(hwnd: HWND, title: &str, body: &str) {
+    let mut nid = NOTIFYICONDATAW {
+        cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
+        hWnd: hwnd,
+        uID: 1,
+        uFlags: NIF_INFO,
+        ..Default::default()
+    };
+    // NOTIFYICONDATAW_0 union: uTimeout / uVersion — for balloons set timeout ms.
+    nid.Anonymous = NOTIFYICONDATAW_0 { uTimeout: 8_000 };
+    nid.dwInfoFlags = NIIF_INFO;
+    copy_wide_fixed(&mut nid.szInfoTitle, title);
+    copy_wide_fixed(&mut nid.szInfo, body);
+    let ok = unsafe { Shell_NotifyIconW(NIM_MODIFY, &nid) };
+    if !ok.as_bool() {
+        eprintln!("solpaper: tray balloon failed");
+    }
 }
 
 unsafe fn show_tray_menu(hwnd: HWND) -> Result<(), RuntimeError> {

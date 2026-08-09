@@ -21,21 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 5** next: Pomodoro widget projection and notification dedupe. Bullets 1–4 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94)).
+- **#20** — Alpha 1 tracer **bullet 5** in progress: Pomodoro widget projection and notification dedupe (branch `issue-20-pomodoro-widget-notify`). Bullets 1–4 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94)).
 - Remaining #20 after bullet 5: local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- None. Lease `issue-20` released after #94 merge.
+- **#20 bullet 5** — lease `issue-20` owner `agent:solpaper-dev-loop` branch `issue-20-pomodoro-widget-notify` (HIGH).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 5 | Pomodoro widget projection + notification dedupe | claim lease next fire |
-| #20 later bullets | Wallpaper, diagnostics, evidence | after bullet 5 |
+| #20 bullet 5 | Pomodoro widget projection + notification dedupe | PR + CI (this fire) |
+| #20 later bullets | Wallpaper, diagnostics, evidence | after bullet 5 merge |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -77,6 +77,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `1a0a416` (PR #94 bullet 4 Pomodoro persist + tray)
-- **Product HEAD:** `1a0a416`; CI all SUCCESS on #94; squash-merged under owner override
-- **Open implementation PRs:** none
+- **Branch:** `main` @ `ceaa65c` (PR #95 READY after #94)
+- **Product HEAD:** bullet 4 on main; bullet 5 on `issue-20-pomodoro-widget-notify`
+- **Open implementation PRs:** bullet 5 (opening)

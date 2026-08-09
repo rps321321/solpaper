@@ -1,12 +1,12 @@
 {
     "issue":  20,
     "owner":  "agent:solpaper-dev-loop",
-    "branch":  "issue-20-runtime-tray-host",
-    "claimed_at":  "2026-08-08T13:21:52.4907240Z",
-    "expires_at":  "2026-08-08T16:41:47.0501904Z",
-    "heartbeat_at":  "2026-08-08T15:06:49.6611523Z",
-    "status":  "released",
-    "unit":  "Alpha1 tracer1: control HWND + Shell_NotifyIcon tray host + message loop",
-    "pr":  84,
+    "branch":  "issue-20-widget-host-edit-mode",
+    "claimed_at":  "2026-08-08T16:27:12.3144772Z",
+    "expires_at":  "2026-08-08T18:37:28.8189160Z",
+    "heartbeat_at":  "2026-08-08T16:37:28.8189160Z",
+    "status":  "active",
+    "unit":  "Alpha1 tracer2: Approach A widget host + Normal/Edit Mode (tray + Ctrl+Alt+F2 + Escape)",
+    "pr":  87,
     "risk_class":  "HIGH"
 }

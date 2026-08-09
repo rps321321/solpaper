@@ -2,10 +2,10 @@
 
 Status: WAITING_FOR_CI
 Current issue: #20
-Current branch: chore/ready-after-98
-Current PR: (opening)
-Last completed action: squash-merged PR #98 (#20 bullet 6 local wallpaper); released lease; READY state for frontier bullet 7
-Next action: after READY PR CI green, squash-merge; then claim #20 bullet 7 (diagnostics UI)
+Current branch: chore/ready-after-98-20260809-114650
+Current PR: #99
+Last completed action: squash-merged PR #98; released lease; opened LOW READY state PR #99 (frontier bullet 7)
+Next action: after #99 CI green, squash-merge under owner override; then claim #20 bullet 7
 Repeated failure count: 0
 Last failure signature: none
 Blocked consecutive same-reason: 0

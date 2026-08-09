@@ -20,7 +20,10 @@ pub use dpi::set_process_dpi_awareness;
 pub use placeholder::{
     create_placeholder_window, destroy_placeholder_window, run_placeholder_host, PlaceholderConfig,
 };
-pub use runtime::{run_runtime_host, take_settings_requested, RuntimeError, RuntimeHostConfig};
+pub use runtime::{
+    run_runtime_host, take_settings_requested, DiagnosticsHostConfig, RuntimeError,
+    RuntimeHostConfig,
+};
 pub use single_instance::{SingleInstanceError, SingleInstanceGuard};
 pub use wallpaper::{
     prepare_owned_wallpaper, ComDesktopWallpaper, DesktopWallpaper, FakeDesktopWallpaper,

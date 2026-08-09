@@ -1,11 +1,11 @@
 # Development State
 
-Status: READY
+Status: WAITING_FOR_CI
 Current issue: #20
-Current branch: main
-Current PR: none
-Last completed action: squash-merged PR #94 (#20 bullet 4 Pomodoro persist + tray) under owner override; released lease
-Next action: claim #20 bullet 5 (Pomodoro widget projection + notification dedupe)
+Current branch: chore/ready-after-94-20260809-110705
+Current PR: #95
+Last completed action: squash-merged PR #94; released lease; opened LOW READY state PR #95 (frontier bullet 5)
+Next action: after #95 CI green, squash-merge under owner override; then claim #20 bullet 5
 Repeated failure count: 0
 Last failure signature: none
 Blocked consecutive same-reason: 0

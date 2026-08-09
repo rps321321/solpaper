@@ -21,21 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 5** in progress: Pomodoro widget projection and notification dedupe (branch `issue-20-pomodoro-widget-notify`). Bullets 1–4 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94)).
-- Remaining #20 after bullet 5: local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
+- **#20** — Alpha 1 tracer **bullet 6** next: local-folder wallpaper source + #5 adapter. Bullets 1–5 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92), PR [#94](https://github.com/rps321321/solpaper/pull/94), PR [#96](https://github.com/rps321321/solpaper/pull/96)).
+- Remaining #20 after bullet 6: diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- **#20 bullet 5** — lease `issue-20` owner `agent:solpaper-dev-loop` branch `issue-20-pomodoro-widget-notify` (HIGH).
+- None. Lease `issue-20` released after #96 merge.
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 5 | Pomodoro widget projection + notification dedupe | PR + CI (this fire) |
-| #20 later bullets | Wallpaper, diagnostics, evidence | after bullet 5 merge |
+| #20 bullet 6 | Local-folder wallpaper + #5 adapter | claim lease next fire |
+| #20 later bullets | Diagnostics UI, physical evidence | after bullet 6 |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -53,11 +53,12 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 
 ## Recently completed
 
+- **#20 bullet 5** — Pomodoro widget projection + NIF_INFO notification dedupe. PR #96 (merged 2026-08-09).
 - **#20 bullet 4** — Pomodoro state persistence + tray Start/Pause/Resume/Skip/Reset. PR #94 (merged 2026-08-09).
 - **#20 bullet 3** — Atomic settings/layout persistence + off-screen clamp. PR #92 (merged 2026-08-09).
 - **#20 bullet 2** — Approach A widget host + Normal/Edit Mode. PR #87 (merged 2026-08-09).
 - **#20 bullet 1** — Runtime control HWND + Shell_NotifyIcon tray host. PR #84 (merged 2026-08-08).
-- **State PRs** — #85 / #86 after #84; #88–#91 after #87; #93 after #92; post-#94 READY follows.
+- **State PRs** — #85 / #86 after #84; #88–#91 after #87; #93 after #92; #95 after #94; post-#96 READY follows.
 - **#13 draft** — Acceptance matrix. PR #82.
 - **#7** — Tray design + adapters. PR #79.
 - **#5** — IDesktopWallpaper. PR #77.
@@ -77,6 +78,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `ceaa65c` (PR #95 READY after #94)
-- **Product HEAD:** bullet 4 on main; bullet 5 on `issue-20-pomodoro-widget-notify`
-- **Open implementation PRs:** bullet 5 (opening)
+- **Branch:** `main` @ `a91a653` (PR #96 bullet 5 widget projection + balloons)
+- **Product HEAD:** `a91a653`; CI all SUCCESS on #96; squash-merged under owner override
+- **Open implementation PRs:** none

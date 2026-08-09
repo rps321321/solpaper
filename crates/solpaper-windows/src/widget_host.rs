@@ -91,12 +91,15 @@ struct HostState {
 struct WidgetSlot {
     id: String,
     hwnd: UiHwnd,
+    opacity: u8,
 }
 
 static STATE: Mutex<Option<HostState>> = Mutex::new(None);
 /// Mirrors STATE.mode for fast hit-test path without lock contention on every NCHITTEST if needed.
 static EDIT_ACTIVE: AtomicBool = AtomicBool::new(false);
 static SELECTED: AtomicUsize = AtomicUsize::new(0);
+/// Set when Edit Mode geometry changes (drag/resize/nudge); cleared by layout flush.
+static LAYOUT_DIRTY: AtomicBool = AtomicBool::new(false);
 
 /// Create all widget HWNDs (Approach A). Caller must pump messages; destroy with [`destroy_all_widgets`].
 pub fn create_widget_host(configs: &[WidgetSurfaceConfig]) -> windows::core::Result<Vec<HWND>> {
@@ -114,6 +117,7 @@ pub fn create_widget_host(configs: &[WidgetSurfaceConfig]) -> windows::core::Res
             slots.push(WidgetSlot {
                 id: cfg.id.clone(),
                 hwnd: UiHwnd(hwnd),
+                opacity: cfg.opacity,
             });
             hwnds.push(hwnd);
         }
@@ -127,6 +131,7 @@ pub fn create_widget_host(configs: &[WidgetSurfaceConfig]) -> windows::core::Res
         });
         EDIT_ACTIVE.store(false, Ordering::SeqCst);
         SELECTED.store(0, Ordering::SeqCst);
+        LAYOUT_DIRTY.store(false, Ordering::SeqCst);
         Ok(hwnds)
     }
 }
@@ -145,6 +150,22 @@ pub fn destroy_all_widgets() {
         }
     }
     EDIT_ACTIVE.store(false, Ordering::SeqCst);
+    LAYOUT_DIRTY.store(false, Ordering::SeqCst);
+}
+
+/// Whether live widget geometry differs from the last flushed layout.
+pub fn layout_is_dirty() -> bool {
+    LAYOUT_DIRTY.load(Ordering::SeqCst)
+}
+
+/// Mark layout dirty (geometry changed in Edit Mode).
+pub fn mark_layout_dirty() {
+    LAYOUT_DIRTY.store(true, Ordering::SeqCst);
+}
+
+/// Clear dirty flag after a successful flush.
+pub fn clear_layout_dirty() {
+    LAYOUT_DIRTY.store(false, Ordering::SeqCst);
 }
 
 /// Current surface mode (Normal / Edit).
@@ -194,8 +215,10 @@ pub fn toggle_surface_mode() -> SurfaceMode {
     next
 }
 
-/// Live geometries after drag/resize (for tests / later layout persistence).
-pub fn snapshot_widget_rects() -> Vec<(String, SurfaceRect)> {
+/// Live geometries after drag/resize (for layout persistence).
+///
+/// Each tuple is `(id, rect, opacity)`.
+pub fn snapshot_widget_rects() -> Vec<(String, SurfaceRect, u8)> {
     let guard = STATE.lock().expect("widget host state");
     let Some(state) = guard.as_ref() else {
         return Vec::new();
@@ -215,7 +238,7 @@ pub fn snapshot_widget_rects() -> Vec<(String, SurfaceRect)> {
                 (rc.right - rc.left) as f32,
                 (rc.bottom - rc.top) as f32,
             ) {
-                out.push((slot.id.clone(), rect));
+                out.push((slot.id.clone(), rect, slot.opacity));
             }
         }
     }
@@ -519,6 +542,9 @@ unsafe fn on_mouse_move() {
 unsafe fn on_lbutton_up() {
     let mut guard = STATE.lock().expect("widget host state");
     if let Some(state) = guard.as_mut() {
+        if state.drag.is_some() {
+            LAYOUT_DIRTY.store(true, Ordering::SeqCst);
+        }
         state.drag = None;
     }
     let _ = ReleaseCapture();
@@ -558,6 +584,7 @@ unsafe fn on_key_down(wparam: WPARAM) {
     let work = primary_work_area();
     let next = apply_edit_arrow(base, arrow, ctrl, shift, work);
     move_resize_hwnd(slot.hwnd.0, next);
+    LAYOUT_DIRTY.store(true, Ordering::SeqCst);
     let _ = InvalidateRect(slot.hwnd.0, None, true);
 }
 

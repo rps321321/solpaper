@@ -5,12 +5,15 @@
 //! widget host Edit Mode hotkeys (Ctrl+Alt+F2, Escape while editing).
 //! Second launch finds this HWND via `FindWindowW`.
 
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::Mutex;
 
 use solpaper_core::{
-    alpha1_widget_host_flags, build_tray_menu, SurfaceMode, TrayCommand, TrayMenuEntry,
-    CONTROL_WINDOW_CLASS,
+    alpha1_widget_host_flags, build_tray_menu, SurfaceMode, TrayCommand, TrayMenuEntry, WidgetId,
+    WidgetLayoutEntry, WidgetLayoutSet, CONTROL_WINDOW_CLASS,
 };
+use solpaper_storage::save_layout;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -34,8 +37,8 @@ use windows::Win32::UI::WindowsAndMessaging::{
 
 use crate::activation::WM_APP_SHOW_SETTINGS;
 use crate::widget_host::{
-    create_widget_host, destroy_all_widgets, set_surface_mode, surface_mode, toggle_surface_mode,
-    WidgetSurfaceConfig,
+    clear_layout_dirty, create_widget_host, destroy_all_widgets, set_surface_mode,
+    snapshot_widget_rects, surface_mode, toggle_surface_mode, WidgetSurfaceConfig,
 };
 
 /// Tray callback message (WM_APP + 2). Control window only.
@@ -90,7 +93,11 @@ pub struct RuntimeHostConfig {
     pub smoke: bool,
     /// Approach A widget surfaces (empty = tray-only runtime).
     pub widgets: Vec<WidgetSurfaceConfig>,
+    /// When set, flush layout JSON on Edit→Normal and shutdown (atomic write).
+    pub layout_path: Option<PathBuf>,
 }
+
+static LAYOUT_PATH: Mutex<Option<PathBuf>> = Mutex::new(None);
 
 /// Whether a second-launch activation requested Settings (for host / tests).
 pub fn take_settings_requested() -> bool {
@@ -107,6 +114,10 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
     ACCEPTING_WORK.store(true, Ordering::SeqCst);
     SETTINGS_REQUESTED.store(false, Ordering::SeqCst);
     ESCAPE_HOTKEY_REGISTERED.store(false, Ordering::SeqCst);
+    {
+        let mut guard = LAYOUT_PATH.lock().expect("layout path");
+        *guard = config.layout_path.clone();
+    }
 
     unsafe {
         let hinstance = GetModuleHandleW(None)?;
@@ -160,6 +171,7 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             pump_peek(48);
             // Graceful teardown without full GetMessage loop.
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
+            flush_layout_to_disk();
             unregister_all_hotkeys(control);
             let _ = tray_delete(control);
             if has_widgets {
@@ -167,6 +179,7 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             }
             let _ = DestroyWindow(control);
             pump_peek(16);
+            clear_layout_path();
             return Ok(());
         }
 
@@ -183,7 +196,8 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
             DispatchMessageW(&msg);
         }
 
-        // Loop exit: ensure tray/hotkeys/widgets removed if still present.
+        // Loop exit: flush layout, then remove tray/hotkeys/widgets if still present.
+        flush_layout_to_disk();
         unregister_all_hotkeys(control);
         let _ = tray_delete(control);
         if has_widgets {
@@ -191,7 +205,61 @@ pub fn run_runtime_host(config: &RuntimeHostConfig) -> Result<(), RuntimeError> 
         }
     }
 
+    clear_layout_path();
     Ok(())
+}
+
+fn clear_layout_path() {
+    let mut guard = LAYOUT_PATH.lock().expect("layout path");
+    *guard = None;
+}
+
+/// Snapshot live widgets and atomically write `layout.json` when a path is configured.
+///
+/// Writes last-known geometry on Edit→Normal and shutdown. On failure, logs and keeps
+/// in-memory geometry (no crash). Skips when not dirty and widgets already match disk
+/// only when there is nothing to snapshot.
+fn flush_layout_to_disk() {
+    let path = {
+        let guard = LAYOUT_PATH.lock().expect("layout path");
+        guard.clone()
+    };
+    let Some(path) = path else {
+        return;
+    };
+    let snaps = snapshot_widget_rects();
+    if snaps.is_empty() {
+        return;
+    }
+    let mut set = WidgetLayoutSet::new_empty();
+    for (id, rect, opacity) in snaps {
+        match WidgetId::new(id.as_str()) {
+            Ok(wid) => match WidgetLayoutEntry::from_top_left_rect(
+                wid,
+                rect.x,
+                rect.y,
+                rect.width,
+                rect.height,
+                opacity,
+            ) {
+                Ok(entry) => set.widgets.push(entry),
+                Err(e) => {
+                    eprintln!("solpaper: skip layout entry {id}: {e}");
+                }
+            },
+            Err(e) => eprintln!("solpaper: skip layout id {id}: {e}"),
+        }
+    }
+    if set.widgets.is_empty() {
+        return;
+    }
+    match save_layout(&path, &set) {
+        Ok(()) => {
+            clear_layout_dirty();
+            eprintln!("solpaper: layout saved ({} widget(s))", set.widgets.len());
+        }
+        Err(e) => eprintln!("solpaper: layout save failed: {e}"),
+    }
 }
 
 unsafe fn register_toggle_edit_hotkey(hwnd: HWND) -> Result<(), RuntimeError> {
@@ -226,6 +294,7 @@ unsafe fn unregister_all_hotkeys(hwnd: HWND) {
 }
 
 fn apply_edit_mode(hwnd: HWND, mode: SurfaceMode) {
+    let prev = surface_mode();
     set_surface_mode(mode);
     unsafe {
         if mode.is_edit() {
@@ -233,6 +302,10 @@ fn apply_edit_mode(hwnd: HWND, mode: SurfaceMode) {
         } else {
             unregister_escape_hotkey(hwnd);
         }
+    }
+    // Atomic layout persistence: flush when leaving Edit Mode (tray, hotkey, Escape).
+    if prev.is_edit() && !mode.is_edit() {
+        flush_layout_to_disk();
     }
 }
 
@@ -403,6 +476,7 @@ fn handle_tray_command(hwnd: HWND, cmd: TrayCommand) {
     match cmd {
         TrayCommand::Quit => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
+            flush_layout_to_disk();
             unsafe {
                 unregister_all_hotkeys(hwnd);
                 destroy_all_widgets();
@@ -485,6 +559,7 @@ unsafe extern "system" fn control_wnd_proc(
         }
         WM_DESTROY => {
             ACCEPTING_WORK.store(false, Ordering::SeqCst);
+            flush_layout_to_disk();
             unregister_all_hotkeys(hwnd);
             destroy_all_widgets();
             let _ = tray_delete(hwnd);

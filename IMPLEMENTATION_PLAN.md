@@ -21,21 +21,20 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 3** next: versioned settings/layout persistence + off-screen clamping. Bullets 1–2 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87)).
+- **#20** — Alpha 1 tracer **bullet 3** in progress: versioned settings + atomic layout persistence + off-screen clamping. Bullets 1–2 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87)).
 - Remaining #20 after bullet 3: Pomodoro domain+widget+tray → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- None. Lease `issue-20` released; PR #90 merged. Next fire claims bullet 3.
+- **#20 bullet 3** — branch `issue-20-settings-layout-persist`; lease held by `agent:solpaper-dev-loop` (HIGH).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 3 | Settings/layout persistence + clamp | claim lease next fire |
-| #20 later bullets | Pomodoro UI, wallpaper | after bullet 3 |
+| #20 later bullets | Pomodoro UI, wallpaper | after bullet 3 merge |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked

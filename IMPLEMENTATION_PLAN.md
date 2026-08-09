@@ -21,21 +21,21 @@ Regeneratable execution ledger. Do not duplicate GitHub issue bodies. Status on 
 
 ## Current frontier
 
-- **#20** — Alpha 1 tracer **bullet 4** next: Pomodoro domain/state persistence and tray actions from #19. Bullets 1–3 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92)).
+- **#20** — Alpha 1 tracer **bullet 4** in progress: Pomodoro domain/state persistence and tray actions from #19 (branch `issue-20-pomodoro-persist-tray`). Bullets 1–3 complete (PR [#84](https://github.com/rps321321/solpaper/pull/84), PR [#87](https://github.com/rps321321/solpaper/pull/87), PR [#92](https://github.com/rps321321/solpaper/pull/92)); post-#92 READY [#93](https://github.com/rps321321/solpaper/pull/93) merged.
 - Remaining #20 after bullet 4: Pomodoro widget projection + notification dedupe → local wallpaper folders → diagnostics UI → physical evidence (MD-RT-*).
 - **#13** — Matrix draft landed (PR #82); human freeze still open.
 - Manual evidence: MD-* including MD-RT-01..05, MD-WP-*.
 
 ## Active work
 
-- None. Lease `issue-20` released after #92 merge.
+- **#20 bullet 4** — lease `issue-20` owner `agent:solpaper-dev-loop` branch `issue-20-pomodoro-persist-tray` (HIGH).
 
 ## Ready
 
 | Issue | Title | Next action |
 |------:|-------|-------------|
-| #20 bullet 4 | Pomodoro domain/state + tray actions | claim lease next fire |
-| #20 later bullets | Widget projection, wallpaper | after bullet 4 |
+| #20 bullet 4 | Pomodoro domain/state + tray actions | PR + CI (this fire) |
+| #20 later bullets | Widget projection, wallpaper | after bullet 4 merge |
 | #13 close | Acceptance freeze | owner v1 boundary |
 
 ## Blocked
@@ -76,6 +76,6 @@ MD-001..009, MD-A11Y-*, MD-UX-01, MD-PERF-*, MD-WP-01..06, MD-RT-01..05.
 ## Last verified repository state
 
 - **Date (UTC):** 2026-08-09
-- **Branch:** `main` @ `8175e43` (PR #92 bullet 3 persistence)
-- **Product HEAD:** `8175e43` (settings/layout persist + clamp); CI all SUCCESS on #92
-- **Open implementation PRs:** none
+- **Branch:** `main` @ `2f9a611` (PR #93 READY after #92)
+- **Product HEAD:** `2f9a611` / bullet 3 on main; bullet 4 on `issue-20-pomodoro-persist-tray`
+- **Open implementation PRs:** bullet 4 (opening)

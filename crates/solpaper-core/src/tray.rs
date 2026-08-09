@@ -3,7 +3,7 @@
 //! Platform tray / registry / HWND code lives in `solpaper-windows`. This module is
 //! pure and unit-tested on any host.
 
-use crate::pomodoro::{AvailableActions, TimerStatus};
+use crate::pomodoro::{AvailableActions, Command as PomodoroCommand, TimerStatus};
 
 /// Fixed menu command IDs in blueprint #7 display order (excluding separators).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -95,6 +95,38 @@ pub fn alpha1_widget_host_flags() -> TrayFeatureFlags {
         wallpaper: false,
         autostart_ui: false,
         diagnostics: true,
+    }
+}
+
+/// Alpha 1 after tracer bullet 4: Pomodoro tray actions enabled (wallpaper still later).
+pub fn alpha1_pomodoro_flags() -> TrayFeatureFlags {
+    TrayFeatureFlags {
+        settings: true,
+        edit_mode: true,
+        pomodoro: true,
+        wallpaper: false,
+        autostart_ui: false,
+        diagnostics: true,
+    }
+}
+
+/// Map a tray Pomodoro command to a domain command given the current timer status.
+///
+/// Returns `None` for non-Pomodoro tray commands. Callers still apply domain legality
+/// via [`crate::PomodoroState::apply`] (illegal transitions are rejected there).
+pub fn pomodoro_command_for_tray(
+    cmd: TrayCommand,
+    status: &TimerStatus,
+) -> Option<PomodoroCommand> {
+    match cmd {
+        TrayCommand::PomodoroStartPauseResume => match status {
+            TimerStatus::Idle => Some(PomodoroCommand::Start),
+            TimerStatus::Running { .. } => Some(PomodoroCommand::Pause),
+            TimerStatus::Paused { .. } => Some(PomodoroCommand::Resume),
+        },
+        TrayCommand::PomodoroSkip => Some(PomodoroCommand::Skip),
+        TrayCommand::PomodoroReset => Some(PomodoroCommand::Reset),
+        _ => None,
     }
 }
 
@@ -351,6 +383,65 @@ mod tests {
             TrayCommand::PomodoroStartPauseResume
         ));
         assert!(!command_enabled(&menu, TrayCommand::WallpaperNext));
+    }
+
+    #[test]
+    fn pomodoro_flags_enable_pomodoro_actions() {
+        let flags = alpha1_pomodoro_flags();
+        let actions = AvailableActions {
+            start: true,
+            pause: false,
+            resume: false,
+            skip: false,
+            reset: true,
+        };
+        let menu = build_tray_menu(flags, Some(actions));
+        assert!(command_enabled(&menu, TrayCommand::ToggleEditMode));
+        assert!(command_enabled(
+            &menu,
+            TrayCommand::PomodoroStartPauseResume
+        ));
+        assert!(command_enabled(&menu, TrayCommand::PomodoroReset));
+        assert!(!command_enabled(&menu, TrayCommand::PomodoroSkip));
+        assert!(!command_enabled(&menu, TrayCommand::WallpaperNext));
+    }
+
+    #[test]
+    fn tray_pomodoro_maps_start_pause_resume() {
+        assert_eq!(
+            pomodoro_command_for_tray(TrayCommand::PomodoroStartPauseResume, &TimerStatus::Idle),
+            Some(PomodoroCommand::Start)
+        );
+        assert_eq!(
+            pomodoro_command_for_tray(
+                TrayCommand::PomodoroStartPauseResume,
+                &TimerStatus::Running {
+                    phase: crate::Phase::Focus,
+                    deadline_utc_ms: 1,
+                    phase_instance_id: 1,
+                }
+            ),
+            Some(PomodoroCommand::Pause)
+        );
+        assert_eq!(
+            pomodoro_command_for_tray(
+                TrayCommand::PomodoroStartPauseResume,
+                &TimerStatus::Paused {
+                    phase: crate::Phase::Focus,
+                    remaining_ms: 100,
+                    phase_instance_id: 1,
+                }
+            ),
+            Some(PomodoroCommand::Resume)
+        );
+        assert_eq!(
+            pomodoro_command_for_tray(TrayCommand::PomodoroSkip, &TimerStatus::Idle),
+            Some(PomodoroCommand::Skip)
+        );
+        assert_eq!(
+            pomodoro_command_for_tray(TrayCommand::OpenSettings, &TimerStatus::Idle),
+            None
+        );
     }
 
     #[test]

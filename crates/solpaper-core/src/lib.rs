@@ -32,11 +32,12 @@ pub use surface::{
     MIN_VISIBLE_DIP, MIN_WIDGET_SIZE_DIP, NUDGE_STEP_DIP, NUDGE_STEP_LARGE_DIP, RESIZE_GRIP_DIP,
 };
 pub use tray::{
-    alpha1_scaffold_flags, alpha1_widget_host_flags, autostart_command_line, build_tray_menu,
-    command_enabled, pomodoro_status_label, portable_allows_autostart_ui, NotificationDeduper,
-    PhaseInstanceId, SecondLaunchAction, ShutdownStep, TrayCommand, TrayFeatureFlags,
-    TrayMenuEntry, AUTOSTART_BACKGROUND_FLAG, AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS,
-    SECOND_LAUNCH_ACTION, SHUTDOWN_SEQUENCE, SHUTDOWN_WORKER_WAIT_MS,
+    alpha1_pomodoro_flags, alpha1_scaffold_flags, alpha1_widget_host_flags, autostart_command_line,
+    build_tray_menu, command_enabled, pomodoro_command_for_tray, pomodoro_status_label,
+    portable_allows_autostart_ui, NotificationDeduper, PhaseInstanceId, SecondLaunchAction,
+    ShutdownStep, TrayCommand, TrayFeatureFlags, TrayMenuEntry, AUTOSTART_BACKGROUND_FLAG,
+    AUTOSTART_VALUE_NAME, CONTROL_WINDOW_CLASS, SECOND_LAUNCH_ACTION, SHUTDOWN_SEQUENCE,
+    SHUTDOWN_WORKER_WAIT_MS,
 };
 pub use wallpaper::{
     check_decoded_pixels, check_local_file_size, fill_decision, fill_scale_factors,
